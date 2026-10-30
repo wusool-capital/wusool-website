@@ -1,0 +1,25 @@
+---
+const title = "Wusool Capital | M&A advisory in the UAE";
+const description =
+  "Wusool Capital is an M&A advisory firm helping business owners in the UAE sell their companies to the right buyers.";
+// Build output is file format (/sell.html), so drop the .html for the public URL.
+const path = Astro.url.pathname.replace(/(index)?\.html$/, "");
+const canonical = new URL(path, Astro.site).href;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <main>
+      <h1>Wusool Capital</h1>
+      <p>The new site is being built here.</p>
+    </main>
+  </body>
+</html>
