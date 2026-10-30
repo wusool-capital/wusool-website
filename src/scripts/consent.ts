@@ -96,11 +96,11 @@ function set(v: Choice) {
 }
 
 // Opens the banner and moves focus to the first choice.
-const open = () => {
+const openBanner = () => {
   banner.hidden = false;
   banner.querySelector<HTMLButtonElement>("[data-consent]")?.focus();
 };
-w.wusoolConsent = { get, version: VERSION, open };
+w.wusoolConsent = { get, version: VERSION, open: openBanner };
 banner.querySelectorAll<HTMLButtonElement>("[data-consent]").forEach((btn) =>
   btn.addEventListener("click", () => {
     set(btn.dataset.consent as Choice);
@@ -113,10 +113,12 @@ document.addEventListener("click", (e) => {
   );
   if (!a) return;
   e.preventDefault();
-  open();
+  openBanner();
 });
 // Escape closes a reopened banner; a first-time visitor still has to choose.
 banner.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && get()) banner.hidden = true;
 });
 if (!initial) banner.hidden = false;
+
+export {};

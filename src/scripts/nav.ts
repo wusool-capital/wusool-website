@@ -6,3 +6,5 @@ burger?.addEventListener("click", () => {
   burger.setAttribute("aria-expanded", String(open));
   burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
 });
+
+export {};

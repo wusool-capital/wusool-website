@@ -61,3 +61,5 @@ document.querySelectorAll<HTMLElement>("[data-process]").forEach((root) => {
     { threshold: 0.3 },
   ).observe(root);
 });
+
+export {};
