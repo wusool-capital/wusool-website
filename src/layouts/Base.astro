@@ -1,0 +1,80 @@
+---
+// Page shell: head, nav, footer, consent banner and the embed.js modals.
+import "../styles/global.css";
+import interUrl from "@fontsource-variable/inter/files/inter-latin-opsz-normal.woff2?url";
+import favicon from "../assets/logo/favicon.svg?url";
+import Nav from "../components/Nav.astro";
+import ClosingFooter from "../components/ClosingFooter.astro";
+import ConsentBanner from "../components/ConsentBanner.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  noindex?: boolean;
+}
+const { title, description, noindex = false } = Astro.props;
+// Build output is file format (/sell.html), so drop the .html for the public URL.
+const path = Astro.url.pathname.replace(/(index)?\.html$/, "");
+const canonical = new URL(path, Astro.site).href;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href={favicon} type="image/svg+xml" />
+    <link
+      rel="preload"
+      href={interUrl}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <meta
+      name="google-site-verification"
+      content="4Ypgg9qt_cisqft7Q6uWebm3SLH6eQQ87rUlCILJPFc"
+    />
+  </head>
+  <body>
+    <slot name="announce" />
+    <Nav />
+    <main>
+      <slot />
+    </main>
+    <ClosingFooter />
+    <ConsentBanner />
+    <script
+      is:inline
+      src="https://tools.wusoolcapital.com/embed.js"
+      data-tool="get-started"
+      data-modal
+      data-trigger='[data-form="get-started"]'
+      defer
+    ></script>
+    <script
+      is:inline
+      src="https://tools.wusoolcapital.com/embed.js"
+      data-tool="buyers"
+      data-modal
+      data-trigger='[data-form="buyers"]'
+      defer
+    ></script>
+    <script>
+      // Scroll reveal: add .in once an element enters the viewport.
+      const io = new IntersectionObserver(
+        (entries) =>
+          entries.forEach((e) => {
+            if (!e.isIntersecting) return;
+            e.target.classList.add("in");
+            io.unobserve(e.target);
+          }),
+        { threshold: 0.15 },
+      );
+      document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+    </script>
+  </body>
+</html>

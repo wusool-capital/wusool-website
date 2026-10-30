@@ -1,0 +1,33 @@
+---
+// Hero mock: example matched buyers.
+import MockCard from "./MockCard.astro";
+import MockMatch from "./MockMatch.astro";
+---
+
+<MockCard
+  title="Matched buyers"
+  chip="NDA signed"
+  chipTone="solid"
+  foot="Success-fee based · GCC-native"
+  footIcon="sparkle"
+>
+  <MockMatch
+    icon="buildings"
+    name="Family office"
+    detail="GCC, sector fit"
+    status="Talks"
+  />
+  <MockMatch
+    icon="briefcase"
+    name="PE fund"
+    detail="UAE, size fit"
+    status="LOI"
+  />
+  <MockMatch
+    icon="handshake"
+    name="Strategic buyer"
+    detail="KSA, adjacent sector"
+    status="Contacted"
+    tone="quiet"
+  />
+</MockCard>

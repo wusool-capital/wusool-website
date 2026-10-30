@@ -1,0 +1,90 @@
+---
+// Pill button. Renders a link, or a modal trigger button when `form` is set.
+import Icon from "./Icon.astro";
+
+interface Props {
+  href?: string;
+  form?: "get-started" | "buyers";
+  variant?: "primary" | "light" | "ghost-dark";
+  size?: "md" | "sm";
+  arrow?: boolean;
+  source?: string;
+}
+const {
+  href,
+  form,
+  variant = "primary",
+  size = "md",
+  arrow = true,
+  source,
+} = Astro.props;
+const cls = ["btn", `btn--${variant}`, size === "sm" && "btn--sm"];
+---
+
+{form ? (
+  <button type="button" class:list={cls} data-form={form} data-source={source}>
+    <slot />
+    {arrow && <Icon name="arrow-right" />}
+  </button>
+) : (
+  <a class:list={cls} href={href} data-source={source}>
+    <slot />
+    {arrow && <Icon name="arrow-right" />}
+  </a>
+)}
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: var(--btn-h);
+    padding: 0 var(--btn-pad-x);
+    border: 1px solid transparent;
+    border-radius: var(--r-pill);
+    font-size: var(--text-15);
+    font-weight: var(--weight-medium);
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      transform var(--dur-base) var(--ease),
+      background var(--dur-base),
+      border-color var(--dur-base);
+  }
+  .btn:active {
+    transform: scale(var(--press));
+  }
+  .btn :global(.icon) {
+    transition: transform var(--dur) var(--ease);
+  }
+  .btn:hover :global(.icon) {
+    transform: translateX(var(--nudge));
+  }
+  .btn--primary {
+    background: var(--navy);
+    color: var(--on-navy);
+  }
+  .btn--primary:hover {
+    background: var(--navy-2);
+  }
+  .btn--light {
+    background: var(--surface);
+    color: var(--navy);
+  }
+  .btn--light:hover {
+    background: var(--sky-soft);
+  }
+  .btn--ghost-dark {
+    border-color: var(--on-navy-border);
+    background: transparent;
+    color: var(--on-navy);
+  }
+  .btn--ghost-dark:hover {
+    border-color: var(--on-navy-border-hover);
+  }
+  .btn--sm {
+    height: var(--btn-h-sm);
+    padding: 0 var(--space-4);
+    font-size: var(--text-14);
+  }
+</style>

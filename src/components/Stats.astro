@@ -1,0 +1,72 @@
+---
+// Row of key figures in one white card.
+interface Props {
+  items: { num: string; unit: string; text: string }[];
+}
+const { items } = Astro.props;
+---
+
+<div class="stats">
+  <div class="wrap">
+    <div class="grid reveal">
+      {items.map((s) => (
+        <div class="stat">
+          <div class="num">
+            {s.num}
+            <small>{s.unit}</small>
+          </div>
+          <p>{s.text}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  .stats {
+    padding: var(--space-7) 0 0;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+  }
+  .stat {
+    padding: var(--space-7) var(--space-8);
+  }
+  .stat + .stat {
+    border-left: 1px solid var(--line);
+  }
+  .num {
+    color: var(--navy);
+    font-size: var(--text-stat);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-stat);
+    letter-spacing: var(--tracking-num);
+    font-variant-numeric: tabular-nums;
+  }
+  small {
+    margin-left: var(--space-1-5);
+    color: var(--muted);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-h3);
+  }
+  p {
+    max-width: var(--measure-card);
+    margin-top: var(--space-3);
+    color: var(--muted);
+    font-size: var(--text-15);
+  }
+  @media (max-width: 720px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .stat + .stat {
+      border-top: 1px solid var(--line);
+      border-left: 0;
+    }
+  }
+</style>

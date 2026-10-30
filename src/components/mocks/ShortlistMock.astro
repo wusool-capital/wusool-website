@@ -1,0 +1,39 @@
+---
+// Process mock, step 2: the buyer shortlist.
+import MockCard from "./MockCard.astro";
+import MockMatch from "./MockMatch.astro";
+---
+
+<MockCard
+  title="Buyer shortlist"
+  chip="Matched on sector and size"
+  foot="Every buyer signs an NDA before seeing anything."
+  footIcon="lock-simple"
+>
+  <MockMatch
+    icon="buildings"
+    name="Family office"
+    detail="Healthcare platform, UAE"
+    status="Strong fit"
+    tone="solid"
+  />
+  <MockMatch
+    icon="chart-line-up"
+    name="PE fund"
+    detail="GCC mid-market"
+    status="Good fit"
+  />
+  <MockMatch
+    icon="magnifying-glass"
+    name="Search fund"
+    detail="Self-funded, Dubai"
+    status="Good fit"
+  />
+  <MockMatch
+    icon="handshake"
+    name="Strategic buyer"
+    detail="Clinic group, KSA"
+    status="Reviewing"
+    tone="quiet"
+  />
+</MockCard>

@@ -1,0 +1,110 @@
+---
+// Latest insights: one tinted lead card and two stacked cards.
+import ArrowLink from "./ArrowLink.astro";
+import Icon from "./Icon.astro";
+
+interface Post {
+  href: string;
+  title: string;
+  excerpt: string;
+}
+interface Props {
+  lead: Post & { glyph: string };
+  side: Post[];
+}
+const { lead, side } = Astro.props;
+---
+
+<div class="posts">
+  <a class="post lead reveal" href={lead.href}>
+    <Icon name={lead.glyph} class="glyph" />
+    <h3>{lead.title}</h3>
+    <p>{lead.excerpt}</p>
+    <ArrowLink class="more">Read more</ArrowLink>
+  </a>
+  <div class="side">
+    {side.map((p) => (
+      <a class="post reveal" href={p.href}>
+        <h3>{p.title}</h3>
+        <p>{p.excerpt}</p>
+        <ArrowLink class="more">Read more</ArrowLink>
+      </a>
+    ))}
+  </div>
+</div>
+
+<style>
+  .posts {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: var(--space-4);
+    margin-top: var(--space-12);
+  }
+  .side {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .post {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-7);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+    transition:
+      border-color var(--dur-base),
+      transform var(--dur-mid) var(--ease);
+  }
+  .post:hover {
+    border-color: var(--sky);
+    transform: translateY(var(--lift));
+  }
+  h3 {
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+  }
+  p {
+    margin-top: var(--space-2-5);
+    color: var(--muted);
+    font-size: var(--text-15);
+  }
+  .post :global(.more) {
+    margin-top: auto;
+    padding-top: var(--space-5);
+    font-size: var(--text-14);
+  }
+  .lead {
+    position: relative;
+    justify-content: flex-end;
+    min-height: var(--feature-min-h);
+    overflow: hidden;
+    border-color: var(--sky);
+    background: var(--sky-soft);
+  }
+  .lead h3 {
+    max-width: var(--measure-post);
+    margin-top: auto;
+    font-size: var(--text-post-lead);
+  }
+  .lead :global(.more) {
+    margin-top: 0;
+  }
+  .lead :global(.glyph) {
+    position: absolute;
+    top: var(--space-7);
+    right: var(--space-7);
+    color: var(--sky);
+    font-size: var(--text-glyph);
+  }
+  @media (max-width: 720px) {
+    .posts {
+      grid-template-columns: 1fr;
+    }
+    .lead {
+      min-height: var(--feature-min-h-sm);
+    }
+    .lead :global(.glyph) {
+      font-size: var(--text-glyph-sm);
+    }
+  }
+</style>

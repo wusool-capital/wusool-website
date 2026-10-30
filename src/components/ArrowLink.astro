@@ -1,0 +1,35 @@
+---
+// Text link with a trailing arrow. Renders a span when `href` is not set,
+// for use inside a card that is already a link.
+import Icon from "./Icon.astro";
+
+interface Props {
+  href?: string;
+  source?: string;
+  class?: string;
+}
+const { href, source, class: className } = Astro.props;
+const Tag = href ? "a" : "span";
+---
+
+<Tag class:list={["link", className]} href={href} data-source={source}>
+  <slot />
+  <Icon name="arrow-right" />
+</Tag>
+
+<style>
+  .link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    color: var(--navy);
+    font-weight: var(--weight-medium);
+  }
+  .link :global(.icon) {
+    transition: transform var(--dur) var(--ease);
+  }
+  .link:hover :global(.icon),
+  :global(a:hover) > .link :global(.icon) {
+    transform: translateX(var(--nudge));
+  }
+</style>

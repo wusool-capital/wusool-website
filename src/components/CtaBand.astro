@@ -1,0 +1,43 @@
+---
+// Closing call to action at the top of the navy footer panel.
+import { closingCta } from "../data/site";
+import Button from "./Button.astro";
+---
+
+<div class="band reveal">
+  <h2>{closingCta.title}</h2>
+  <p>{closingCta.text}</p>
+  <Button href={closingCta.href} variant="light" source="closing-cta">
+    {closingCta.label}
+  </Button>
+</div>
+
+<style>
+  .band {
+    position: relative;
+    padding: var(--space-24) var(--space-8) var(--space-20);
+    text-align: center;
+  }
+  h2 {
+    max-width: var(--measure-cta);
+    margin: 0 auto;
+    color: var(--on-navy);
+    font-size: var(--text-cta);
+    line-height: var(--leading-cta);
+    letter-spacing: var(--tracking-display);
+    text-wrap: balance;
+  }
+  p {
+    margin-top: var(--space-5);
+    color: var(--on-navy-muted);
+    font-size: var(--text-xl);
+  }
+  .band :global(.btn) {
+    margin-top: var(--space-8);
+  }
+  @media (max-width: 720px) {
+    .band {
+      padding: var(--space-16) var(--space-5) var(--space-14);
+    }
+  }
+</style>

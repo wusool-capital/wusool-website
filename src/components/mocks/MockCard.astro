@@ -1,0 +1,66 @@
+---
+// White UI card used by the live mocks: title, status chip, content, footnote.
+import Chip from "../Chip.astro";
+import Icon from "../Icon.astro";
+
+interface Props {
+  title: string;
+  chip: string;
+  chipTone?: "soft" | "solid" | "quiet";
+  foot?: string;
+  footIcon?: string;
+  class?: string;
+}
+const {
+  title,
+  chip,
+  chipTone = "soft",
+  foot,
+  footIcon,
+  class: className,
+} = Astro.props;
+---
+
+<div class:list={["ui", className]}>
+  <div class="head">
+    <span class="title">{title}</span>
+    <Chip tone={chipTone}>{chip}</Chip>
+  </div>
+  <slot />
+  {foot && (
+    <div class="foot">
+      {footIcon && <Icon name={footIcon} />} {foot}
+    </div>
+  )}
+</div>
+
+<style>
+  .ui {
+    padding: var(--space-5);
+    border-radius: var(--r-card);
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-mock);
+  }
+  .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-4);
+  }
+  .title {
+    color: var(--navy);
+    font-size: var(--text-14);
+    font-weight: var(--weight-semibold);
+  }
+  .foot {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+</style>

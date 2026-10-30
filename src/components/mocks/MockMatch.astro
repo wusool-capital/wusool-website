@@ -1,0 +1,61 @@
+---
+// One buyer row in a mock: icon, name, detail, status chip.
+import Chip from "../Chip.astro";
+import Icon from "../Icon.astro";
+
+interface Props {
+  icon: string;
+  name: string;
+  detail: string;
+  status: string;
+  tone?: "soft" | "solid" | "quiet";
+}
+const { icon, name, detail, status, tone = "soft" } = Astro.props;
+---
+
+<div class="match">
+  <span class="avatar">
+    <Icon name={icon} />
+  </span>
+  <div class="main">
+    <b>{name}</b>
+    <small>{detail}</small>
+  </div>
+  <Chip tone={tone}>{status}</Chip>
+</div>
+
+<style>
+  .match {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2-5) 0;
+  }
+  .match + .match {
+    border-top: 1px solid var(--line);
+  }
+  .avatar {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: var(--avatar);
+    height: var(--avatar);
+    border-radius: var(--r-inner);
+    background: var(--sky-soft);
+    color: var(--navy);
+    font-size: var(--avatar-icon);
+  }
+  .main {
+    flex: 1;
+    min-width: 0;
+  }
+  b {
+    display: block;
+    font-size: var(--text-14);
+    font-weight: var(--weight-semibold);
+  }
+  small {
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+</style>

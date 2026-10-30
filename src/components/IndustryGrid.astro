@@ -1,0 +1,98 @@
+---
+// Grid of sector cards linking to the industry pages. First card is tinted.
+import ArrowLink from "./ArrowLink.astro";
+
+interface Props {
+  items: {
+    href: string;
+    icon: string;
+    title: string;
+    text: string;
+    cta: string;
+  }[];
+}
+const { items } = Astro.props;
+---
+
+<div class="grid">
+  {items.map((i) => (
+    <a class="tile reveal" href={i.href} data-source="industry-grid">
+      <span class="icon-box">
+        <img src={i.icon} alt="" width="22" height="22" loading="lazy" />
+      </span>
+      <h3>{i.title}</h3>
+      <p>{i.text}</p>
+      <ArrowLink class="more">{i.cta}</ArrowLink>
+    </a>
+  ))}
+</div>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-3);
+    margin-top: var(--space-12);
+  }
+  .tile {
+    display: flex;
+    flex-direction: column;
+    min-height: var(--tile-min-h);
+    padding: var(--space-6);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+    transition:
+      border-color var(--dur-base),
+      transform var(--dur-mid) var(--ease),
+      box-shadow var(--dur-mid);
+  }
+  .tile:hover {
+    border-color: var(--sky);
+    box-shadow: var(--shadow);
+    transform: translateY(var(--lift));
+  }
+  .tile:first-child {
+    border-color: var(--sky);
+    background: var(--sky-soft);
+  }
+  .icon-box {
+    display: grid;
+    place-items: center;
+    width: var(--tile-icon);
+    height: var(--tile-icon);
+    margin-bottom: var(--space-5);
+    border-radius: var(--r-icon);
+    background: var(--sky-soft);
+  }
+  .tile:first-child .icon-box {
+    background: var(--surface);
+  }
+  .icon-box img {
+    width: var(--tile-icon-img);
+    height: var(--tile-icon-img);
+  }
+  p {
+    margin-top: var(--space-2);
+    color: var(--muted);
+    font-size: var(--text-15);
+  }
+  .tile :global(.more) {
+    margin-top: auto;
+    padding-top: var(--space-4-5);
+    font-size: var(--text-14);
+  }
+  @media (max-width: 1080px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 720px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .tile {
+      min-height: 0;
+    }
+  }
+</style>

@@ -27,6 +27,7 @@ jobs:
       - run: npm audit --audit-level=high
       - run: npm run lint
       - run: npm run check
+      - run: npm run check:tokens
       - run: npm run build
       - run: npm run check:dist
       - run: npx playwright install --with-deps chromium

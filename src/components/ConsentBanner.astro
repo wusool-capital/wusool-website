@@ -1,0 +1,95 @@
+---
+// Cookie banner ported from the live site: same cookie, choices, version,
+// consent-mode calls, iframe message and `wusool-consent` event.
+// Change from live: Clarity loads only after "Accept all" (PRD 14.4).
+---
+
+<div
+  class="banner"
+  id="cookie-banner"
+  role="dialog"
+  aria-label="Cookie choices"
+  hidden
+>
+  <div class="inner">
+    <p>
+      We use cookies and similar tools to see how our site and tools are used,
+      so we can improve them. Accept all also records how you use our tools,
+      including what you enter (your name, email, phone and LinkedIn are
+      hidden), and links it to your enquiry. Cookies only skips the recording.
+      Decline turns off tracking in your browser, and we still count enquiries
+      without your details. <a href="/privacy-policy">Privacy Policy</a>
+    </p>
+    <div class="choices">
+      <button type="button" data-consent="declined">
+        Decline
+      </button>
+      <button type="button" data-consent="cookies">
+        Cookies only
+      </button>
+      <button type="button" data-consent="all">
+        Accept all
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import "../scripts/consent";
+</script>
+
+<style>
+  .banner {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: var(--z-banner);
+    padding: var(--space-5) var(--space-6);
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+    box-shadow: var(--shadow-banner);
+    font-size: var(--text-14);
+  }
+  .banner[hidden] {
+    display: none;
+  }
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    align-items: center;
+    justify-content: space-between;
+    max-width: var(--wrap-max);
+    margin: 0 auto;
+  }
+  p {
+    flex: 1 1 var(--banner-text-basis);
+    color: var(--ink);
+  }
+  p a {
+    color: var(--navy);
+    text-decoration: underline;
+    text-underline-offset: var(--nudge);
+  }
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  button {
+    min-width: var(--banner-btn-min);
+    height: var(--btn-h-sm);
+    padding: 0 var(--space-5);
+    border: 1px solid var(--navy);
+    border-radius: var(--r-pill);
+    background: var(--navy);
+    color: var(--on-navy);
+    font-size: var(--text-14);
+    font-weight: var(--weight-medium);
+    cursor: pointer;
+  }
+  button:hover {
+    background: var(--navy-2);
+  }
+</style>
