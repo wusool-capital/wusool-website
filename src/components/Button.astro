@@ -52,7 +52,7 @@ const cls = ["btn", `btn--${variant}`, size === "sm" && "btn--sm"];
       border-color var(--dur-base);
   }
   .btn:active {
-    transform: scale(0.98);
+    transform: scale(var(--press));
   }
   .btn :global(.icon) {
     transition: transform var(--dur) var(--ease);

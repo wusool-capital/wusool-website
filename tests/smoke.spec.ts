@@ -37,11 +37,18 @@ for (const path of pages) {
   });
 }
 
-test("Get Started opens the tools modal trigger", async ({
+test("Get Started is wired to the embed.js modal", async ({
   page,
   isMobile,
 }) => {
   await page.goto("/");
+  for (const tool of ["get-started", "buyers"]) {
+    await expect(
+      page.locator(
+        `script[src="https://tools.wusoolcapital.com/embed.js"][data-tool="${tool}"][data-modal][data-trigger='[data-form="${tool}"]']`,
+      ),
+    ).toHaveCount(1);
+  }
   if (isMobile) await page.getByRole("button", { name: "Open menu" }).click();
   const trigger = page.locator('[data-form="get-started"]:visible').first();
   await expect(trigger).toBeVisible();

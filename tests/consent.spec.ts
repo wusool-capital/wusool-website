@@ -145,4 +145,7 @@ test("Privacy choices reopens the banner", async ({
   await expect(banner).toBeHidden();
   await page.getByRole("button", { name: "Privacy choices" }).click();
   await expect(banner).toBeVisible();
+  await expect(banner.getByRole("button", { name: "Decline" })).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(banner).toBeHidden();
 });

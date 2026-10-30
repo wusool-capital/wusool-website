@@ -49,6 +49,10 @@ svg {
   outline: 2px solid var(--navy);
   outline-offset: 2px;
 }
+/* Navy panels: the ring is drawn on navy, so it switches to sky. */
+.on-navy :focus-visible {
+  outline-color: var(--sky);
+}
 h1,
 h2,
 h3 {
@@ -58,7 +62,7 @@ h3 {
   font-optical-sizing: auto;
 }
 h2 {
-  max-width: 22ch;
+  max-width: var(--measure-h2);
   font-size: var(--text-h2);
   font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);

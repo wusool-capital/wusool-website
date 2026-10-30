@@ -1,7 +1,7 @@
 ---
 // Sticky header: logo, links with dropdowns, Get Started, mobile menu.
 import logo from "../assets/logo/logo-navy.svg?url";
-import { nav, company } from "../data/site";
+import { nav, mobileNav, company } from "../data/site";
 import Button from "./Button.astro";
 import Icon from "./Icon.astro";
 ---
@@ -48,13 +48,9 @@ import Icon from "./Icon.astro";
       </div>
     </nav>
     <div class="mobile" id="mobile-menu">
-      {nav.map((item) =>
-        item.menu ? (
-          item.menu.map((l) => <a href={l.href}>{l.label}</a>)
-        ) : (
-          <a href={item.href}>{item.label}</a>
-        ),
-      )}
+      {mobileNav.map((l) => (
+        <a href={l.href}>{l.label}</a>
+      ))}
       <Button form="get-started" source="nav-mobile">
         Get Started
       </Button>
@@ -63,13 +59,7 @@ import Icon from "./Icon.astro";
 </header>
 
 <script>
-  const header = document.querySelector<HTMLElement>("[data-header]");
-  const burger = header?.querySelector<HTMLButtonElement>(".burger");
-  burger?.addEventListener("click", () => {
-    const open = header?.toggleAttribute("data-open") ?? false;
-    burger.setAttribute("aria-expanded", String(open));
-    burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
-  });
+  import "../scripts/nav";
 </script>
 
 <style>

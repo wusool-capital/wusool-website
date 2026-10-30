@@ -51,7 +51,7 @@ export const industries = [
   {
     href: "/industries/technology",
     icon: technology,
-    iconAlt: "Technology business icon",
+
     title: "Technology",
     text: "SaaS, software, IT services. Recurring revenue commands a premium.",
     cta: "Sell Your Tech Business",
@@ -59,7 +59,7 @@ export const industries = [
   {
     href: "/industries/food-beverage",
     icon: foodBeverage,
-    iconAlt: "Restaurant and F&B business icon",
+
     title: "F&B and Restaurants",
     text: "Restaurants, cafés, franchise operations across UAE & GCC.",
     cta: "Sell Your F&B Business",
@@ -67,7 +67,7 @@ export const industries = [
   {
     href: "/industries/healthcare",
     icon: healthcare,
-    iconAlt: "Healthcare and clinic business icon",
+
     title: "Healthcare & Clinics",
     text: "Clinics, diagnostics, wellness. Licence transfers handled.",
     cta: "Sell Your Clinic",
@@ -75,7 +75,7 @@ export const industries = [
   {
     href: "/industries/business-services",
     icon: businessServices,
-    iconAlt: "Business services icon",
+
     title: "Business Services",
     text: "Agencies, consultancies, logistics. Exit on your terms.",
     cta: "Sell Your Agency",
@@ -83,7 +83,7 @@ export const industries = [
   {
     href: "/industries/manufacturing",
     icon: manufacturing,
-    iconAlt: "Manufacturing business icon",
+
     title: "Manufacturing",
     text: "Asset-heavy businesses with strong buyer appetite in GCC.",
     cta: "Sell Your Manufacturing Business",
@@ -91,7 +91,7 @@ export const industries = [
   {
     href: "/industries/education",
     icon: education,
-    iconAlt: "Education business icon",
+
     title: "Education",
     text: "Nurseries to training centres, with licence transfers handled in the process.",
     cta: "Sell Your Education Business",
@@ -99,7 +99,7 @@ export const industries = [
   {
     href: "/industries/retail",
     icon: retail,
-    iconAlt: "Retail business icon",
+
     title: "Retail & Consumer",
     text: "Standalone stores to multi-location retail operations.",
     cta: "Sell Your Retail Business",
@@ -107,7 +107,7 @@ export const industries = [
   {
     href: "/industries/logistics",
     icon: logistics,
-    iconAlt: "Logistics business icon",
+
     title: "Logistics",
     text: "Fleet assets, route contracts, and driver visas.",
     cta: "Sell Your Logistics Business",

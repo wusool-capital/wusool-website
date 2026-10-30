@@ -54,6 +54,7 @@
   --tracking-num-sm: -0.02em;
   --weight-medium: 500;
   --weight-semibold: 600;
+  --measure-h2: 22ch;
   --measure-lede: 58ch;
   --measure-body: 68ch;
   --measure-hero: 46ch;
@@ -123,6 +124,8 @@
   --nudge: 3px;
   --lift: -3px;
   --menu-shift: -4px;
+  --press: 0.98;
+  --turn-open: 45deg;
   --rise-y: 16px;
   --reveal-y: 20px;
 
@@ -145,6 +148,7 @@
 
   /* Motion */
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-linear: linear;
   --dur-fast: 0.18s;
   --dur-base: 0.2s;
   --dur: 0.25s;

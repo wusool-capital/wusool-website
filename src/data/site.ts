@@ -48,6 +48,16 @@ export const nav: NavItem[] = [
   },
 ];
 
+// Phone menu, as drawn in index.html.
+export const mobileNav: NavLink[] = [
+  { label: "For Sellers", href: "/sell" },
+  { label: "For Buyers", href: "/buyers" },
+  { label: "Industries", href: "/industries/technology" },
+  { label: "Valuation Calculator", href: "/valuation-tool" },
+  { label: "Insights", href: "/insights" },
+  { label: "Team", href: "/team" },
+];
+
 export const footerLinks: NavLink[] = [
   { label: "For Sellers", href: "/sell" },
   { label: "For Buyers", href: "/buyers" },

@@ -3,9 +3,10 @@
 // Pass one mock per step in slots named pane-0, pane-1, ...
 interface Props {
   steps: { title: string; text: string }[];
+  // Unique per page when a page has more than one Process block.
+  id?: string;
 }
-const { steps } = Astro.props;
-const uid = "process";
+const { steps, id: uid = "process" } = Astro.props;
 const panes = await Promise.all(
   steps.map((_, i) => Astro.slots.render(`pane-${i}`)),
 );
@@ -13,7 +14,12 @@ const panes = await Promise.all(
 
 <div class="process" data-process>
   <div>
-    <div class="steps" role="tablist" aria-label="Process steps">
+    <div
+      class="steps"
+      role="tablist"
+      aria-label="Process steps"
+      aria-orientation="vertical"
+    >
       {steps.map((s, i) => (
         <button
           class="step"
@@ -25,8 +31,8 @@ const panes = await Promise.all(
           tabindex={i === 0 ? 0 : -1}
         >
           <span class="n">{String(i + 1).padStart(2, "0")}</span>
-          <h3>{s.title}</h3>
-          <p>{s.text}</p>
+          <span class="title">{s.title}</span>
+          <span class="text">{s.text}</span>
           <span class="prog" />
         </button>
       ))}
@@ -50,69 +56,7 @@ const panes = await Promise.all(
 </div>
 
 <script>
-  // Auto-advance every --tab-interval while visible; stop after a manual pick.
-  document.querySelectorAll<HTMLElement>("[data-process]").forEach((root) => {
-    const tabs = [...root.querySelectorAll<HTMLButtonElement>("[role=tab]")];
-    const interval =
-      parseFloat(getComputedStyle(root).getPropertyValue("--tab-interval")) *
-      1000;
-    let current = 0;
-    let timer: number | undefined;
-    let auto = !matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    const show = (i: number) => {
-      tabs.forEach((t, k) => {
-        const on = k === i;
-        t.setAttribute("aria-selected", String(on));
-        t.tabIndex = on ? 0 : -1;
-        const pane = document.getElementById(
-          t.getAttribute("aria-controls") ?? "",
-        );
-        if (pane) {
-          pane.hidden = !on;
-          pane.classList.toggle("on", on);
-        }
-        const bar = t.querySelector<HTMLElement>(".prog");
-        if (!bar) return;
-        bar.classList.remove("run");
-        void bar.offsetWidth; // restart the progress animation
-        if (on && auto) bar.classList.add("run");
-      });
-      current = i;
-    };
-    const stop = () => {
-      auto = false;
-      clearInterval(timer);
-    };
-    const start = () => {
-      if (!auto) return;
-      clearInterval(timer);
-      timer = window.setInterval(
-        () => show((current + 1) % tabs.length),
-        interval,
-      );
-      show(current);
-    };
-    tabs.forEach((t, i) => {
-      t.addEventListener("click", () => {
-        stop();
-        show(i);
-      });
-      t.addEventListener("keydown", (e) => {
-        if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-        e.preventDefault();
-        const n =
-          (i + (e.key === "ArrowDown" ? 1 : -1) + tabs.length) % tabs.length;
-        stop();
-        show(n);
-        tabs[n].focus();
-      });
-    });
-    new IntersectionObserver(
-      ([e]) => (e.isIntersecting ? start() : clearInterval(timer)),
-      { threshold: 0.3 },
-    ).observe(root);
-  });
+  import "../scripts/tabs";
 </script>
 
 <style>
@@ -148,10 +92,15 @@ const panes = await Promise.all(
     font-size: var(--text-sm);
     font-variant-numeric: tabular-nums;
   }
-  .step h3 {
+  .title {
+    display: block;
     margin-top: var(--space-1);
+    color: var(--navy);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-h3);
   }
-  .step p {
+  .text {
     display: none;
     margin-top: var(--space-2);
     color: var(--muted);
@@ -162,7 +111,7 @@ const panes = await Promise.all(
     background: var(--surface);
     box-shadow: var(--shadow);
   }
-  .step[aria-selected="true"] p {
+  .step[aria-selected="true"] .text {
     display: block;
   }
   .prog {
@@ -176,7 +125,7 @@ const panes = await Promise.all(
     transform-origin: left;
   }
   .step[aria-selected="true"] :global(.prog.run) {
-    animation: prog var(--tab-interval) linear forwards;
+    animation: prog var(--tab-interval) var(--ease-linear) forwards;
   }
   @keyframes prog {
     to {

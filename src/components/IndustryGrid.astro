@@ -6,7 +6,6 @@ interface Props {
   items: {
     href: string;
     icon: string;
-    iconAlt: string;
     title: string;
     text: string;
     cta: string;
@@ -19,13 +18,7 @@ const { items } = Astro.props;
   {items.map((i) => (
     <a class="tile reveal" href={i.href} data-source="industry-grid">
       <span class="icon-box">
-        <img
-          src={i.icon}
-          alt={i.iconAlt}
-          width="22"
-          height="22"
-          loading="lazy"
-        />
+        <img src={i.icon} alt="" width="22" height="22" loading="lazy" />
       </span>
       <h3>{i.title}</h3>
       <p>{i.text}</p>

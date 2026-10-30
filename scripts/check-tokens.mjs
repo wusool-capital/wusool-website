@@ -16,7 +16,19 @@ const RULES = [
   [/#[0-9a-f]{3,8}\b/gi, "raw color"],
   [/\b(?:rgba?|hsla?|oklch|cubic-bezier)\(/g, "raw color or easing"],
   [
-    /(?<![\w-])(?!0(?:px|em|rem|s)\b)(?!1px\b)(?!2px\b)(?!1em\b)\d*\.?\d+(?:px|rem|em|ms|s)\b/g,
+    /:\s*[^;]*\b(?:white|black|red|blue|green|gray|grey|silver|orange|yellow|purple|pink|color-mix)\b/g,
+    "named color",
+  ],
+  [
+    /\b(?:font-weight|line-height|z-index)\s*:\s*\d/g,
+    "raw weight, leading or layer",
+  ],
+  [
+    /(?<![\w-])(?:ease|ease-in|ease-out|ease-in-out|linear)(?![\w-])/g,
+    "keyword easing",
+  ],
+  [
+    /(?<![\w-])(?!0(?:px|em|rem|s)\b)(?!1px\b)(?!2px\b)(?!1em\b)\d*\.?\d+(?:px|rem|em|ms|s|deg|ch|vw|vh|dvh)\b/g,
     "raw size or time",
   ],
 ];
@@ -38,6 +50,7 @@ for (const file of files("src")) {
   css = css
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/@media[^{]*/g, "")
+    .replace(/@font-face\s*\{[^}]*\}/g, "")
     .replace(/unicode-range:[^;]*;/g, "");
   css.split("\n").forEach((line) => {
     for (const [re, what] of RULES) {
