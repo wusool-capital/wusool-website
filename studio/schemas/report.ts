@@ -1,0 +1,143 @@
+import { defineField, defineType } from "sanity";
+import { silos } from "./options";
+
+// Type name and the tools app fields (html, htmlFile, rendered*, freePages,
+// interactive, bannerPinned) kept from the original Sanity project.
+export const report = defineType({
+  name: "report",
+  title: "Report",
+  type: "document",
+  groups: [
+    { name: "content", default: true },
+    { name: "seo", title: "SEO" },
+    { name: "gate", title: "Tools app" },
+  ],
+  fields: [
+    defineField({
+      name: "title",
+      type: "string",
+      group: "content",
+      validation: (r) => r.required(),
+    }),
+    defineField({
+      name: "slug",
+      type: "slug",
+      group: "content",
+      options: { source: "title" },
+      validation: (r) => r.required(),
+    }),
+    defineField({ name: "excerpt", type: "text", rows: 3, group: "content" }),
+    defineField({
+      name: "silo",
+      title: "Primary silo",
+      type: "string",
+      group: "content",
+      options: { list: silos },
+    }),
+    defineField({
+      name: "featuredImage",
+      type: "image",
+      group: "content",
+      fields: [{ name: "alt", type: "string" }],
+    }),
+    defineField({
+      name: "companionInsight",
+      type: "reference",
+      group: "content",
+      to: [{ type: "insights" }],
+    }),
+    defineField({
+      name: "ctaText",
+      title: "CTA text",
+      type: "string",
+      group: "content",
+    }),
+    defineField({
+      name: "ctaUrl",
+      title: "CTA URL",
+      type: "string",
+      group: "content",
+    }),
+    defineField({
+      name: "publishedAt",
+      title: "Published date",
+      type: "datetime",
+      group: "content",
+    }),
+    defineField({ name: "lastUpdated", type: "datetime", group: "content" }),
+    defineField({ name: "readingTime", type: "string", group: "content" }),
+    defineField({ name: "featured", type: "boolean", group: "content" }),
+    defineField({
+      name: "bannerPinned",
+      title: "Pin to banner",
+      type: "boolean",
+      group: "content",
+    }),
+    defineField({
+      name: "seoTitle",
+      title: "SEO title",
+      type: "string",
+      group: "seo",
+    }),
+    defineField({
+      name: "seoDescription",
+      title: "SEO description",
+      type: "text",
+      rows: 2,
+      group: "seo",
+    }),
+    defineField({
+      name: "ogTitle",
+      title: "OG title",
+      type: "string",
+      group: "seo",
+    }),
+    defineField({
+      name: "ogImage",
+      title: "OG image",
+      type: "image",
+      group: "seo",
+    }),
+    defineField({
+      name: "gateId",
+      title: "Tools app gate id",
+      type: "string",
+      group: "gate",
+    }),
+    defineField({ name: "bodyFormat", type: "string", group: "gate" }),
+    defineField({
+      name: "body",
+      type: "array",
+      of: [{ type: "block" }],
+      group: "gate",
+    }),
+    defineField({ name: "html", type: "text", group: "gate", hidden: true }),
+    defineField({
+      name: "htmlFile",
+      title: "HTML bundle",
+      type: "file",
+      group: "gate",
+    }),
+    defineField({ name: "freePages", type: "number", group: "gate" }),
+    defineField({ name: "interactive", type: "boolean", group: "gate" }),
+    defineField({
+      name: "renderedFrom",
+      type: "string",
+      group: "gate",
+      readOnly: true,
+    }),
+    defineField({
+      name: "renderedHtml",
+      type: "text",
+      group: "gate",
+      hidden: true,
+    }),
+    defineField({
+      name: "renderedPreviewEnd",
+      type: "number",
+      group: "gate",
+      readOnly: true,
+    }),
+  ],
+  preview: { select: { title: "title", subtitle: "silo" } },
+});

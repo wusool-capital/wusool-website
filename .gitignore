@@ -9,3 +9,6 @@ playwright-report/
 .env.*
 .dev.vars
 .DS_Store
+studio/node_modules/
+studio/dist/
+studio/.sanity/
