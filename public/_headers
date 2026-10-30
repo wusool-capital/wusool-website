@@ -6,5 +6,6 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
   X-Frame-Options: DENY
 
-https://*.workers.dev/*
+# Staging host. Preview URLs get noindex from Cloudflare already.
+https://wusool-website.jules-aa2.workers.dev/*
   X-Robots-Tag: noindex
