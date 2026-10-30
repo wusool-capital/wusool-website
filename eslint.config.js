@@ -24,6 +24,7 @@ export default [
         process: "readonly",
         console: "readonly",
         Buffer: "readonly",
+        URL: "readonly",
         module: "writable",
       },
     },

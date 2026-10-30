@@ -8,6 +8,8 @@ module.exports = {
       numberOfRuns: 3,
     },
     assert: {
+      // Assert on the median run, so one lucky run cannot pass the gate.
+      aggregationMethod: "median-run",
       assertions: {
         "categories:performance": ["error", { minScore: 0.95 }],
         "categories:accessibility": ["error", { minScore: 1 }],

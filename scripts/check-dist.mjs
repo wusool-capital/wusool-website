@@ -26,10 +26,10 @@ const pathOf = (file) =>
     .replace(/(^|\/)index\.html$/, "")
     .replace(/\.html$/, "");
 
-// Internal link target exists as a built page or file.
-const exists = (href) => {
-  const p = decodeURI(href.split(/[?#]/)[0]).replace(/\/$/, "");
-  if (p === "") return true;
+// Internal path exists as a built page or file.
+const exists = (pathname) => {
+  const p = decodeURI(pathname);
+  if (p === "/") return true;
   return [p, `${p}.html`, `${p}/index.html`].some((c) =>
     existsSync(join(DIST, c)),
   );
@@ -38,6 +38,21 @@ const exists = (href) => {
 const size = (src) => {
   const p = join(DIST, src.split("?")[0]);
   return existsSync(p) ? statSync(p).size : 0;
+};
+
+// Static imports and dynamic import() of .js chunks in a piece of code.
+const imports = (code) =>
+  [...code.matchAll(/(?:from|import)\s*\(?\s*["']([^"']+\.js)["']/g)].map(
+    (m) => m[1],
+  );
+
+// Adds a JS file and every chunk it loads to the set.
+const addJs = (pathname, set) => {
+  const p = join(DIST, pathname);
+  if (set.has(p) || !existsSync(p)) return;
+  set.add(p);
+  for (const spec of imports(readFileSync(p, "utf8")))
+    addJs(new URL(spec, SITE + pathname).pathname, set);
 };
 
 for (const file of htmlFiles) {
@@ -51,25 +66,49 @@ for (const file of htmlFiles) {
   // Links and alt text apply to every page, indexable or not.
   for (const a of doc.querySelectorAll("a")) {
     const href = a.getAttribute("href");
-    if (href === undefined) err("link without href");
-    else if (href === "#" || href === "") {
+    if (href === undefined) {
+      err("link without href");
+    } else if (href === "#" || href === "") {
       if (!a.hasAttribute("data-form")) err(`empty link "${href}"`);
-    } else if (href.startsWith("/") && !href.startsWith("//") && !exists(href))
-      err(`broken link ${href}`);
+    } else if (/^javascript:/i.test(href)) {
+      err(`javascript link ${href}`);
+    } else {
+      const url = new URL(href, SITE + path);
+      if (url.origin !== SITE) continue;
+      if (url.pathname !== "/" && url.pathname.endsWith("/"))
+        err(`link ${href} has a trailing slash and redirects`);
+      else if (!exists(url.pathname)) err(`broken link ${href}`);
+    }
   }
   for (const img of doc.querySelectorAll("img")) {
     if (!img.hasAttribute("alt"))
       err(`image without alt: ${img.getAttribute("src")}`);
   }
 
+  // JS: script tags, island chunks and everything they import.
   let js = 0;
   let css = 0;
+  const jsFiles = new Set();
   for (const s of doc.querySelectorAll("script")) {
     const src = s.getAttribute("src");
-    if (src?.startsWith("/")) js += size(src);
-    else if (!src && s.getAttribute("type") !== "application/ld+json")
+    if (src?.startsWith("/")) addJs(src.split("?")[0], jsFiles);
+    else if (!src && s.getAttribute("type") !== "application/ld+json") {
       js += Buffer.byteLength(s.text);
+      for (const spec of imports(s.text))
+        addJs(new URL(spec, SITE + path).pathname, jsFiles);
+    }
   }
+  for (const island of doc.querySelectorAll("astro-island")) {
+    for (const attr of [
+      "component-url",
+      "renderer-url",
+      "before-hydration-url",
+    ]) {
+      const src = island.getAttribute(attr);
+      if (src?.startsWith("/")) addJs(src, jsFiles);
+    }
+  }
+  for (const f of jsFiles) js += statSync(f).size;
   for (const l of doc.querySelectorAll('link[rel="stylesheet"]')) {
     const href = l.getAttribute("href");
     if (href?.startsWith("/")) css += size(href);
