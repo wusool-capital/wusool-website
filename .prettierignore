@@ -1,0 +1,11 @@
+dist
+.astro
+index.html
+PRD.md
+DESIGN.md
+package-lock.json
+.wrangler
+.lighthouseci
+test-results
+playwright-report
+results.sarif
