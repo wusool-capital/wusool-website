@@ -1,6 +1,8 @@
 {
   "name": "wusool-website",
   "compatibility_date": "2026-10-01",
+  // Lets Workers Builds publish a preview URL per branch (wrangler preview).
+  "previews": {},
   "assets": {
     "directory": "./dist",
     "html_handling": "drop-trailing-slash",
