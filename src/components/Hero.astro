@@ -1,0 +1,130 @@
+---
+// Navy hero panel: copy and CTAs on the left, a live UI mock on the right.
+interface Props {
+  label: string;
+  title: string;
+  soft: string;
+  sub: string;
+}
+const { label, title, soft, sub } = Astro.props;
+---
+
+<section class="hero">
+  <div class="wrap">
+    <div class="panel">
+      <div class="copy">
+        <span class="label appear">{label}</span>
+        <h1 class="appear d2">
+          {title} <span class="soft">{soft}</span>
+        </h1>
+        <p class="sub appear d3">{sub}</p>
+        <div class="ctas appear d4">
+          <slot name="ctas" />
+        </div>
+      </div>
+      <div class="visual" aria-hidden="true">
+        <slot />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding: var(--space-4) 0 0;
+  }
+  .panel {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: var(--space-12);
+    align-items: center;
+    min-height: var(--hero-min-h);
+    padding: var(--hero-pad);
+    overflow: hidden;
+    border-radius: var(--r-panel);
+    background: var(--navy);
+    color: var(--on-navy);
+  }
+  .panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(60% 80% at 85% 20%, var(--glow-strong), transparent 60%),
+      radial-gradient(40% 50% at 10% 110%, var(--glow-soft), transparent 70%);
+    pointer-events: none;
+  }
+  .copy {
+    position: relative;
+  }
+  .label {
+    display: inline-block;
+    margin-bottom: var(--space-3-5);
+    color: var(--sky);
+    font-size: var(--text-14);
+    font-weight: var(--weight-medium);
+  }
+  h1 {
+    color: var(--on-navy);
+    font-size: var(--text-h1);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+    text-wrap: balance;
+  }
+  .soft {
+    display: block;
+    color: var(--sky);
+  }
+  .sub {
+    max-width: var(--measure-hero);
+    margin-top: var(--space-5-5);
+    color: var(--on-navy-muted);
+    font-size: var(--text-lg);
+  }
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-8-5);
+  }
+  .visual {
+    position: relative;
+    display: grid;
+    gap: var(--space-3-5);
+  }
+  .appear,
+  .visual > :global(*) {
+    animation: rise var(--dur-rise) var(--ease) both;
+  }
+  .d2,
+  .visual > :global(:first-child) {
+    animation-delay: var(--delay-step);
+  }
+  .d3 {
+    animation-delay: calc(var(--delay-step) * 2);
+  }
+  .d4,
+  .visual > :global(:nth-child(2)) {
+    animation-delay: calc(var(--delay-step) * 3);
+  }
+  @media (max-width: 1080px) {
+    .panel {
+      grid-template-columns: 1fr;
+      min-height: 0;
+      padding: var(--space-14) var(--space-10);
+    }
+  }
+  @media (max-width: 720px) {
+    .panel {
+      gap: var(--space-8-5);
+      padding: var(--space-10) var(--space-5-5);
+      border-radius: var(--r-panel-sm);
+    }
+    .ctas > :global(.btn) {
+      justify-content: center;
+      width: 100%;
+    }
+  }
+</style>

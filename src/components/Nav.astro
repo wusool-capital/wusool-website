@@ -1,0 +1,207 @@
+---
+// Sticky header: logo, links with dropdowns, Get Started, mobile menu.
+import logo from "../assets/logo/logo-navy.svg?url";
+import { nav, company } from "../data/site";
+import Button from "./Button.astro";
+import Icon from "./Icon.astro";
+---
+
+<header class="header" data-header>
+  <div class="wrap">
+    <nav class="nav" aria-label="Main">
+      <a class="logo" href="/">
+        <img src={logo} alt={company.logoAlt} width="152" height="26" />
+      </a>
+      <ul class="links">
+        {nav.map((item) => (
+          <li>
+            {item.menu ? (
+              <>
+                <button type="button" aria-haspopup="true">
+                  {item.label} <Icon name="caret-down" />
+                </button>
+                <div class:list={["menu", item.wide && "menu--wide"]}>
+                  {item.menu.map((l) => (
+                    <a href={l.href}>{l.label}</a>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <a href={item.href}>{item.label}</a>
+            )}
+          </li>
+        ))}
+      </ul>
+      <div class="cta">
+        <Button form="get-started" size="sm" arrow={false} source="nav">
+          Get Started
+        </Button>
+        <button
+          class="burger"
+          type="button"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <Icon name="list" />
+        </button>
+      </div>
+    </nav>
+    <div class="mobile" id="mobile-menu">
+      {nav.map((item) =>
+        item.menu ? (
+          item.menu.map((l) => <a href={l.href}>{l.label}</a>)
+        ) : (
+          <a href={item.href}>{item.label}</a>
+        ),
+      )}
+      <Button form="get-started" source="nav-mobile">
+        Get Started
+      </Button>
+    </div>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector<HTMLElement>("[data-header]");
+  const burger = header?.querySelector<HTMLButtonElement>(".burger");
+  burger?.addEventListener("click", () => {
+    const open = header?.toggleAttribute("data-open") ?? false;
+    burger.setAttribute("aria-expanded", String(open));
+    burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  });
+</script>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    background: var(--header-bg);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--nav-h);
+  }
+  .logo img {
+    width: auto;
+    height: var(--logo-h);
+  }
+  .links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .links > li {
+    position: relative;
+  }
+  .links > li > a,
+  .links > li > button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-3);
+    border: 0;
+    border-radius: var(--r-pill);
+    background: none;
+    color: var(--ink);
+    font-size: var(--text-15);
+    cursor: pointer;
+  }
+  .links > li > a:hover,
+  .links > li > button:hover {
+    background: var(--hover-tint);
+  }
+  .menu {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    left: 0;
+    min-width: var(--menu-w);
+    padding: var(--space-2);
+    border: 1px solid var(--line);
+    border-radius: var(--r-menu);
+    background: var(--surface);
+    box-shadow: var(--shadow-menu);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(var(--menu-shift));
+    transition:
+      opacity var(--dur-fast),
+      transform var(--dur-fast) var(--ease),
+      visibility var(--dur-fast);
+  }
+  .menu--wide {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-width: var(--menu-w-wide);
+  }
+  li:hover > .menu,
+  li:focus-within > .menu {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  .menu a {
+    display: block;
+    padding: var(--space-2-5) var(--space-3);
+    border-radius: var(--r-item);
+    font-size: var(--text-14);
+  }
+  .menu a:hover {
+    background: var(--sky-soft);
+    color: var(--navy);
+  }
+  .cta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .burger {
+    display: none;
+    place-items: center;
+    width: var(--burger);
+    height: var(--burger);
+    border: 1px solid var(--line);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: var(--burger-icon);
+    cursor: pointer;
+  }
+  .mobile {
+    display: none;
+    padding: var(--space-2) 0 var(--space-5);
+    border-top: 1px solid var(--line);
+  }
+  .mobile > a {
+    display: block;
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .mobile > :global(.btn) {
+    margin-top: var(--space-4);
+  }
+  @media (max-width: 1080px) {
+    .links {
+      display: none;
+    }
+    .burger {
+      display: grid;
+    }
+    [data-open] .mobile {
+      display: block;
+    }
+  }
+  @media (max-width: 720px) {
+    .cta > :global(.btn) {
+      display: none;
+    }
+  }
+</style>

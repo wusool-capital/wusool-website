@@ -1,0 +1,163 @@
+/* Every design value of the site. Components read these tokens only.
+   Source: index.html (approved design) and DESIGN.md (brand colors). */
+:root {
+  /* Color */
+  --navy: #000523;
+  --navy-2: #0b1238;
+  --sky: #c6e1ee;
+  --sky-soft: #eaf3f8;
+  --page: #f5f5f5;
+  --surface: #ffffff;
+  --ink: #1a1a1a;
+  --muted: #5e6670;
+  --line: #e4e4e7;
+  --line-strong: #c9c9cf;
+  --on-navy: #ffffff;
+  --on-navy-muted: #a9b6c9;
+  --on-navy-line: rgb(255 255 255 / 0.1);
+  --on-navy-border: rgb(255 255 255 / 0.25);
+  --on-navy-border-hover: rgb(255 255 255 / 0.6);
+  --hover-tint: rgb(0 5 35 / 0.05);
+  --header-bg: rgb(245 245 245 / 0.85);
+  --glow-strong: rgb(198 225 238 / 0.16);
+  --glow-soft: rgb(198 225 238 / 0.08);
+  --glow-closing: rgb(198 225 238 / 0.14);
+
+  /* Type */
+  --font: "Inter Variable", system-ui, sans-serif;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-14: 14px;
+  --text-15: 15px;
+  --text-base: 16px;
+  --text-17: 17px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-range: 24px;
+  --text-stat: 40px;
+  --text-glyph: 120px;
+  --text-glyph-sm: 80px;
+  --text-h2: clamp(30px, 3.6vw, 44px);
+  --text-h1: clamp(36px, 3.9vw, 54px);
+  --text-cta: clamp(36px, 5vw, 64px);
+  --text-post-lead: clamp(24px, 2.4vw, 32px);
+  --leading-body: 1.55;
+  --leading-tight: 1.1;
+  --leading-display: 1.04;
+  --leading-snug: 1.25;
+  --leading-stat: 1;
+  --leading-cta: 1.05;
+  --tracking-h: -0.025em;
+  --tracking-display: -0.035em;
+  --tracking-h3: -0.01em;
+  --tracking-num: -0.03em;
+  --tracking-num-sm: -0.02em;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --measure-lede: 58ch;
+  --measure-body: 68ch;
+  --measure-hero: 46ch;
+  --measure-card: 32ch;
+  --measure-post: 18ch;
+  --measure-cta: 18ch;
+
+  /* Space */
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-2-5: 10px;
+  --space-3: 12px;
+  --space-3-5: 14px;
+  --space-4: 16px;
+  --space-4-5: 18px;
+  --space-5: 20px;
+  --space-5-5: 22px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-8-5: 34px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --wrap-max: 1280px;
+  --wrap-gutter: 32px;
+  --wrap-gutter-sm: 16px;
+  --section-y: 96px;
+  --section-y-sm: 64px;
+  --nav-h: 72px;
+
+  /* Component sizes */
+  --btn-h: 46px;
+  --btn-h-sm: 38px;
+  --btn-pad-x: 22px;
+  --logo-h: 26px;
+  --burger: 42px;
+  --burger-icon: 20px;
+  --menu-w: 260px;
+  --menu-w-wide: 480px;
+  --hero-min-h: min(640px, calc(100dvh - 140px));
+  --hero-pad: 64px;
+  --avatar: 34px;
+  --avatar-icon: 17px;
+  --tile-icon: 44px;
+  --tile-icon-img: 22px;
+  --dot-sm: 22px;
+  --dot: 24px;
+  --dot-lg: 30px;
+  --social: 38px;
+  --tile-min-h: 230px;
+  --feature-min-h: 420px;
+  --feature-min-h-sm: 320px;
+  --pane-max: 440px;
+  --input-h: 40px;
+  --bar-h: 6px;
+  --prog-h: 3px;
+  --sticky-top: 100px;
+  --chip-pad: 3px 10px;
+  --blur: 12px;
+  --banner-btn-min: 120px;
+  --banner-text-basis: 480px;
+  --nudge: 3px;
+  --lift: -3px;
+  --menu-shift: -4px;
+  --rise-y: 16px;
+  --reveal-y: 20px;
+
+  /* Radius */
+  --r-pill: 999px;
+  --r-panel: 24px;
+  --r-panel-sm: 20px;
+  --r-card: 16px;
+  --r-menu: 14px;
+  --r-icon: 12px;
+  --r-inner: 10px;
+  --r-item: 8px;
+
+  /* Shadow */
+  --shadow: 0 1px 2px rgb(0 5 35 / 0.04), 0 8px 24px rgb(0 5 35 / 0.05);
+  --shadow-menu: 0 16px 40px rgb(0 5 35 / 0.1);
+  --shadow-mock: 0 30px 60px rgb(0 0 0 / 0.25);
+  --shadow-banner: 0 -4px 24px rgb(0 5 35 / 0.08);
+  --scrim: rgb(0 5 35 / 0.2);
+
+  /* Motion */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 0.18s;
+  --dur-base: 0.2s;
+  --dur: 0.25s;
+  --dur-mid: 0.3s;
+  --dur-pane: 0.6s;
+  --dur-slow: 0.8s;
+  --dur-rise: 0.9s;
+  --dur-bar: 1.4s;
+  --delay-step: 0.15s;
+  --delay-bar: 0.5s;
+  --tab-interval: 6s;
+
+  /* Layers */
+  --z-header: 40;
+  --z-banner: 50;
+}

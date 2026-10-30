@@ -1,0 +1,211 @@
+---
+// Cookie banner ported from the live site: same cookie, choices, version,
+// consent-mode calls, iframe message and `wusool-consent` event.
+// Change from live: Clarity loads only after "Accept all" (PRD 14.4).
+---
+
+<div
+  class="banner"
+  id="cookie-banner"
+  role="dialog"
+  aria-label="Cookie choices"
+  hidden
+>
+  <div class="inner">
+    <p>
+      We use cookies and similar tools to see how our site and tools are used,
+      so we can improve them. Accept all also records how you use our tools,
+      including what you enter (your name, email, phone and LinkedIn are
+      hidden), and links it to your enquiry. Cookies only skips the recording.
+      Decline turns off tracking in your browser, and we still count enquiries
+      without your details. <a href="/privacy-policy">Privacy Policy</a>
+    </p>
+    <div class="choices">
+      <button type="button" data-consent="declined">
+        Decline
+      </button>
+      <button type="button" data-consent="cookies">
+        Cookies only
+      </button>
+      <button type="button" data-consent="all">
+        Accept all
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  type Choice = "declined" | "cookies" | "all";
+  type Fn = (...args: unknown[]) => void;
+  type Queued = Fn & { q?: unknown[] };
+  const w = window as unknown as {
+    dataLayer: unknown[];
+    gtag?: Fn;
+    clarity?: Queued;
+    WusoolAnalytics?: { setConsent?: (granted: boolean) => void };
+    wusoolConsent?: unknown;
+  };
+
+  const NAME = "wusool_analytics_consent";
+  const VERSION = "2026-10";
+  const CLARITY_ID = "vngmb7f75n";
+  const banner = document.getElementById("cookie-banner") as HTMLElement;
+
+  const get = () =>
+    (document.cookie.match(new RegExp(`(?:^|; )${NAME}=([^;]+)`)) ?? [])[1] ??
+    "";
+  const remember = (granted: boolean) => {
+    try {
+      localStorage.setItem(NAME, granted ? "granted" : "denied");
+    } catch {
+      /* storage blocked */
+    }
+  };
+
+  // Clarity runs only after "Accept all".
+  let clarityLoaded = false;
+  const loadClarity = () => {
+    if (clarityLoaded) return;
+    clarityLoaded = true;
+    const s = document.createElement("script");
+    s.async = true;
+    s.src = `https://www.clarity.ms/tag/${CLARITY_ID}`;
+    document.head.appendChild(s);
+  };
+  const clarityConsent = (all: boolean) =>
+    w.clarity?.("consentv2", {
+      ad_Storage: "denied",
+      analytics_Storage: all ? "granted" : "denied",
+    });
+
+  // Defaults, as on the live site.
+  w.dataLayer = w.dataLayer || [];
+  const gtag: Fn =
+    w.gtag ||
+    function (...args: unknown[]) {
+      w.dataLayer.push(args);
+    };
+  w.gtag = gtag;
+  const initial = get();
+  try {
+    if (initial) remember(initial === "all");
+    else localStorage.removeItem(NAME);
+  } catch {
+    /* storage blocked */
+  }
+  gtag("consent", "default", {
+    analytics_storage:
+      initial === "all" || initial === "cookies" ? "granted" : "denied",
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
+    wait_for_update: 500,
+  });
+  if (!w.clarity) {
+    const q: unknown[] = [];
+    w.clarity = Object.assign((...args: unknown[]) => void q.push(args), { q });
+  }
+  clarityConsent(initial === "all");
+  if (initial === "all") loadClarity();
+
+  function set(v: Choice) {
+    const domain = location.hostname.includes("wusoolcapital.com")
+      ? ";domain=.wusoolcapital.com"
+      : "";
+    document.cookie = `${NAME}=${v};path=/;max-age=31536000;SameSite=Lax;Secure${domain}`;
+    remember(v === "all");
+    gtag("consent", "update", {
+      analytics_storage: v === "all" || v === "cookies" ? "granted" : "denied",
+    });
+    if (v === "all") loadClarity();
+    clarityConsent(v === "all");
+    // PostHog replay is bundled with its events, so only Accept all turns it on.
+    w.WusoolAnalytics?.setConsent?.(v === "all");
+    const msg = { type: "wusool-consent", choice: v, version: VERSION };
+    document.querySelectorAll("iframe").forEach((f) => {
+      try {
+        f.contentWindow?.postMessage(msg, "*");
+      } catch {
+        /* cross-origin frame gone */
+      }
+    });
+    window.dispatchEvent(new CustomEvent("wusool-consent", { detail: msg }));
+  }
+
+  w.wusoolConsent = {
+    get,
+    version: VERSION,
+    open: () => (banner.hidden = false),
+  };
+  banner.querySelectorAll<HTMLButtonElement>("[data-consent]").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      set(btn.dataset.consent as Choice);
+      banner.hidden = true;
+    }),
+  );
+  document.addEventListener("click", (e) => {
+    const a = (e.target as Element).closest(
+      'a[href="#privacy-choices"],[data-privacy-choices]',
+    );
+    if (!a) return;
+    e.preventDefault();
+    banner.hidden = false;
+  });
+  if (!initial) banner.hidden = false;
+</script>
+
+<style>
+  .banner {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: var(--z-banner);
+    padding: var(--space-5) var(--space-6);
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+    box-shadow: var(--shadow-banner);
+    font-size: var(--text-14);
+  }
+  .banner[hidden] {
+    display: none;
+  }
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    align-items: center;
+    justify-content: space-between;
+    max-width: var(--wrap-max);
+    margin: 0 auto;
+  }
+  p {
+    flex: 1 1 var(--banner-text-basis);
+    color: var(--ink);
+  }
+  p a {
+    color: var(--navy);
+    text-decoration: underline;
+    text-underline-offset: var(--nudge);
+  }
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  button {
+    min-width: var(--banner-btn-min);
+    height: var(--btn-h-sm);
+    padding: 0 var(--space-5);
+    border: 1px solid var(--navy);
+    border-radius: var(--r-pill);
+    background: var(--navy);
+    color: var(--on-navy);
+    font-size: var(--text-14);
+    font-weight: var(--weight-medium);
+    cursor: pointer;
+  }
+  button:hover {
+    background: var(--navy-2);
+  }
+</style>

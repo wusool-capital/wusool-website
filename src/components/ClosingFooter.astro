@@ -1,0 +1,198 @@
+---
+// Closing CTA band and footer, sharing one navy panel (as in index.html).
+import logo from "../assets/logo/logo-white.svg?url";
+import { closingCta, company, footerLinks, legalLinks } from "../data/site";
+import Button from "./Button.astro";
+import Icon from "./Icon.astro";
+
+const year = new Date().getFullYear();
+---
+
+<div class="closing">
+  <div class="wrap">
+    <div class="panel">
+      <div class="band reveal">
+        <h2>{closingCta.title}</h2>
+        <p>{closingCta.text}</p>
+        <Button href={closingCta.href} variant="light" source="closing-cta">
+          {closingCta.label}
+        </Button>
+      </div>
+      <footer>
+        <div class="grid">
+          <div class="brand">
+            <img src={logo} alt={company.logoAlt} width="158" height="26" />
+            <address>
+              <p>{company.legalName}</p>
+              <p>{company.address}</p>
+              <p>{company.license}</p>
+              <a href={`mailto:${company.email}`}>{company.email}</a>
+            </address>
+            <a
+              class="social"
+              href={company.linkedin}
+              aria-label="Wusool Capital on LinkedIn"
+            >
+              <Icon name="linkedin-logo" />
+            </a>
+          </div>
+          <nav class="links" aria-label="Footer">
+            {footerLinks.map((l) => (
+              <a href={l.href}>{l.label}</a>
+            ))}
+          </nav>
+        </div>
+        <div class="legal">
+          <span>
+            © {year} {company.name}. All rights reserved.
+          </span>
+          <nav aria-label="Legal">
+            <a href={legalLinks[0].href}>{legalLinks[0].label}</a>
+            <button type="button" data-privacy-choices>
+              Privacy choices
+            </button>
+            {legalLinks.slice(1).map((l) => (
+              <a href={l.href}>{l.label}</a>
+            ))}
+          </nav>
+        </div>
+      </footer>
+    </div>
+  </div>
+</div>
+
+<style>
+  .closing {
+    padding: 0 0 var(--space-4);
+  }
+  .panel {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--r-panel);
+    background: var(--navy);
+    color: var(--on-navy);
+  }
+  .panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      50% 70% at 50% 0%,
+      var(--glow-closing),
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+  .band {
+    position: relative;
+    padding: var(--space-24) var(--space-8) var(--space-20);
+    text-align: center;
+  }
+  .band h2 {
+    max-width: var(--measure-cta);
+    margin: 0 auto;
+    color: var(--on-navy);
+    font-size: var(--text-cta);
+    line-height: var(--leading-cta);
+    letter-spacing: var(--tracking-display);
+    text-wrap: balance;
+  }
+  .band p {
+    margin-top: var(--space-5);
+    color: var(--on-navy-muted);
+    font-size: var(--text-xl);
+  }
+  .band :global(.btn) {
+    margin-top: var(--space-8);
+  }
+  footer {
+    position: relative;
+    padding: var(--space-12) var(--space-12) var(--space-8);
+    border-top: 1px solid var(--on-navy-line);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-10);
+    align-items: start;
+  }
+  .brand {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-6);
+  }
+  .brand img {
+    width: auto;
+    height: var(--logo-h);
+  }
+  address {
+    display: grid;
+    gap: var(--space-1-5);
+    font-style: normal;
+  }
+  .grid p,
+  .grid a {
+    color: var(--on-navy-muted);
+    font-size: var(--text-14);
+  }
+  address a {
+    color: var(--on-navy);
+  }
+  .social {
+    display: inline-grid;
+    place-items: center;
+    width: var(--social);
+    height: var(--social);
+    border: 1px solid var(--on-navy-border);
+    border-radius: var(--r-pill);
+    font-size: var(--text-lg);
+  }
+  .grid .social {
+    color: var(--on-navy);
+  }
+  .links {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: var(--space-3) var(--space-12);
+  }
+  .links a:hover,
+  .legal a:hover,
+  .legal button:hover {
+    color: var(--on-navy);
+  }
+  .legal {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-10);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--on-navy-line);
+    color: var(--on-navy-muted);
+    font-size: var(--text-sm);
+  }
+  .legal nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+  }
+  .legal button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-size: inherit;
+    cursor: pointer;
+  }
+  @media (max-width: 720px) {
+    .band {
+      padding: var(--space-16) var(--space-5) var(--space-14);
+    }
+    footer {
+      padding: var(--space-10) var(--space-5-5) var(--space-7);
+    }
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

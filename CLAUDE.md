@@ -43,6 +43,10 @@ Features are built one at a time, in the order of PRD 14.2.
 - Apply design feedback with small edits to the token file or one component. Never regenerate a page.
 - On features 2, 4, 7, 8 and any new page template, also apply `/taste-skill:design-taste-frontend`. Where it conflicts with the PRD, the PRD wins: Astro with CSS tokens (no Next.js or Tailwind), Inter only, light theme only, `index.html` components, branded covers and live UI mocks instead of stock photography. Do not use it on other features. Do not use `/frontend-design`.
 
+## Content rules
+
+- The brand is always Wusool Capital. The registered entity name appears only in the legal line (`company.legalName` in `src/data/site.ts`).
+
 ## Safety
 
 - Never put a secret, token or API key in the repo or client code. Use Cloudflare secrets, and ask Jules to add any credential.
@@ -55,12 +59,15 @@ For copy, comments, commit messages and reports: no em dashes, no "it's not X, i
 ## Commands
 
 - `npm run dev`: local dev server.
-- `npm run gates`: every local gate (lint, Astro check, build, `check:dist`, npm audit, Playwright, Lighthouse CI).
+- `npm run gates`: every local gate (lint, Astro check, `check:tokens`, build, `check:dist`, npm audit, Playwright, Lighthouse CI).
 - `npm run preview`: serve `dist/` with `wrangler dev` on port 8787, with `_headers` applied.
 
 ## Gates
 
 - `scripts/check-dist.mjs`: titles 30 to 60 chars, descriptions 70 to 160, unique titles and descriptions, one H1, self canonical on `https://www.wusoolcapital.com`, alt text, broken internal links, `href="#"` only on `data-form` modal triggers, one JSON-LD `@graph` per page, JS under 50 KB and CSS under 100 KB per page. Pages with `noindex` skip the SEO checks.
+- `scripts/check-tokens.mjs`: no raw colors, sizes, times or easings in component styles or `global.css`. Add a token to `tokens.css` instead.
+- `scripts/pending-routes.json`: live-site paths not built yet. Links to them pass the link checks. Remove a path in the feature that builds it. Must be empty by feature 12.
 - `lighthouserc.cjs`: mobile Performance 95+, Accessibility, Best Practices and SEO 100, LCP under 2.0s, TBT under 150ms, CLS under 0.05. Add a URL per new template.
 - `tests/smoke.spec.ts`: Playwright at desktop and mobile widths. Add each new page.
+- `tests/consent.spec.ts`: each consent choice matches the live banner (cookie, consent mode, Clarity, tools bridge, iframe message, event). Clarity loads only after Accept all.
 - Manual on the staging URL at each report: Ahrefs Site Audit (health 95+, zero errors), Rich Results Test, securityheaders.com (A or better).

@@ -1,0 +1,66 @@
+---
+// Process mock, step 1: the business intake form.
+import Chip from "../Chip.astro";
+import Icon from "../Icon.astro";
+import MockCard from "./MockCard.astro";
+---
+
+<MockCard title="Your business" chip="Step 1 of 3" chipTone="quiet">
+  <div class="row">
+    <span>Sector</span>
+    <div class="input">Healthcare &amp; Clinics</div>
+  </div>
+  <div class="row">
+    <span>Annual revenue</span>
+    <div class="input focus">AED 12M to 20M</div>
+  </div>
+  <div class="row">
+    <span>What are you looking for?</span>
+    <div class="seg">
+      <Chip tone="solid">Full exit</Chip>
+      <Chip tone="quiet">Partial sale</Chip>
+      <Chip tone="quiet">Not sure yet</Chip>
+    </div>
+  </div>
+  <div class="timer">
+    <Icon name="clock" /> About 10 minutes. No documents needed.
+  </div>
+</MockCard>
+
+<style>
+  .row {
+    display: grid;
+    gap: var(--space-1-5);
+    margin-bottom: var(--space-3);
+  }
+  .row > span {
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+  .input {
+    display: flex;
+    align-items: center;
+    height: var(--input-h);
+    padding: 0 var(--space-3);
+    border: 1px solid var(--line);
+    border-radius: var(--r-inner);
+    font-size: var(--text-14);
+  }
+  .focus {
+    border-color: var(--navy);
+    outline: 2px solid var(--sky);
+  }
+  .seg {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1-5);
+  }
+  .timer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-1);
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+</style>

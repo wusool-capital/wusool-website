@@ -8,6 +8,10 @@ const DIST = "dist";
 const SITE = "https://www.wusoolcapital.com";
 const JS_BUDGET = 50 * 1024;
 const CSS_BUDGET = 100 * 1024;
+// Pages later features build; links to them are allowed until then.
+const PENDING = new Set(
+  JSON.parse(readFileSync("scripts/pending-routes.json", "utf8")).routes,
+);
 
 const files = (dir) =>
   readdirSync(dir).flatMap((f) => {
@@ -77,7 +81,8 @@ for (const file of htmlFiles) {
       if (url.origin !== SITE) continue;
       if (url.pathname !== "/" && url.pathname.endsWith("/"))
         err(`link ${href} has a trailing slash and redirects`);
-      else if (!exists(url.pathname)) err(`broken link ${href}`);
+      else if (!exists(url.pathname) && !PENDING.has(url.pathname))
+        err(`broken link ${href}`);
     }
   }
   for (const img of doc.querySelectorAll("img")) {
@@ -168,6 +173,13 @@ for (const file of htmlFiles) {
       err("JSON-LD is not valid JSON");
     }
   }
+}
+
+for (const route of PENDING) {
+  if (exists(route))
+    errors.push(
+      `${route} is built: remove it from scripts/pending-routes.json`,
+    );
 }
 
 if (errors.length) {

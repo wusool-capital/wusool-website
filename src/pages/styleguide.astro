@@ -1,0 +1,254 @@
+---
+// Every component on one page (PRD 5.2). Noindex, not in the sitemap.
+import Base from "../layouts/Base.astro";
+import Announce from "../components/Announce.astro";
+import Hero from "../components/Hero.astro";
+import Button from "../components/Button.astro";
+import ArrowLink from "../components/ArrowLink.astro";
+import Chip from "../components/Chip.astro";
+import SectionHead from "../components/SectionHead.astro";
+import Stats from "../components/Stats.astro";
+import Compare from "../components/Compare.astro";
+import IndustryGrid from "../components/IndustryGrid.astro";
+import Process from "../components/Process.astro";
+import DealsTable from "../components/DealsTable.astro";
+import Posts from "../components/Posts.astro";
+import Faq from "../components/Faq.astro";
+import ValuationMock from "../components/mocks/ValuationMock.astro";
+import BuyersMock from "../components/mocks/BuyersMock.astro";
+import BusinessMock from "../components/mocks/BusinessMock.astro";
+import ShortlistMock from "../components/mocks/ShortlistMock.astro";
+import ProgressMock from "../components/mocks/ProgressMock.astro";
+import * as d from "../data/styleguide";
+
+const colors = [
+  "navy",
+  "navy-2",
+  "sky",
+  "sky-soft",
+  "page",
+  "surface",
+  "ink",
+  "muted",
+  "line",
+  "line-strong",
+  "on-navy-muted",
+];
+---
+
+<Base
+  title="Styleguide | Wusool Capital"
+  description="Every Wusool Capital website component in one place, built from the design tokens."
+  noindex
+>
+  <Announce
+    slot="announce"
+    href="/reports"
+    lead="Just released:"
+    title="Buyouts in the GCC."
+    cta="Get the playbook"
+  />
+
+  <Hero
+    label="GCC M&A Advisory"
+    title="Sell your business in the UAE."
+    soft="Faster. For more."
+    sub="The M&A advisory firm built for business owners in the UAE. No 12-month timelines. The right buyers, moving fast."
+  >
+    <Fragment slot="ctas">
+      <Button href="/valuation-tool" variant="light" source="hero">
+        Get a Free Valuation
+      </Button>
+      <Button href="/buyers" variant="ghost-dark" source="hero">
+        Access The Buyer Network
+      </Button>
+    </Fragment>
+    <ValuationMock />
+    <BuyersMock />
+  </Hero>
+
+  <Stats items={d.stats} />
+
+  <section class="section">
+    <div class="wrap">
+      <SectionHead
+        title="Tokens and primitives"
+        lede="Colors from tokens.css, buttons, links and chips."
+      />
+      <ul class="swatches">
+        {colors.map((c) => (
+          <li>
+            <span class={`sw sw-${c}`} />
+            {`--${c}`}
+          </li>
+        ))}
+      </ul>
+      <div class="row">
+        <Button href="/sell">Primary</Button>
+        <Button href="/sell" size="sm" arrow={false}>
+          Small
+        </Button>
+        <Button form="get-started" source="styleguide">
+          Modal trigger
+        </Button>
+        <ArrowLink href="/insights">Arrow link</ArrowLink>
+        <Chip>Soft</Chip>
+        <Chip tone="solid">Solid</Chip>
+        <Chip tone="quiet">Quiet</Chip>
+      </div>
+      <div class="row navy">
+        <Button href="/valuation-tool" variant="light">
+          Light
+        </Button>
+        <Button href="/buyers" variant="ghost-dark">
+          Ghost on navy
+        </Button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--flush-top">
+    <div class="wrap">
+      <SectionHead
+        title="There's a better way to sell your business in the UAE"
+        lede="See how Wusool Capital compares to the traditional advisory model."
+      />
+      <Compare old={d.compare.old} better={d.compare.better} />
+    </div>
+  </section>
+
+  <section class="section section--flush-top">
+    <div class="wrap">
+      <SectionHead
+        title="We know your sector"
+        lede="Wusool Capital has active buyers and closed deals across the UAE's most active M&A sectors."
+      />
+      <IndustryGrid items={d.industries} />
+    </div>
+  </section>
+
+  <section class="section section--surface">
+    <div class="wrap">
+      <SectionHead
+        label="The process"
+        title="How our M&A advisory process works"
+        lede="From first conversation to close, here's exactly what happens."
+      />
+      <Process steps={d.steps}>
+        <Fragment slot="ctas">
+          <Button href="/sell" source="process">
+            Start the Process
+          </Button>
+          <ArrowLink href="/buyers">
+            Looking to acquire? Access GCC deal flow
+          </ArrowLink>
+        </Fragment>
+        <BusinessMock slot="pane-0" />
+        <ShortlistMock slot="pane-1" />
+        <ProgressMock slot="pane-2" />
+      </Process>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <SectionHead
+        title="Recent UAE M&A transactions"
+        lede="Every deal is anonymized. Confidentiality is standard, not an afterthought."
+      />
+      <DealsTable rows={d.deals} note="Anonymized by default">
+        <ArrowLink href="/sell">
+          Selling your business? See what's possible
+        </ArrowLink>
+      </DealsTable>
+    </div>
+  </section>
+
+  <section class="section section--flush-top">
+    <div class="wrap">
+      <SectionHead title="Latest from Wusool Capital" />
+      <Posts lead={d.posts.lead} side={d.posts.side} />
+    </div>
+  </section>
+
+  <section class="section section--surface">
+    <div class="wrap">
+      <Faq items={d.faq}>
+        <SectionHead
+          label="Common questions"
+          title="FAQ's"
+          lede="Answers to frequently asked questions."
+        />
+        <Button href="mailto:contact@wusoolcapital.com">Talk to us</Button>
+      </Faq>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--menu-w), 1fr));
+    gap: var(--space-3);
+    margin: var(--space-8) 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-14);
+  }
+  .swatches li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .sw {
+    width: var(--tile-icon);
+    height: var(--tile-icon);
+    border: 1px solid var(--line);
+    border-radius: var(--r-inner);
+  }
+  .sw-navy {
+    background: var(--navy);
+  }
+  .sw-navy-2 {
+    background: var(--navy-2);
+  }
+  .sw-sky {
+    background: var(--sky);
+  }
+  .sw-sky-soft {
+    background: var(--sky-soft);
+  }
+  .sw-page {
+    background: var(--page);
+  }
+  .sw-surface {
+    background: var(--surface);
+  }
+  .sw-ink {
+    background: var(--ink);
+  }
+  .sw-muted {
+    background: var(--muted);
+  }
+  .sw-line {
+    background: var(--line);
+  }
+  .sw-line-strong {
+    background: var(--line-strong);
+  }
+  .sw-on-navy-muted {
+    background: var(--on-navy-muted);
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+    margin-top: var(--space-8);
+  }
+  .navy {
+    padding: var(--space-6);
+    border-radius: var(--r-card);
+    background: var(--navy);
+  }
+</style>

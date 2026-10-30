@@ -8,4 +8,6 @@ export default defineConfig({
     // External stylesheets only, so the CSP needs no 'unsafe-inline'.
     inlineStylesheets: "never",
   },
+  // External scripts only, so the CSP needs no 'unsafe-inline'.
+  vite: { build: { assetsInlineLimit: 0 } },
 });

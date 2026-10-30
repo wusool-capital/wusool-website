@@ -1,0 +1,65 @@
+---
+// Process mock, step 3: deal progress checklist.
+import Icon from "../Icon.astro";
+import MockCard from "./MockCard.astro";
+
+const steps = [
+  { label: "NDAs signed", when: "Week 1", state: "done" },
+  { label: "Data room opened", when: "Week 2", state: "done" },
+  { label: "First offer received", when: "Week 6", state: "done" },
+  { label: "Negotiations", when: "In progress", state: "cur" },
+  { label: "Close", when: "", state: "next" },
+];
+const status = { done: "completed", cur: "current", next: "not started" };
+---
+
+<MockCard title="Deal progress" chip="On track">
+  {steps.map((s) => (
+    <div class:list={["check", s.state]}>
+      <Icon name={s.state === "cur" ? "dot" : "check"} />
+      {s.label}
+      <span class="visually-hidden">
+        ({status[s.state as keyof typeof status]})
+      </span>
+      {s.when && <span class="when">{s.when}</span>}
+    </div>
+  ))}
+</MockCard>
+
+<style>
+  .check {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2-5) 0;
+    font-size: var(--text-14);
+  }
+  .check + .check {
+    border-top: 1px solid var(--line);
+  }
+  .check > :global(.icon) {
+    box-sizing: content-box;
+    width: var(--text-xs);
+    height: var(--text-xs);
+    padding: var(--space-1-5);
+    border-radius: var(--r-pill);
+  }
+  .done > :global(.icon) {
+    background: var(--navy);
+    color: var(--on-navy);
+  }
+  .cur > :global(.icon) {
+    border: 1px solid var(--navy);
+    background: var(--sky-soft);
+    color: var(--navy);
+  }
+  .next > :global(.icon) {
+    border: 1px solid var(--line-strong);
+    color: transparent;
+  }
+  .when {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+</style>

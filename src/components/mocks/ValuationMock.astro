@@ -1,0 +1,92 @@
+---
+// Hero mock: example valuation estimate.
+import Chip from "../Chip.astro";
+import MockCard from "./MockCard.astro";
+---
+
+<MockCard title="Valuation estimate" chip="Example" chipTone="quiet">
+  <div class="grid">
+    <div class="field">
+      <small>Sector</small>
+      <b>Technology</b>
+    </div>
+    <div class="field">
+      <small>Location</small>
+      <b>Dubai, UAE</b>
+    </div>
+  </div>
+  <div class="range">
+    <small>EBITDA multiple range</small>
+    <div class="row">
+      <b>4x to 7x</b>
+      <Chip>Recurring revenue</Chip>
+    </div>
+    <div class="bar">
+      <span></span>
+    </div>
+  </div>
+</MockCard>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2-5);
+  }
+  .field {
+    padding: var(--space-2-5) var(--space-3);
+    border: 1px solid var(--line);
+    border-radius: var(--r-inner);
+  }
+  small {
+    display: block;
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+  .field b {
+    font-size: var(--text-14);
+    font-weight: var(--weight-semibold);
+  }
+  .range {
+    margin-top: var(--space-3-5);
+    padding: var(--space-3-5);
+    border-radius: var(--r-inner);
+    background: var(--sky-soft);
+  }
+  .row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-top: 2px;
+  }
+  .row b {
+    color: var(--navy);
+    font-size: var(--text-range);
+    letter-spacing: var(--tracking-num-sm);
+    font-variant-numeric: tabular-nums;
+  }
+  .bar {
+    position: relative;
+    height: var(--bar-h);
+    margin-top: var(--space-3);
+  }
+  .bar span {
+    position: absolute;
+    top: 0;
+    right: 30%;
+    bottom: 0;
+    left: 22%;
+    border-radius: var(--r-pill);
+    background: var(--navy);
+    transform-origin: left;
+    animation: grow var(--dur-bar) var(--delay-bar) var(--ease) both;
+  }
+  @keyframes grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+</style>

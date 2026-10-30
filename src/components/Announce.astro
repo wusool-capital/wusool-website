@@ -1,0 +1,69 @@
+---
+// Pill announcement above the header. Driven by the pinned report later.
+import Icon from "./Icon.astro";
+
+interface Props {
+  href: string;
+  lead: string;
+  title: string;
+  cta: string;
+}
+const { href, lead, title, cta } = Astro.props;
+---
+
+<div class="announce">
+  <a href={href} data-source="announcement">
+    {lead} <strong>{title}</strong>
+    <span class="go">
+      {cta} <Icon name="arrow-right" />
+    </span>
+  </a>
+</div>
+
+<style>
+  .announce {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-3) var(--space-4) 0;
+  }
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2-5);
+    padding: var(--space-1-5) var(--space-2) var(--space-1-5) var(--space-3-5);
+    border: 1px solid var(--line);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  strong {
+    color: var(--navy);
+    font-weight: var(--weight-semibold);
+  }
+  .go {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--nudge) var(--space-2-5);
+    border-radius: var(--r-pill);
+    background: var(--sky-soft);
+    color: var(--navy);
+    font-weight: var(--weight-medium);
+  }
+  @media (max-width: 720px) {
+    a {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--space-1) var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--r-card);
+      font-size: var(--text-sm);
+      text-align: center;
+    }
+    strong,
+    .go {
+      white-space: nowrap;
+    }
+  }
+</style>

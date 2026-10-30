@@ -1,0 +1,145 @@
+---
+// Anonymized transactions in the brand table style. Rows stack on phones.
+import Chip from "./Chip.astro";
+import Icon from "./Icon.astro";
+
+interface Row {
+  mandate: string;
+  status: string;
+  closed: boolean;
+  sector: string;
+  country: string;
+  year: string;
+  summary: string;
+}
+interface Props {
+  rows: Row[];
+  note: string;
+}
+const { rows, note } = Astro.props;
+---
+
+<div class="deals reveal">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Mandate</th>
+        <th scope="col">Status</th>
+        <th scope="col">Sector</th>
+        <th scope="col">Country</th>
+        <th scope="col">Year</th>
+        <th scope="col">Summary</th>
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((r) => (
+        <tr>
+          <td class="type">{r.mandate}</td>
+          <td>
+            <Chip
+              tone={r.closed ? "solid" : "soft"}
+              icon={r.closed ? "check" : "circle-notch"}
+            >
+              {r.status}
+            </Chip>
+          </td>
+          <td data-k="Sector">{r.sector}</td>
+          <td data-k="Country">{r.country}</td>
+          <td data-k="Year">{r.year}</td>
+          <td class="desc">{r.summary}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+  <div class="foot">
+    <small>
+      <Icon name="shield-check" /> {note}
+    </small>
+    <slot />
+  </div>
+</div>
+
+<style>
+  .deals {
+    margin-top: var(--space-12);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+  }
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: var(--text-15);
+  }
+  th {
+    padding: var(--space-3-5) var(--space-5);
+    background: var(--navy);
+    color: var(--on-navy);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    text-align: left;
+    white-space: nowrap;
+  }
+  td {
+    padding: var(--space-4-5) var(--space-5);
+    vertical-align: middle;
+  }
+  tbody tr:nth-child(even) td {
+    background: var(--page);
+  }
+  tbody tr:hover td {
+    background: var(--sky-soft);
+  }
+  .type {
+    color: var(--navy);
+    font-weight: var(--weight-semibold);
+  }
+  .desc {
+    color: var(--muted);
+  }
+  .foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-4-5) var(--space-5);
+    border-top: 1px solid var(--line);
+  }
+  small {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  @media (max-width: 720px) {
+    thead {
+      display: none;
+    }
+    table,
+    tbody,
+    tr,
+    td {
+      display: block;
+    }
+    tr {
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--line);
+    }
+    tbody tr td,
+    tbody tr:nth-child(even) td {
+      padding: 2px 0;
+      background: transparent;
+    }
+    td[data-k]::before {
+      content: attr(data-k) ": ";
+      color: var(--muted);
+    }
+    .foot {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

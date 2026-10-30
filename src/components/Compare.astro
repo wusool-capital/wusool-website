@@ -1,0 +1,105 @@
+---
+// Two columns: the old way (crossed) against the Wusool Capital way (checked).
+import Icon from "./Icon.astro";
+
+interface Props {
+  old: { title: string; items: string[] };
+  better: { title: string; items: string[] };
+}
+const { old, better } = Astro.props;
+---
+
+<div class="compare">
+  <div class="col old reveal">
+    <h3>{old.title}</h3>
+    <ul>
+      {old.items.map((i) => (
+        <li>
+          <Icon name="x" />
+          <span class="visually-hidden">No:</span> {i}
+        </li>
+      ))}
+    </ul>
+  </div>
+  <div class="col new reveal">
+    <h3>{better.title}</h3>
+    <ul>
+      {better.items.map((i) => (
+        <li>
+          <Icon name="check" />
+          <span class="visually-hidden">Yes:</span> {i}
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<style>
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: var(--space-4);
+    margin-top: var(--space-12);
+  }
+  .col {
+    padding: var(--space-8);
+    border-radius: var(--r-card);
+  }
+  .old {
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .new {
+    background: var(--navy);
+    color: var(--on-navy);
+  }
+  .new h3 {
+    color: var(--on-navy);
+  }
+  ul {
+    display: grid;
+    gap: var(--space-1);
+    margin: var(--space-5-5) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+  }
+  .old li {
+    color: var(--muted);
+  }
+  li > :global(.icon) {
+    box-sizing: content-box;
+    width: var(--text-sm);
+    height: var(--text-sm);
+    margin-top: 1px;
+    padding: var(--space-1-5);
+    border-radius: var(--r-pill);
+  }
+  .old li > :global(.icon) {
+    background: var(--page);
+    color: var(--muted);
+  }
+  .new li > :global(.icon) {
+    background: var(--sky);
+    color: var(--navy);
+  }
+  .old li + li {
+    border-top: 1px solid var(--line);
+  }
+  .new li + li {
+    border-top: 1px solid var(--on-navy-line);
+  }
+  @media (max-width: 720px) {
+    .compare {
+      grid-template-columns: 1fr;
+    }
+    .col {
+      padding: var(--space-6);
+    }
+  }
+</style>

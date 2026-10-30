@@ -1,0 +1,28 @@
+---
+// Inlines one Phosphor icon (regular weight) at build. Only used glyphs ship.
+import { readFileSync } from "node:fs";
+
+interface Props {
+  name: string;
+  class?: string;
+}
+const { name, class: className = "" } = Astro.props;
+const svg = readFileSync(
+  `node_modules/@phosphor-icons/core/assets/regular/${name}.svg`,
+  "utf8",
+).replace(
+  "<svg ",
+  `<svg aria-hidden="true" focusable="false" class="icon ${className}" `,
+);
+---
+
+<Fragment set:html={svg} />
+
+<style is:global>
+  .icon {
+    display: inline-block;
+    flex: none;
+    width: 1em;
+    height: 1em;
+  }
+</style>

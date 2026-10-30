@@ -1,0 +1,40 @@
+---
+// Small status pill. Status is never shown by color alone: the text carries it.
+import Icon from "./Icon.astro";
+
+interface Props {
+  tone?: "soft" | "solid" | "quiet";
+  icon?: string;
+}
+const { tone = "soft", icon } = Astro.props;
+---
+
+<span class:list={["chip", `chip--${tone}`]}>
+  {icon && <Icon name={icon} />}
+  <slot />
+</span>
+
+<style>
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    padding: var(--chip-pad);
+    border: 1px solid var(--sky);
+    border-radius: var(--r-pill);
+    background: var(--sky-soft);
+    color: var(--navy);
+    font-size: var(--text-xs);
+    white-space: nowrap;
+  }
+  .chip--solid {
+    border-color: var(--navy);
+    background: var(--navy);
+    color: var(--on-navy);
+  }
+  .chip--quiet {
+    border-color: var(--line-strong);
+    background: var(--surface);
+    color: var(--muted);
+  }
+</style>

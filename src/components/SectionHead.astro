@@ -1,0 +1,29 @@
+---
+// Optional label, H2 and lede above a section.
+interface Props {
+  label?: string;
+  title: string;
+  lede?: string;
+}
+const { label, title, lede } = Astro.props;
+---
+
+{label && <span class="label reveal">{label}</span>}
+<h2 class="reveal">{title}</h2>
+{lede && <p class="lede reveal">{lede}</p>}
+
+<style>
+  .label {
+    display: inline-block;
+    margin-bottom: var(--space-3-5);
+    color: var(--muted);
+    font-size: var(--text-14);
+    font-weight: var(--weight-medium);
+  }
+  .lede {
+    max-width: var(--measure-lede);
+    margin-top: var(--space-4);
+    color: var(--muted);
+    font-size: var(--text-lg);
+  }
+</style>
