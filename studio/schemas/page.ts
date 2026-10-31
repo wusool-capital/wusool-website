@@ -229,11 +229,12 @@ const sections = [
     description: "Embeds a tool from the tools app at this position.",
     type: "object",
     fields: [
-      {
+      defineField({
         name: "tool",
         type: "string",
         options: { list: ["valuation", "readiness", "benchmark"] },
-      },
+        validation: (r) => r.required(),
+      }),
     ],
   }),
   defineArrayMember({

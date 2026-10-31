@@ -522,8 +522,10 @@ for (const [path, tool, type] of [
     test.skip(isMobile, "content check, desktop only");
     const html = await (await request.get(path)).text();
     expect(html).toMatch(/<h1[^>]*>[^<]+/);
-    expect(html).toContain(
-      `src="https://tools.wusoolcapital.com/embed.js" data-tool="${tool}"`,
+    expect(html).toMatch(
+      new RegExp(
+        `<script[^>]*(src="https://tools\\.wusoolcapital\\.com/embed\\.js"[^>]*data-tool="${tool}"|data-tool="${tool}"[^>]*src="https://tools\\.wusoolcapital\\.com/embed\\.js")`,
+      ),
     );
     const ld = JSON.parse(
       html.match(
