@@ -1,0 +1,283 @@
+---
+// Report landing page (PRD 6.1): indexable H1, summary, what's inside and
+// cover at build. The report itself and its form come from the tools app.
+import Base from "../../layouts/Base.astro";
+import Breadcrumbs from "../../components/insights/Breadcrumbs.astro";
+import ArrowLink from "../../components/ArrowLink.astro";
+import Button from "../../components/Button.astro";
+import {
+  allReports,
+  cardImage,
+  ogImage,
+  topicOf,
+  formatDate,
+  type Report,
+} from "../../lib/insights";
+import { SITE, ORG_ID, WEBSITE_ID, graph, breadcrumbs } from "../../lib/schema";
+
+export async function getStaticPaths() {
+  return (await allReports()).map((report) => ({
+    params: { slug: report.slug },
+    props: { report },
+  }));
+}
+
+const { report: r } = Astro.props as { report: Report };
+if (!r.seoTitle || !r.seoDescription || !r.excerpt) {
+  throw new Error(
+    `Sanity: report ${r.slug} needs an SEO title, description and excerpt`,
+  );
+}
+const url = `${SITE}/reports/${r.slug}`;
+// Height over width, from the Sanity asset ref ("image-<id>-<w>x<h>-<ext>").
+const previewRatio = (ref: string) => {
+  const [w, h] = ref.split("-")[2].split("x").map(Number);
+  return h / w;
+};
+const topic = topicOf(r.silo);
+const updated =
+  // Shown only when it falls on a later day than publication.
+  r.lastUpdated &&
+  r.lastUpdated.slice(0, 10) > (r.publishedAt ?? "").slice(0, 10)
+    ? r.lastUpdated
+    : undefined;
+const image = ogImage("reports", r);
+const crumbs = [
+  { name: "Home", href: "/" },
+  { name: "Reports", href: "/reports" },
+  { name: r.title },
+];
+const jsonLd = graph([
+  {
+    "@type": "WebPage",
+    "@id": `${url}#webpage`,
+    url,
+    name: r.seoTitle,
+    description: r.seoDescription,
+    isPartOf: { "@id": WEBSITE_ID },
+    breadcrumb: { "@id": `${url}#breadcrumb` },
+    inLanguage: "en",
+  },
+  {
+    "@type": "Report",
+    "@id": `${url}#report`,
+    headline: r.title,
+    description: r.seoDescription,
+    abstract: r.excerpt,
+    image,
+    datePublished: r.publishedAt,
+    dateModified: updated ?? r.publishedAt,
+    articleSection: r.silo,
+    inLanguage: "en",
+    mainEntityOfPage: { "@id": `${url}#webpage` },
+    author: { "@id": ORG_ID },
+    publisher: { "@id": ORG_ID },
+  },
+  breadcrumbs(
+    url,
+    crumbs.map((c) => ({
+      name: c.name,
+      url: c.href ? `${SITE}${c.href}` : url,
+    })),
+  ),
+]);
+---
+
+<Base
+  title={r.seoTitle}
+  description={r.seoDescription}
+  og={{ title: r.ogTitle, image }}
+  jsonLd={jsonLd}
+  top="page"
+  bottom="page"
+>
+  <header class="head">
+    <div class="wrap split">
+      <div>
+        <Breadcrumbs items={crumbs} />
+        {topic && (
+          <a class="topic" href={`/insights/topic/${topic.slug}`}>
+            {topic.silo}
+          </a>
+        )}
+        <h1>{r.title}</h1>
+        <p class="lede">{r.excerpt}</p>
+        <p class="meta">
+          <span>Wusool Capital</span>
+          {r.publishedAt && (
+            <span>
+              Published{" "}
+              <time datetime={r.publishedAt}>{formatDate(r.publishedAt)}</time>
+            </span>
+          )}
+          {updated && (
+            <span>
+              Updated <time datetime={updated}>{formatDate(updated)}</time>
+            </span>
+          )}
+          {r.readingTime && <span>{r.readingTime}</span>}
+        </p>
+        <div class="go">
+          <Button href="#read" source={`report-${r.slug}-hero`}>
+            Read the report
+          </Button>
+        </div>
+      </div>
+      {r.preview ? (
+        <img
+          class="preview"
+          src={`/previews/${r.slug}.webp`}
+          alt={r.preview.alt ?? ""}
+          width="600"
+          height={Math.round(600 * previewRatio(r.preview.ref))}
+          fetchpriority="high"
+        />
+      ) : (
+        <img
+          class="cover"
+          src={cardImage("reports", r)}
+          alt=""
+          width="800"
+          height="420"
+          fetchpriority="high"
+        />
+      )}
+    </div>
+  </header>
+
+  {r.inside && r.inside.length > 0 && (
+    <section class="section section--flush-top" aria-labelledby="inside">
+      <div class="wrap">
+        <h2 id="inside">What's inside</h2>
+        <ul class="inside">
+          {r.inside.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  {r.insight && (
+    <div class="wrap companion">
+      <ArrowLink href={`/insights/${r.insight.slug}`}>
+        Read the summary article
+      </ArrowLink>
+    </div>
+  )}
+
+  <section
+    class="section section--surface"
+    id="read"
+    aria-labelledby="read-title"
+  >
+    <div class="wrap">
+      <h2 id="read-title">Read the report</h2>
+      <div class="reader">
+        <script
+          is:inline
+          src="https://tools.wusoolcapital.com/embed.js"
+          data-tool="report"
+          data-report={r.slug}
+          defer
+        ></script>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .head {
+    padding: var(--space-10) 0 var(--space-16);
+  }
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: var(--space-12);
+    align-items: start;
+  }
+  .topic {
+    display: inline-block;
+    margin-top: var(--space-8);
+    padding: var(--chip-pad);
+    border: 1px solid var(--sky);
+    border-radius: var(--r-pill);
+    background: var(--sky-soft);
+    color: var(--navy);
+    font-size: var(--text-sm);
+  }
+  h1 {
+    margin-top: var(--space-4);
+    font-size: var(--text-h2);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-display);
+    text-wrap: balance;
+  }
+  .lede {
+    max-width: var(--measure-lede);
+    margin-top: var(--space-4);
+    color: var(--muted);
+    font-size: var(--text-lg);
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin-top: var(--space-5);
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  .go {
+    margin-top: var(--space-8);
+  }
+  .cover {
+    width: 100%;
+    height: auto;
+    border-radius: var(--r-card);
+  }
+  .preview {
+    justify-self: center;
+    width: 100%;
+    max-width: var(--preview-w);
+    height: auto;
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-menu);
+  }
+  h2 {
+    font-size: var(--text-range);
+    font-weight: var(--weight-semibold);
+  }
+  .inside {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+    margin: var(--space-6) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .inside li {
+    padding: var(--space-5) var(--space-6);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+    font-weight: var(--weight-medium);
+  }
+  .companion {
+    padding-bottom: var(--section-y);
+  }
+  .reader {
+    min-height: var(--defer-size);
+    margin-top: var(--space-6);
+  }
+  .reader :global(iframe) {
+    width: 100%;
+    border: 0;
+  }
+  @media (max-width: 900px) {
+    .split,
+    .inside {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

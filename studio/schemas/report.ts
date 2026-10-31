@@ -66,6 +66,22 @@ export const report = defineType({
     }),
     defineField({ name: "lastUpdated", type: "datetime", group: "content" }),
     defineField({ name: "readingTime", type: "string", group: "content" }),
+    defineField({
+      name: "preview",
+      title: "First page preview",
+      description: "Set by scripts/report-preview.mjs.",
+      type: "image",
+      group: "content",
+      fields: [{ name: "alt", type: "string" }],
+    }),
+    defineField({
+      name: "inside",
+      title: "What's inside",
+      description: "Short bullets shown on the report page.",
+      type: "array",
+      group: "content",
+      of: [{ type: "string" }],
+    }),
     defineField({ name: "featured", type: "boolean", group: "content" }),
     defineField({
       name: "bannerPinned",

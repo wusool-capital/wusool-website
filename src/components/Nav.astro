@@ -103,12 +103,16 @@ import Icon from "./Icon.astro";
     font-size: var(--text-15);
     cursor: pointer;
   }
-  .links > li > a:hover,
-  .links > li > button:hover {
+  /* The tint follows the whole item, so it stays on while the pointer is in
+     the menu. */
+  .links > li:hover > a,
+  .links > li:hover > button {
     background: var(--hover-tint);
   }
   .menu {
     position: absolute;
+    /* Above the hover bridge, so the bridge never takes a click. */
+    z-index: var(--z-menu);
     top: calc(100% + var(--space-2));
     left: 0;
     min-width: var(--menu-w);
@@ -121,9 +125,25 @@ import Icon from "./Icon.astro";
     visibility: hidden;
     transform: translateY(var(--menu-shift));
     transition:
-      opacity var(--dur-fast),
-      transform var(--dur-fast) var(--ease),
-      visibility var(--dur-fast);
+      opacity var(--dur-fast) var(--menu-close-delay),
+      transform var(--dur-fast) var(--ease) var(--menu-close-delay),
+      visibility 0s calc(var(--dur-fast) + var(--menu-close-delay));
+  }
+  /* The item's hover area reaches down to its menu, as wide as the button,
+     so crossing the gap never leaves the hovered item. */
+  .links > li:has(> .menu)::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    z-index: var(--z-bridge);
+    /* Gap plus the menu's rounded corner, so the corner is covered too. */
+    height: calc(var(--space-2) + var(--r-menu));
+  }
+  /* Moving to another item closes the previous menu at once. */
+  .links:has(> li:hover) > li:not(:hover) > .menu {
+    transition-delay: 0s;
   }
   .menu--wide {
     display: grid;
@@ -135,6 +155,7 @@ import Icon from "./Icon.astro";
     opacity: 1;
     visibility: visible;
     transform: none;
+    transition-delay: 0s;
   }
   .menu a {
     display: block;

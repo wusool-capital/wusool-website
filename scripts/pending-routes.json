@@ -4,12 +4,10 @@
     "/valuation-tool",
     "/deal-readiness-tool",
     "/benchmark",
-    "/reports",
     "/team",
     "/careers",
     "/privacy-policy",
     "/terms",
-    "/reports/*",
     "/team/*"
   ]
 }
