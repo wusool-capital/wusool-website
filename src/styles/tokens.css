@@ -173,6 +173,8 @@
   --delay-bar: 0.5s;
   --tab-interval: 6s;
   --dur-flow: 20s;
+  /* Wait before a nav menu closes, so a pointer slip does not close it. */
+  --menu-close-delay: 0.15s;
 
   /* Layers */
   --z-header: 40;
