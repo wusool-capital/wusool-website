@@ -39,7 +39,11 @@ interface Industry {
   seoMetaDescription: string;
   ogImage?: string;
   guide?: { href: string; label: string };
-  areaServed: string[];
+  settings: {
+    areaServed?: string[];
+    dealSizeRange?: string;
+    timeToFirstOffer?: string;
+  };
 }
 
 export async function getStaticPaths() {
@@ -54,7 +58,7 @@ export async function getStaticPaths() {
       count(*[_type == "insights" && "/insights/" + slug.current == ^.clusterArticleUrl]) > 0 =>
         {"href": clusterArticleUrl, "label": clusterArticleLabel}
     ),
-    "areaServed": *[_id == "siteSettings"][0].areaServed
+    "settings": *[_id == "siteSettings"][0]{areaServed, dealSizeRange, timeToFirstOffer}
   }`);
   return industries.map((industry) => ({
     params: { slug: industry.slug },
@@ -63,7 +67,7 @@ export async function getStaticPaths() {
 }
 
 const { industry: i } = Astro.props as { industry: Industry };
-if (!i.seoMetaTitle || !i.seoMetaDescription || !i.heroHeadline) {
+if (!i.name || !i.seoMetaTitle || !i.seoMetaDescription || !i.heroHeadline) {
   throw new Error(
     `Sanity: industry ${i.slug} needs an SEO title, description and hero headline`,
   );
@@ -76,6 +80,7 @@ const range = i.ebitdaMultipleRange
   .replace(/ EBITDA$/, "");
 const killers = listItems(i.commonDealKillers);
 const wants = listItems(i.whatBuyersLookFor);
+const overview = html(i.sectorOverview);
 
 const jsonLd = graph([
   {
@@ -85,12 +90,12 @@ const jsonLd = graph([
   service(
     url,
     {
-      name: `Sell-side M&A advisory for ${i.name} businesses in the UAE`,
+      name: i.heroHeadline,
       serviceType: "Sell-side M&A advisory",
       category: i.name,
       description: i.heroSubtext,
     },
-    i.areaServed,
+    i.settings.areaServed ?? [],
   ),
   ...(faq.length ? [faqPage(url, faq)] : []),
   breadcrumbs(url, [
@@ -117,24 +122,34 @@ const jsonLd = graph([
         Get Your Free Valuation
       </Button>
     </Fragment>
-    <ValuationMock sector={i.name} range={range} note="Typical range" />
+    {range && (
+      <ValuationMock sector={i.name} range={range} note="Typical range" />
+    )}
     <BuyersMock />
   </Hero>
 
   <Facts
     items={[
       { label: "EBITDA multiple", value: i.ebitdaMultipleRange },
-      { label: "To first offer", value: i.dealTimeline },
+      {
+        label: "To first offer",
+        value: i.settings.timeToFirstOffer?.replace(/ to first offer$/, ""),
+      },
       { label: "Buyer types", value: i.buyerTypes },
-      { label: "Deal-size range", value: i.dealSizeRange },
+      // Approved values from site settings (PRD 13), the same on every page.
+      { label: "Deal-size range", value: i.settings.dealSizeRange },
     ]}
   />
 
   <section class="section">
     <div class="wrap">
-      <SectionHead title="Sector overview" />
-      <div class="overview reveal" set:html={html(i.sectorOverview)} />
-      {(killers.length > 0 || wants.length > 0) && (
+      {overview && (
+        <>
+          <SectionHead title="Sector overview" />
+          <div class="overview reveal" set:html={overview} />
+        </>
+      )}
+      {killers.length > 0 && wants.length > 0 && (
         <Compare
           old={{ title: "Common deal-killers", items: killers }}
           better={{ title: "What buyers look for", items: wants }}

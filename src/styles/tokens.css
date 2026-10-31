@@ -104,6 +104,7 @@
   --burger-icon: 20px;
   --menu-w: 260px;
   --menu-w-wide: 480px;
+  --fact-min: 220px;
   --hero-min-h: min(640px, calc(100dvh - 140px));
   --hero-pad: 64px;
   --avatar: 34px;

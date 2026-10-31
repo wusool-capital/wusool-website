@@ -232,12 +232,13 @@ test("all industry pages render their Sanity content", async ({ page }) => {
   const res = await fetch(
     api +
       encodeURIComponent(
-        '*[_type == "industry"]{"slug": slug.current, seoMetaTitle, heroHeadline, faq}',
+        '*[_type == "industry"]{"slug": slug.current, seoMetaTitle, seoMetaDescription, heroHeadline, faq}',
       ),
   );
   const industries: {
     slug: string;
     seoMetaTitle: string;
+    seoMetaDescription: string;
     heroHeadline: string;
     faq: { question: string; answer: string }[];
   }[] = (await res.json()).result;
@@ -246,6 +247,10 @@ test("all industry pages render their Sanity content", async ({ page }) => {
     const r = await page.goto(`/industries/${i.slug}`);
     expect(r?.status(), i.slug).toBe(200);
     await expect(page).toHaveTitle(i.seoMetaTitle);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      "content",
+      i.seoMetaDescription,
+    );
     expect(i.seoMetaTitle.length, i.slug).toBeLessThanOrEqual(60);
     await expect(page.locator("h1")).toHaveText(i.heroHeadline);
     const ld = JSON.parse(

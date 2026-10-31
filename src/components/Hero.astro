@@ -4,7 +4,7 @@ interface Props {
   label?: string;
   title: string;
   soft?: string;
-  sub: string;
+  sub?: string;
 }
 const { label, title, soft, sub } = Astro.props;
 // The illustration column shows only when the page passes one.
@@ -23,7 +23,7 @@ const visual = Astro.slots.has("default")
           {soft && " "}
           {soft && <span class="soft">{soft}</span>}
         </h1>
-        <p class="sub appear d3">{sub}</p>
+        {sub && <p class="sub appear d3">{sub}</p>}
         <div class="ctas appear d4">
           <slot name="ctas" />
         </div>
