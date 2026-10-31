@@ -20,6 +20,7 @@ const TYPES = {
   "/insights/": "insights",
   "/industries/": "industry",
   "/reports/": "report",
+  "/team/": "teamMember",
 };
 const slugs = await (
   await fetch(

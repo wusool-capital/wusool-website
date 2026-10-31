@@ -1,0 +1,398 @@
+---
+// Article page for every published insight (PRD 6.2): breadcrumbs, H1,
+// dates, author, key takeaways, table of contents, body with exhibits, a
+// contextual CTA mid-article, FAQ, end CTA, share links, related insights.
+import Base from "../../layouts/Base.astro";
+import Button from "../../components/Button.astro";
+import ArrowLink from "../../components/ArrowLink.astro";
+import Faq from "../../components/Faq.astro";
+import SectionHead from "../../components/SectionHead.astro";
+import Breadcrumbs from "../../components/insights/Breadcrumbs.astro";
+import InsightCard from "../../components/insights/InsightCard.astro";
+import Takeaways from "../../components/insights/Takeaways.astro";
+import Toc from "../../components/insights/Toc.astro";
+import AuthorBox from "../../components/insights/AuthorBox.astro";
+import ShareLinks from "../../components/insights/ShareLinks.astro";
+import Prose from "../../components/insights/Prose.astro";
+import {
+  allInsights,
+  cardImage,
+  ogImage,
+  topicOf,
+  formatDate,
+  type Insight,
+} from "../../lib/insights";
+import { renderBody } from "../../lib/portable";
+import { imageUrl } from "../../lib/sanity";
+import {
+  SITE,
+  ORG_ID,
+  WEBSITE_ID,
+  graph,
+  faqPage,
+  breadcrumbs,
+} from "../../lib/schema";
+
+export async function getStaticPaths() {
+  const all = await allInsights();
+  return all.map((insight) => ({
+    params: { slug: insight.slug },
+    props: { insight, all },
+  }));
+}
+
+const { insight: i, all } = Astro.props as { insight: Insight; all: Insight[] };
+if (!i.h1 || !i.seoTitle || !i.seoDescription) {
+  throw new Error(
+    `Sanity: insight ${i.slug} needs an H1, SEO title and description`,
+  );
+}
+const url = `${SITE}/insights/${i.slug}`;
+const topic = topicOf(i.silo);
+const faq = (i.faq ?? []).filter((f) => f.question && f.answer);
+const { html, toc } = renderBody(i.body);
+
+// The contextual CTA sits before the middle H2 of long articles.
+const heads = [...html.matchAll(/<h2 /g)].map((m) => m.index ?? 0);
+const cut = heads.length >= 4 ? heads[Math.floor(heads.length / 2)] : -1;
+const [first, second] =
+  cut > 0 ? [html.slice(0, cut), html.slice(cut)] : [html, ""];
+
+// Related: same topic first, then the newest others.
+const related = all
+  .filter((x) => x.slug !== i.slug && !x.hideFromListings)
+  .sort((a, b) => Number(b.silo === i.silo) - Number(a.silo === i.silo))
+  .slice(0, 3);
+
+const cta = {
+  label: i.ctaText || "Get a Free Valuation",
+  href: i.ctaUrl || "/valuation-tool",
+};
+const published = i.publishedAt;
+const updated =
+  i.lastUpdated && i.lastUpdated > (published ?? "")
+    ? i.lastUpdated
+    : undefined;
+const image = ogImage("insights", i);
+
+const crumbs = [
+  { name: "Home", href: "/" },
+  { name: "Insights", href: "/insights" },
+  ...(topic
+    ? [{ name: topic.silo, href: `/insights/topic/${topic.slug}` }]
+    : []),
+  { name: i.h1 },
+];
+const jsonLd = graph([
+  {
+    "@type": "WebPage",
+    "@id": `${url}#webpage`,
+    url,
+    name: i.seoTitle,
+    description: i.seoDescription,
+    isPartOf: { "@id": WEBSITE_ID },
+    breadcrumb: { "@id": `${url}#breadcrumb` },
+    inLanguage: "en",
+  },
+  {
+    "@type": "Article",
+    "@id": `${url}#article`,
+    headline: i.h1.slice(0, 110),
+    description: i.seoDescription,
+    image,
+    datePublished: published,
+    dateModified: updated ?? published,
+    articleSection: i.silo,
+    inLanguage: "en",
+    mainEntityOfPage: { "@id": `${url}#webpage` },
+    publisher: { "@id": ORG_ID },
+    ...(i.author && {
+      author: {
+        "@type": "Person",
+        "@id": `${SITE}/team/${i.author.slug}#person`,
+        name: i.author.name,
+        url: `${SITE}/team/${i.author.slug}`,
+      },
+    }),
+  },
+  ...(faq.length ? [faqPage(url, faq)] : []),
+  breadcrumbs(
+    url,
+    crumbs.map((c) => ({
+      name: c.name,
+      url: c.href ? `${SITE}${c.href === "/" ? "/" : c.href}` : url,
+    })),
+  ),
+]);
+---
+
+<Base
+  title={i.seoTitle}
+  description={i.seoDescription}
+  og={{ title: i.ogTitle, image }}
+  jsonLd={jsonLd}
+  top="page"
+  bottom="page"
+>
+  <article data-pagefind-body>
+    <header class="head">
+      <div class="wrap">
+        <Breadcrumbs items={crumbs} />
+        {topic && (
+          <a class="topic" href={`/insights/topic/${topic.slug}`}>
+            {topic.silo}
+          </a>
+        )}
+        <h1>{i.h1}</h1>
+        {i.excerpt && <p class="lede">{i.excerpt}</p>}
+        <p class="meta">
+          {i.author && (
+            <a href={`/team/${i.author.slug}`} rel="author">
+              {i.author.name}
+            </a>
+          )}
+          {published && (
+            <span>
+              Published{" "}
+              <time datetime={published}>{formatDate(published)}</time>
+            </span>
+          )}
+          {updated && (
+            <span>
+              Updated <time datetime={updated}>{formatDate(updated)}</time>
+            </span>
+          )}
+          {i.readingTime && <span>{i.readingTime}</span>}
+        </p>
+      </div>
+    </header>
+
+    <div class="wrap layout">
+      <div class="main">
+        {i.image && (
+          <img
+            class="hero"
+            src={imageUrl(i.image, 1200, 630, "webp")}
+            alt=""
+            width="1200"
+            height="630"
+            fetchpriority="high"
+          />
+        )}
+        {i.keyTakeaways && i.keyTakeaways.length > 0 && (
+          <Takeaways items={i.keyTakeaways} />
+        )}
+        {toc.length >= 4 && (
+          <details class="toc-mobile">
+            <summary>On this page</summary>
+            <Toc items={toc} />
+          </details>
+        )}
+        <Prose html={first} />
+        {second && (
+          <aside class="cta-inline" aria-label="Next step">
+            <p>
+              {i.report
+                ? "Get the full report with every exhibit."
+                : "Thinking about selling? See what your business could be worth."}
+            </p>
+            {i.report ? (
+              <Button
+                href={`/reports/${i.report.slug}`}
+                source={`insight-${i.slug}-mid`}
+              >
+                Download the report
+              </Button>
+            ) : (
+              <Button href={cta.href} source={`insight-${i.slug}-mid`}>
+                {cta.label}
+              </Button>
+            )}
+          </aside>
+        )}
+        {second && <Prose html={second} />}
+
+        <div class="end">
+          <p>
+            {i.report
+              ? `${i.report.title} is available as a full report.`
+              : "Ready for the next step?"}
+          </p>
+          <Button
+            href={i.report ? `/reports/${i.report.slug}` : cta.href}
+            source={`insight-${i.slug}-end`}
+          >
+            {i.report ? "Download the report" : cta.label}
+          </Button>
+        </div>
+        <ShareLinks url={url} title={i.h1} />
+        {i.author && <AuthorBox author={i.author} />}
+      </div>
+      {toc.length >= 4 && (
+        <aside class="aside">
+          <Toc items={toc} />
+        </aside>
+      )}
+    </div>
+  </article>
+
+  {faq.length > 0 && (
+    <section class="section section--surface" id="faq">
+      <div class="wrap">
+        <Faq items={faq}>
+          <SectionHead label="Common questions" title="FAQ's" />
+          <Button form="get-started" source={`insight-${i.slug}-faq`}>
+            Talk to us
+          </Button>
+        </Faq>
+      </div>
+    </section>
+  )}
+
+  <section class="section">
+    <div class="wrap">
+      <div class="related-head">
+        <SectionHead title="Related insights" />
+        <ArrowLink href="/insights" class="reveal">
+          All insights
+        </ArrowLink>
+      </div>
+      <div class="related">
+        {related.map((r) => (
+          <InsightCard
+            href={`/insights/${r.slug}`}
+            image={cardImage("insights", r)}
+            title={r.title}
+            topic={topicOf(r.silo)?.silo}
+            meta={r.readingTime}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .head {
+    padding: var(--space-10) 0 var(--space-8);
+  }
+  .topic {
+    display: inline-block;
+    margin-top: var(--space-8);
+    padding: var(--chip-pad);
+    border: 1px solid var(--sky);
+    border-radius: var(--r-pill);
+    background: var(--sky-soft);
+    color: var(--navy);
+    font-size: var(--text-sm);
+  }
+  h1 {
+    max-width: var(--measure-h1);
+    margin-top: var(--space-4);
+    font-size: var(--text-h2);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-display);
+    text-wrap: balance;
+  }
+  .lede {
+    max-width: var(--measure-body);
+    margin-top: var(--space-4);
+    color: var(--muted);
+    font-size: var(--text-lg);
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin-top: var(--space-5);
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  .meta a {
+    color: var(--navy);
+    font-weight: var(--weight-medium);
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--menu-w);
+    gap: var(--space-16);
+    align-items: start;
+    padding-bottom: var(--section-y);
+  }
+  .hero {
+    width: 100%;
+    height: auto;
+    margin-bottom: var(--space-10);
+    border-radius: var(--r-card);
+  }
+  .aside {
+    position: sticky;
+    top: var(--sticky-top);
+  }
+  .toc-mobile {
+    display: none;
+  }
+  .cta-inline,
+  .end {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    max-width: var(--measure-body);
+    margin: var(--space-10) 0;
+    padding: var(--space-6) var(--space-7);
+    border-radius: var(--r-card);
+  }
+  .cta-inline {
+    border: 1px solid var(--sky);
+    background: var(--sky-soft);
+  }
+  .end {
+    background: var(--navy);
+    color: var(--on-navy);
+  }
+  .end :global(.btn) {
+    background: var(--surface);
+    color: var(--navy);
+  }
+  .related-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-6);
+  }
+  .related {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+    margin-top: var(--space-10);
+  }
+  @media (max-width: 1080px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+    .aside {
+      display: none;
+    }
+    .toc-mobile {
+      display: block;
+      max-width: var(--measure-body);
+      margin-bottom: var(--space-8);
+      padding: var(--space-4) var(--space-5);
+      border: 1px solid var(--line);
+      border-radius: var(--r-card);
+      background: var(--surface);
+    }
+    .toc-mobile summary {
+      color: var(--navy);
+      font-weight: var(--weight-semibold);
+      cursor: pointer;
+    }
+    .related {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

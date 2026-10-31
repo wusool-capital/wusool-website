@@ -1,0 +1,52 @@
+---
+// Key takeaways near the top of an article (PRD 6.2, GEO).
+import Icon from "../Icon.astro";
+
+interface Props {
+  items: string[];
+}
+const { items } = Astro.props;
+---
+
+<aside class="takeaways" aria-labelledby="takeaways-title">
+  <h2 id="takeaways-title">Key takeaways</h2>
+  <ul>
+    {items.map((t) => (
+      <li>
+        <Icon name="check" />
+        {t}
+      </li>
+    ))}
+  </ul>
+</aside>
+
+<style>
+  .takeaways {
+    margin: 0 0 var(--space-10);
+    padding: var(--space-6) var(--space-7);
+    border: 1px solid var(--sky);
+    border-radius: var(--r-card);
+    background: var(--sky-soft);
+  }
+  h2 {
+    max-width: none;
+    font-size: var(--text-lg);
+    letter-spacing: var(--tracking-h3);
+  }
+  ul {
+    display: grid;
+    gap: var(--space-3);
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+  }
+  li > :global(.icon) {
+    margin-top: var(--space-1);
+    color: var(--navy);
+  }
+</style>

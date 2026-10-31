@@ -1,0 +1,46 @@
+---
+// Author box linking to the author's page (E-E-A-T, PRD 8).
+interface Props {
+  author: { name: string; slug: string; roleTitle?: string; shortBio?: string };
+}
+const { author } = Astro.props;
+---
+
+<aside class="author" aria-label="About the author">
+  <p class="label">Written by</p>
+  <a class="name" href={`/team/${author.slug}`} rel="author">
+    {author.name}
+  </a>
+  {author.roleTitle && <p class="role">{author.roleTitle}</p>}
+  {author.shortBio && <p class="bio">{author.shortBio}</p>}
+</aside>
+
+<style>
+  .author {
+    margin-top: var(--space-12);
+    padding: var(--space-6) var(--space-7);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+  }
+  .label,
+  .role {
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  .name {
+    display: inline-block;
+    margin-top: var(--space-1);
+    color: var(--navy);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+  }
+  .name:hover {
+    text-decoration: underline;
+    text-underline-offset: var(--nudge);
+  }
+  .bio {
+    margin-top: var(--space-3);
+    font-size: var(--text-15);
+  }
+</style>
