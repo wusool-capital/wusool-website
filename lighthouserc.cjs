@@ -27,6 +27,7 @@ module.exports = {
         "http://localhost:8787/careers/senior-analyst-ma-advisory-dubai",
         "http://localhost:8787/valuation-tool",
         "http://localhost:8787/benchmark",
+        "http://localhost:8787/privacy-policy",
         "http://localhost:8787/styleguide",
       ],
       numberOfRuns: 3,

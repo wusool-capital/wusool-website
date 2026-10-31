@@ -6,6 +6,7 @@ import { teamMember } from "./teamMember";
 import { career } from "./career";
 import { transaction } from "./transaction";
 import { page } from "./page";
+import { legal } from "./legal";
 import { siteSettings } from "./siteSettings";
 
 export const schemaTypes = [
@@ -19,5 +20,6 @@ export const schemaTypes = [
   career,
   transaction,
   page,
+  legal,
   siteSettings,
 ];

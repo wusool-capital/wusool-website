@@ -1,0 +1,49 @@
+---
+// Served with a 404 status for unknown paths (wrangler not_found_handling).
+import Base from "../layouts/Base.astro";
+import Button from "../components/Button.astro";
+import ArrowLink from "../components/ArrowLink.astro";
+---
+
+<Base
+  title="Page not found | Wusool Capital"
+  description="The page you are looking for doesn't exist or has been moved."
+  noindex
+>
+  <section class="section">
+    <div class="wrap">
+      <h1>Page not found</h1>
+      <p class="lede">
+        The page you are looking for doesn't exist or has been moved.
+      </p>
+      <div class="links">
+        <Button href="/" source="404">
+          Go to the homepage
+        </Button>
+        <ArrowLink href="/insights">Read our insights</ArrowLink>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  h1 {
+    font-size: var(--text-h1);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+  }
+  .lede {
+    max-width: var(--measure-lede);
+    margin-top: var(--space-4);
+    color: var(--muted);
+    font-size: var(--text-lg);
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-6);
+    align-items: center;
+    margin-top: var(--space-8);
+  }
+</style>
