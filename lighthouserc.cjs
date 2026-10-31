@@ -18,6 +18,7 @@ module.exports = {
         "http://localhost:8787/",
         "http://localhost:8787/sell",
         "http://localhost:8787/buyers",
+        "http://localhost:8787/industries/technology",
         "http://localhost:8787/styleguide",
       ],
       numberOfRuns: 3,

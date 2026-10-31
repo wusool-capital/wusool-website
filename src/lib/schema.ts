@@ -91,7 +91,12 @@ export function faqPage(
 
 export function service(
   url: string,
-  s: { name?: string; serviceType?: string; description?: string },
+  s: {
+    name?: string;
+    serviceType?: string;
+    description?: string;
+    category?: string;
+  },
   areaServed: string[],
 ): Node {
   return {
@@ -99,6 +104,7 @@ export function service(
     "@id": `${url}#service`,
     name: s.name,
     serviceType: s.serviceType,
+    category: s.category,
     description: s.description,
     url,
     provider: { "@id": ORG_ID },

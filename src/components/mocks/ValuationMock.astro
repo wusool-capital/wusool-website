@@ -1,14 +1,25 @@
 ---
-// Hero mock: example valuation estimate.
+// Hero mock: example valuation estimate, for a given sector if passed.
 import Chip from "../Chip.astro";
 import MockCard from "./MockCard.astro";
+
+interface Props {
+  sector?: string;
+  range?: string;
+  note?: string;
+}
+const {
+  sector = "Technology",
+  range = "4x to 7x",
+  note = "Recurring revenue",
+} = Astro.props;
 ---
 
 <MockCard title="Valuation estimate" chip="Example" chipTone="quiet">
   <div class="grid">
     <div class="field">
       <small>Sector</small>
-      <b>Technology</b>
+      <b>{sector}</b>
     </div>
     <div class="field">
       <small>Location</small>
@@ -18,8 +29,8 @@ import MockCard from "./MockCard.astro";
   <div class="range">
     <small>EBITDA multiple range</small>
     <div class="row">
-      <b>4x to 7x</b>
-      <Chip>Recurring revenue</Chip>
+      <b>{range}</b>
+      <Chip>{note}</Chip>
     </div>
     <div class="bar">
       <span></span>

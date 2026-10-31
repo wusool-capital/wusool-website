@@ -1,0 +1,56 @@
+---
+// Key figures as a definition list: label above, value below. Values can be
+// long, so they use body-size type instead of the large stat numbers.
+interface Props {
+  items: { label: string; value?: string }[];
+}
+const items = Astro.props.items.filter((i) => i.value);
+---
+
+{items.length > 0 && (
+  <div class="facts">
+    <div class="wrap">
+      <dl class="grid reveal">
+        {items.map((i) => (
+          <div class="fact">
+            <dt>{i.label}</dt>
+            <dd>{i.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+)}
+
+<style>
+  .facts {
+    padding: var(--space-7) 0 0;
+  }
+  /* Hairline separators at any column count: items sit on a line-coloured grid. */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--fact-min), 1fr));
+    gap: 1px;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--line);
+  }
+  .fact {
+    padding: var(--space-6) var(--space-7);
+    background: var(--surface);
+  }
+  dt {
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  dd {
+    margin: var(--space-2) 0 0;
+    color: var(--navy);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-h3);
+  }
+</style>
