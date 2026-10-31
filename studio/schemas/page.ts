@@ -142,8 +142,14 @@ const sections = [
     type: "object",
     fields: [
       ...head,
-      { name: "note", type: "string" },
+      { name: "note", title: "Note under real deals", type: "string" },
       { name: "footLink", type: "object", fields: link },
+      {
+        name: "exampleNote",
+        title: "Note under example deals",
+        description: "Says the rows are indicative examples.",
+        type: "string",
+      },
       {
         name: "examples",
         title: "Example deals",

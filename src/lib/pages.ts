@@ -72,7 +72,8 @@ export async function loadPage(id: string): Promise<PageData> {
 }
 
 // The FAQ shown on the page, which is also the FAQ schema.
+export const faqItems = (section?: Section): Faq[] =>
+  (section?.faq ?? []).filter((i: Faq) => i.question && i.answer);
+// The page's FAQ schema uses its first FAQ section.
 export const faqOf = (sections: Section[]): Faq[] =>
-  (sections.find((s) => s._type === "faqSection")?.faq ?? []).filter(
-    (i: Faq) => i.question && i.answer,
-  );
+  faqItems(sections.find((s) => s._type === "faqSection"));

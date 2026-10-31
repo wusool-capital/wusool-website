@@ -26,12 +26,13 @@ const Tag = form ? "button" : href ? "a" : "span";
 </Tag>
 
 <style>
-  .link {
+  button.link {
     padding: 0;
     border: 0;
     background: none;
-    font-size: inherit;
     cursor: pointer;
+  }
+  .link {
     display: inline-flex;
     align-items: center;
     gap: var(--space-1-5);

@@ -20,7 +20,7 @@ import BusinessMock from "./mocks/BusinessMock.astro";
 import ShortlistMock from "./mocks/ShortlistMock.astro";
 import ProgressMock from "./mocks/ProgressMock.astro";
 import {
-  faqOf,
+  faqItems,
   type Deal,
   type Link,
   type Post,
@@ -66,7 +66,19 @@ const post = (p: Post) => ({
 // Real transactions when Sanity has them, otherwise the section's examples.
 const dealRows = (s: Section): Deal[] =>
   deals.length ? deals : (s.examples ?? []);
-const faqItems = faqOf(sections);
+// Anchor ids go on the first section of each type only, so ids stay unique.
+const anchors: Record<string, string> = {
+  comparisonSection: "compare",
+  sectorGridSection: "industries",
+  processSection: "process",
+  dealsSection: "transactions",
+  postsSection: "insights",
+  faqSection: "faq",
+};
+const anchor = (s: Section) =>
+  sections.find((x) => x._type === s._type) === s
+    ? anchors[s._type]
+    : undefined;
 
 const rendered = sections.filter((s) =>
   s._type === "dealsSection"
@@ -137,7 +149,10 @@ const src = (part: string) => `${page}-${part}`;
       return <Stats items={s.items ?? []} />;
     case "comparisonSection":
       return (
-        <section class:list={["section", flush(i) && "section--flush-top"]}>
+        <section
+          class:list={["section", flush(i) && "section--flush-top"]}
+          id={anchor(s)}
+        >
           <div class="wrap">
             <SectionHead title={s.title} lede={s.lede} />
             <Compare
@@ -162,7 +177,7 @@ const src = (part: string) => `${page}-${part}`;
       return (
         <section
           class:list={["section", flush(i) && "section--flush-top"]}
-          id="industries"
+          id={anchor(s)}
         >
           <div class="wrap">
             <SectionHead title={s.title} lede={s.lede} />
@@ -202,7 +217,7 @@ const src = (part: string) => `${page}-${part}`;
       );
     case "processSection":
       return (
-        <section class="section section--surface" id="process">
+        <section class="section section--surface" id={anchor(s)}>
           <div class="wrap">
             <SectionHead label={s.label} title={s.title} lede={s.lede} />
             <Process steps={(s.steps ?? []).slice(0, 3)}>
@@ -289,12 +304,12 @@ const src = (part: string) => `${page}-${part}`;
       return (
         <section
           class:list={["section", flush(i) && "section--flush-top"]}
-          id="transactions"
+          id={anchor(s)}
         >
           <div class="wrap">
             <SectionHead label={s.label} title={s.title} lede={s.lede} />
             <DealsTable
-              note={s.note}
+              note={deals.length ? s.note : s.exampleNote}
               rows={dealRows(s).map((d) => ({
                 mandate: d.category,
                 status: d.status,
@@ -322,7 +337,7 @@ const src = (part: string) => `${page}-${part}`;
       return (
         <section
           class:list={["section", flush(i) && "section--flush-top"]}
-          id="insights"
+          id={anchor(s)}
         >
           <div class="wrap">
             <div class="posts-head">
@@ -349,9 +364,9 @@ const src = (part: string) => `${page}-${part}`;
       );
     case "faqSection":
       return (
-        <section class="section section--surface" id="faq">
+        <section class="section section--surface" id={anchor(s)}>
           <div class="wrap">
-            <Faq items={faqItems}>
+            <Faq items={faqItems(s)}>
               <SectionHead label={s.label} title={s.title} lede={s.lede} />
               {has(s.cta) && (
                 <Button href={s.cta.href} form={s.cta.form} source={src("faq")}>

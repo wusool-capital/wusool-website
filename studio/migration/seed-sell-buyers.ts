@@ -235,6 +235,7 @@ const sell = {
       title: "Recent UAE M&A transactions",
       lede: "Every deal is anonymized. Confidentiality is standard, not an afterthought.",
       note: "Anonymized by default",
+      exampleNote: "These are indicative examples. Every deal is anonymized.",
       footLink: link(
         "Selling your business? See what's possible",
         "/sell",
@@ -363,7 +364,9 @@ const buyers = {
       label: "Live transactions",
       title: "Active deal flow",
       lede: "Every deal is anonymized until NDA is signed.",
-      note: "These are indicative examples. Live deals are shared exclusively with approved network members.",
+      note: "Anonymized by default",
+      exampleNote:
+        "These are indicative examples. Live deals are shared exclusively with approved network members.",
       footLink: link("Join the Network to See Live Deals", "/buyers", "buyers"),
       examples: items([
         deal(

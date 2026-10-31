@@ -16,6 +16,7 @@ const { label, title, soft, sub } = Astro.props;
         {label && <span class="label appear">{label}</span>}
         <h1 class="appear d2">
           {title}
+          {soft && " "}
           {soft && <span class="soft">{soft}</span>}
         </h1>
         <p class="sub appear d3">{sub}</p>

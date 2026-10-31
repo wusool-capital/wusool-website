@@ -41,7 +41,10 @@ export function organization(s: OrgSettings): Node {
       addressRegion: "Dubai",
       addressCountry: "AE",
     },
-    areaServed: s.areaServed.map((name) => ({ "@type": "Country", name })),
+    areaServed: (s.areaServed ?? []).map((name) => ({
+      "@type": "Country",
+      name,
+    })),
     sameAs: s.sameAs,
   };
 }
@@ -99,7 +102,10 @@ export function service(
     description: s.description,
     url,
     provider: { "@id": ORG_ID },
-    areaServed: areaServed.map((name) => ({ "@type": "Country", name })),
+    areaServed: (areaServed ?? []).map((name) => ({
+      "@type": "Country",
+      name,
+    })),
   };
 }
 

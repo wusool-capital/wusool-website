@@ -85,7 +85,7 @@ const landing = [
   {
     path: "/",
     title: "Sell Your Business UAE | Wusool Capital M&A Advisory",
-    h1: /Sell your business in the UAE\.\s*Faster\. For more\./i,
+    h1: /^Sell your business in the UAE\. Faster\. For more\.$/i,
     meta: /6 weeks to first offer/,
     form: "get-started",
   },
@@ -99,7 +99,7 @@ const landing = [
   {
     path: "/buyers",
     title: "Buy a Business UAE | Access GCC Deal Flow | Wusool Capital",
-    h1: /GCC's most active deal flow under \$25M\.\s*Curated\. Confidential\. Qualified\./i,
+    h1: /^GCC's most active deal flow under \$25M\. Curated\. Confidential\. Qualified\.$/i,
     meta: /\$1M to \$25M/,
     form: "buyers",
   },
@@ -153,3 +153,16 @@ for (const l of landing) {
     }
   });
 }
+
+test("a Buyers CTA opens the buyers form and a Sell CTA the get-started form", async ({
+  page,
+}) => {
+  for (const [path, tool] of [
+    ["/buyers", "buyers"],
+    ["/sell", "get-started"],
+  ]) {
+    await page.goto(path);
+    await page.locator(`main [data-form="${tool}"]`).first().click();
+    await expect(page.locator(`iframe[src*="/${tool}/"]`)).toHaveCount(1);
+  }
+});
