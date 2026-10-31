@@ -21,6 +21,21 @@ export type Deal = {
   year: string;
   summary: string;
 };
+export type Member = {
+  name: string;
+  slug: string;
+  roleTitle?: string;
+  shortBio?: string;
+  headshot?: string;
+  linkedinUrl?: string;
+};
+export type Role = {
+  name: string;
+  slug: string;
+  location?: string;
+  employmentType?: string;
+  department?: string;
+};
 export type Faq = {
   question: string;
   answer: string;
@@ -44,7 +59,11 @@ export interface PageData {
   banner?: { title: string; slug: string };
   posts: Post[];
   deals: Deal[];
+  roles: Role[];
 }
+
+const MEMBER = `{name, "slug": slug.current, roleTitle, shortBio,
+  "headshot": headshot.asset._ref, linkedinUrl}`;
 
 export async function loadPage(id: string): Promise<PageData> {
   const data = await query<PageData>(
@@ -53,7 +72,14 @@ export async function loadPage(id: string): Promise<PageData> {
         seo{..., "ogImage": ogImage.asset._ref},
         service,
         closingCta,
-        sections[]{..., _type == "sectorGridSection" => {tiles[]{..., "slug": industry->slug.current}}}
+        sections[]{
+          ...,
+          _type == "sectorGridSection" => {tiles[]{..., "slug": industry->slug.current}},
+          _type in ["teamSection", "noteSection"] => {
+            "members": members[]->${MEMBER},
+            "signers": signers[]->${MEMBER}
+          }
+        }
       },
       "settings": *[_id == "siteSettings"][0],
       "banner": *[_type == "report" && bannerPinned == true][0]{title, "slug": slug.current},
@@ -62,7 +88,9 @@ export async function loadPage(id: string): Promise<PageData> {
       },
       "deals": *[_type == "transaction"] | order(sortOrder asc){
         category, status, sector, country, year, "summary": oneLineDescription
-      }
+      },
+      "roles": *[_type == "career" && status == "Open" && (!defined(validThrough) || validThrough > now())]
+        | order(datePosted desc){name, "slug": slug.current, location, employmentType, department}
     }`,
     { id },
   );

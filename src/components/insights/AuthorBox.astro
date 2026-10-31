@@ -2,13 +2,14 @@
 // Author box linking to the author's page (E-E-A-T, PRD 8).
 interface Props {
   author: { name: string; slug: string; roleTitle?: string; shortBio?: string };
+  href: string;
 }
-const { author } = Astro.props;
+const { author, href } = Astro.props;
 ---
 
 <aside class="author" aria-label="About the author">
   <p class="label">Written by</p>
-  <a class="name" href={`/team/${author.slug}`} rel="author">
+  <a class="name" href={href} rel="author">
     {author.name}
   </a>
   {author.roleTitle && <p class="role">{author.roleTitle}</p>}

@@ -19,6 +19,7 @@ export interface InsightCard {
   featured?: boolean;
   hideFromListings?: boolean;
   image?: string; // Sanity image asset ref, when an editor uploaded one
+  authorSlug?: string;
 }
 export interface Insight extends InsightCard {
   h1: string;
@@ -45,7 +46,8 @@ export interface ReportCard {
 }
 
 const CARD = `title, "slug": slug.current, excerpt, silo, contentType, publishedAt, readingTime,
-  featured, hideFromListings, "image": featuredImage.asset._ref`;
+  featured, hideFromListings, "image": featuredImage.asset._ref,
+  "authorSlug": author->slug.current`;
 
 export const allInsights = () =>
   query<Insight[]>(`*[_type == "insights"] | order(publishedAt desc){

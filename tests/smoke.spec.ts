@@ -12,6 +12,11 @@ const pages = [
   "/insights/topic/sell-your-business",
   "/reports",
   "/reports/padel-in-the-gulf",
+  "/team",
+  "/team/hugo-cugnet",
+  "/careers",
+  "/careers/senior-analyst-ma-advisory-dubai",
+  "/transactions",
   "/styleguide",
 ];
 // Links to pages later features build (see scripts/check-dist.mjs).
@@ -439,4 +444,73 @@ test("every published report has its landing content in the raw HTML", async ({
     expect(report?.headline, r.slug).toBe(r.title);
     expect(html).toContain(`data-tool="report" data-report="${r.slug}"`);
   }
+});
+
+const graphOf = async (page: import("@playwright/test").Page) =>
+  JSON.parse(
+    (await page.locator('script[type="application/ld+json"]').textContent()) ??
+      "{}",
+  )["@graph"] as { "@type": string; "@id"?: string; [k: string]: unknown }[];
+
+test("each team member has an author page with Person schema, and bylines link to it", async ({
+  page,
+  request,
+  isMobile,
+}) => {
+  test.skip(isMobile, "content check, desktop only");
+  const members: { slug: string; name: string; seoTitle: string }[] = (
+    await (
+      await request.get(
+        sanity(
+          '*[_type == "teamMember" && slug.current != "wusool-capital"]{"slug": slug.current, name, seoTitle}',
+        ),
+      )
+    ).json()
+  ).result;
+  expect(members.length).toBe(4);
+  for (const m of members) {
+    const res = await page.goto(`/team/${m.slug}`);
+    expect(res?.status(), m.slug).toBe(200);
+    await expect(page).toHaveTitle(m.seoTitle);
+    await expect(page.locator("h1")).toHaveText(m.name);
+    const nodes = await graphOf(page);
+    const person = nodes.find((n) => n["@type"] === "Person");
+    expect(person?.["@id"]).toBe(
+      `https://www.wusoolcapital.com/team/${m.slug}#person`,
+    );
+    expect(person?.worksFor).toEqual({
+      "@id": "https://www.wusoolcapital.com/#organization",
+    });
+    expect((person?.sameAs as string[]).length).toBeGreaterThan(0);
+  }
+
+  // A byline links to the author page and the Article points at the Person.
+  await page.goto("/insights/how-to-buy-a-business-uae");
+  const byline = page.locator('.meta a[rel="author"]');
+  const href = await byline.getAttribute("href");
+  expect(members.map((m) => `/team/${m.slug}`)).toContain(href);
+  const article = (await graphOf(page)).find((n) => n["@type"] === "Article");
+  expect((article?.author as { "@id": string })["@id"]).toBe(
+    `https://www.wusoolcapital.com${href}#person`,
+  );
+
+  // The team page lists every member as a Person on an AboutPage.
+  await page.goto("/team");
+  const team = await graphOf(page);
+  expect(team.find((n) => n["@type"] === "AboutPage")).toBeTruthy();
+  expect(team.filter((n) => n["@type"] === "Person").length).toBe(4);
+});
+
+test("an open role has one JobPosting and is listed on Careers", async ({
+  page,
+}) => {
+  await page.goto("/careers");
+  const role = page.locator('a[href^="/careers/"]').first();
+  const href = await role.getAttribute("href");
+  await page.goto(href ?? "");
+  const jobs = (await graphOf(page)).filter((n) => n["@type"] === "JobPosting");
+  expect(jobs.length).toBe(1);
+  expect(jobs[0].hiringOrganization).toEqual({
+    "@id": "https://www.wusoolcapital.com/#organization",
+  });
 });
