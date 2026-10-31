@@ -172,7 +172,7 @@ async function portableText(html: string | undefined, keyPrefix: string) {
   const refs = new Map<string, string>();
   for (const src of srcs) if (src) refs.set(src, await upload("image", src));
   const key = keys(keyPrefix);
-  return htmlToBlocks(html, richTextType as never, {
+  const blocks = htmlToBlocks(html, richTextType as never, {
     parseHtml: parse,
     keyGenerator: key,
     rules: [
@@ -208,6 +208,21 @@ async function portableText(html: string | undefined, keyPrefix: string) {
       },
     ],
   });
+  return headings(blocks as { style?: string }[]);
+}
+
+// The page template owns the only H1. Body headings start at H2 and never
+// skip a level (H2 then H4 becomes H2 then H3), for SEO and AI extraction.
+function headings<T extends { style?: string }>(blocks: T[]) {
+  let previous = 1;
+  for (const b of blocks) {
+    const m = b.style?.match(/^h(\d)$/);
+    if (!m) continue;
+    const level = Math.min(Math.max(Number(m[1]), 2), previous + 1);
+    b.style = `h${level}`;
+    previous = level;
+  }
+  return blocks;
 }
 
 // FAQ HTML to Q&A pairs. A question is a heading, a paragraph led by bold
@@ -511,7 +526,8 @@ async function reportFields(f: Fields) {
     lastUpdated: f["last-updated"],
     ctaText: f["cta-text"],
     ctaUrl: f["cta-url"],
-    excerpt: f.excerpt,
+    // The playbook's Webflow excerpt is placeholder text, so it is dropped.
+    excerpt: f.excerpt === "This is a test excerpt." ? undefined : f.excerpt,
   };
 }
 

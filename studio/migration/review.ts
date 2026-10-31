@@ -33,6 +33,16 @@ const questions = (s = "") =>
       !(/^(STRONG|B)$/.test(e.tagName) && e.closest("h1,h2,h3,h4,h5,h6")) &&
       (e.textContent ?? "").trim().endsWith("?"),
   ).length;
+// Body headings must start at H2 and never skip a level.
+const headingOrder = (blocks: Block[]) => {
+  const levels = blocks
+    .map((b) => b.style?.match(/^h(\d)$/)?.[1])
+    .filter(Boolean)
+    .map(Number);
+  const bad = levels[0] !== undefined && levels[0] !== 2;
+  const skip = levels.some((l, i) => i > 0 && l > levels[i - 1] + 1);
+  return bad || skip ? `levels ${levels.join(",")}` : "H2 first, no skips";
+};
 const words = (s: string) => s.split(/\s+/).filter(Boolean).length;
 const html = (s = "") => new JSDOM(s).window.document;
 
@@ -111,6 +121,12 @@ for (const slug of slugs) {
       html(f["key-takeaways"]).querySelectorAll("li").length,
       d?.keyTakeaways?.length ?? 0,
       false,
+    ],
+    [
+      "heading order",
+      "H2 first, no skips",
+      headingOrder(blocks),
+      headingOrder(blocks) === "H2 first, no skips",
     ],
     ["author", f.author ? "set" : "none", d?.author ?? "none", false],
   ];
