@@ -1,6 +1,6 @@
 ---
-// Team members as cards: headshot, name linking to the author page, role,
-// short bio and LinkedIn.
+// Team members as cards: headshot, name, role, short bio and LinkedIn. Each
+// card's id is the anchor article bylines link to.
 import Icon from "../Icon.astro";
 import { imageUrl } from "../../lib/sanity";
 import type { Member } from "../../lib/pages";
@@ -13,7 +13,7 @@ const { members } = Astro.props;
 
 <ul class="grid">
   {members.map((m) => (
-    <li class="member reveal">
+    <li class="member reveal" id={m.slug}>
       {m.headshot && (
         <img
           src={imageUrl(m.headshot, 240, 240, "webp")}
@@ -25,9 +25,7 @@ const { members } = Astro.props;
         />
       )}
       <div>
-        <h3>
-          <a href={`/team/${m.slug}`}>{m.name}</a>
-        </h3>
+        <h3>{m.name}</h3>
         {m.roleTitle && <p class="role">{m.roleTitle}</p>}
         {m.shortBio && <p class="bio">{m.shortBio}</p>}
         {m.linkedinUrl && (
@@ -71,12 +69,11 @@ const { members } = Astro.props;
     font-weight: var(--weight-semibold);
     letter-spacing: var(--tracking-h3);
   }
-  h3 a {
+  h3 {
     color: var(--navy);
   }
-  h3 a:hover {
-    text-decoration: underline;
-    text-underline-offset: var(--nudge);
+  .member {
+    scroll-margin-top: var(--sticky-top);
   }
   .role {
     color: var(--muted);

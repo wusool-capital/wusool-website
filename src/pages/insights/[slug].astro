@@ -74,9 +74,10 @@ const updated =
     ? i.lastUpdated
     : undefined;
 const image = ogImage("insights", i);
-// Articles signed by the company link to the team page, not a person page.
+// Bylines link to the author's card on the team page; articles signed by the
+// company link to the team page itself.
 const byCompany = i.author?.slug === COMPANY_SLUG;
-const authorHref = byCompany ? "/team" : `/team/${i.author?.slug}`;
+const authorHref = byCompany ? "/team" : `/team#${i.author?.slug}`;
 
 const crumbs = [
   { name: "Home", href: "/" },
@@ -116,7 +117,7 @@ const jsonLd = graph([
             "@type": "Person",
             "@id": personId(i.author.slug),
             name: i.author.name,
-            url: `${SITE}/team/${i.author.slug}`,
+            url: `${SITE}/team#${i.author.slug}`,
           },
     }),
   },

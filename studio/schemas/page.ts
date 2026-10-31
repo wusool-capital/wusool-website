@@ -240,15 +240,11 @@ const sections = [
   defineArrayMember({
     name: "teamSection",
     title: "Team grid",
+    description:
+      "Lists every team member. Add, remove or reorder them under Team members.",
     type: "object",
     fields: [
       { name: "title", type: "string" },
-      {
-        name: "members",
-        description: "In display order. Each links to its author page.",
-        type: "array",
-        of: [{ type: "reference", to: [{ type: "teamMember" }] }],
-      },
       { name: "cta", type: "object", fields: link },
     ],
   }),

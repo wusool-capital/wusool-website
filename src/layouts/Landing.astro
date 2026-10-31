@@ -29,7 +29,8 @@ interface Props {
   nodes?: Record<string, unknown>[];
 }
 const { id, name, source, pageType, nodes = [] } = Astro.props;
-const { page, settings, banner, posts, deals, roles } = await loadPage(id);
+const { page, settings, banner, posts, deals, roles, team } =
+  await loadPage(id);
 const home = id === "page-home";
 const path = Astro.url.pathname.replace(/(index)?\.html$/, "");
 const url = home ? `${SITE}/` : `${SITE}${path}`;
@@ -104,6 +105,7 @@ const jsonLd = graph([
     deals={deals}
     posts={posts}
     roles={roles}
+    team={team}
     page={source}
   />
 </Base>

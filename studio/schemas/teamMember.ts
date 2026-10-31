@@ -18,6 +18,12 @@ export const teamMember = defineType({
       validation: (r) => r.required(),
     }),
     defineField({ name: "roleTitle", title: "Role or title", type: "string" }),
+    defineField({
+      name: "order",
+      title: "Order on the team page",
+      description: "Lower numbers show first.",
+      type: "number",
+    }),
     defineField({ name: "bio", type: "richText" }),
     defineField({ name: "shortBio", type: "text", rows: 2 }),
     defineField({

@@ -60,6 +60,7 @@ export interface PageData {
   posts: Post[];
   deals: Deal[];
   roles: Role[];
+  team: Member[];
 }
 
 const MEMBER = `{name, "slug": slug.current, roleTitle, shortBio,
@@ -75,10 +76,7 @@ export async function loadPage(id: string): Promise<PageData> {
         sections[]{
           ...,
           _type == "sectorGridSection" => {tiles[]{..., "slug": industry->slug.current}},
-          _type in ["teamSection", "noteSection"] => {
-            "members": members[]->${MEMBER},
-            "signers": signers[]->${MEMBER}
-          }
+          _type == "noteSection" => {"signers": signers[]->${MEMBER}}
         }
       },
       "settings": *[_id == "siteSettings"][0],
@@ -89,6 +87,8 @@ export async function loadPage(id: string): Promise<PageData> {
       "deals": *[_type == "transaction"] | order(sortOrder asc){
         category, status, sector, country, year, "summary": oneLineDescription
       },
+      "team": *[_type == "teamMember" && slug.current != "wusool-capital"]
+        | order(order asc, name asc)${MEMBER},
       "roles": *[_type == "career" && status == "Open" && (!defined(validThrough) || string::split(validThrough, "T")[0] >= string::split(now(), "T")[0])]
         | order(datePosted desc){name, "slug": slug.current, location, employmentType, department}
     }`,
@@ -108,7 +108,8 @@ export const faqItems = (section?: Section): Faq[] =>
 export const faqOf = (sections: Section[]): Faq[] =>
   faqItems(sections.find((s) => s._type === "faqSection"));
 
-// Sections that render: deals need rows, latest insights need 3 posts.
+// Sections that render: deals need real transactions, latest insights need
+// 3 posts.
 export const visibleSections = (
   sections: Section[],
   deals: Deal[],
@@ -116,7 +117,7 @@ export const visibleSections = (
 ) =>
   sections.filter((s) =>
     s._type === "dealsSection"
-      ? (deals.length || s.examples?.length) > 0
+      ? deals.length > 0
       : s._type === "postsSection"
         ? posts.length === 3
         : true,

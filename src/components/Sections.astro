@@ -29,6 +29,7 @@ import {
   type Deal,
   type Link,
   type Post,
+  type Member,
   type Role,
   type Section,
 } from "../lib/pages";
@@ -38,10 +39,11 @@ interface Props {
   deals: Deal[];
   posts: Post[];
   roles?: Role[];
+  team?: Member[];
   // Prefix of the data-source attribute on CTAs, e.g. "home".
   page: string;
 }
-const { sections, deals, posts, roles = [], page } = Astro.props;
+const { sections, deals, posts, roles = [], team = [], page } = Astro.props;
 const has = (l?: Link): l is Required<Pick<Link, "label">> & Link =>
   !!(l?.label && (l.href || l.form));
 
@@ -70,9 +72,6 @@ const post = (p: Post) => ({
   excerpt: p.excerpt,
 });
 
-// Real transactions when Sanity has them, otherwise the section's examples.
-const dealRows = (s: Section): Deal[] =>
-  deals.length ? deals : (s.examples ?? []);
 // Anchor ids go on the first section of each type only, so ids stay unique.
 const anchors: Record<string, string> = {
   comparisonSection: "compare",
@@ -314,8 +313,8 @@ const person = (m: { slug: string }) => m.slug !== COMPANY_SLUG;
           <div class="wrap">
             <SectionHead label={s.label} title={s.title} lede={s.lede} />
             <DealsTable
-              note={deals.length ? s.note : s.exampleNote}
-              rows={dealRows(s).map((d) => ({
+              note={s.note}
+              rows={deals.map((d) => ({
                 mandate: d.category,
                 status: d.status,
                 closed: d.status === "Closed" || d.status === "Completed",
@@ -384,7 +383,7 @@ const person = (m: { slug: string }) => m.slug !== COMPANY_SLUG;
         <section class:list={["section", flush(i) && "section--flush-top"]}>
           <div class="wrap">
             <SectionHead title={s.title} />
-            <TeamGrid members={(s.members ?? []).filter(person)} />
+            <TeamGrid members={team} />
             {has(s.cta) && (
               <div class="after reveal">
                 <Button
