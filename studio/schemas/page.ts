@@ -1,4 +1,4 @@
-import { defineArrayMember, defineField, defineType } from "sanity";
+import { defineArrayMember, defineField, defineType, type Rule } from "sanity";
 import { faqList } from "./objects";
 
 // Section blocks of a landing page. Layout is code; content and order are
@@ -24,7 +24,12 @@ const sections = [
       { name: "title", type: "string" },
       { name: "soft", title: "Second line", type: "string" },
       { name: "sub", type: "text", rows: 2 },
-      { name: "ctas", type: "array", of: [{ type: "object", fields: link }] },
+      {
+        name: "ctas",
+        type: "array",
+        of: [{ type: "object", fields: link }],
+        validation: (r: Rule) => r.max(2),
+      },
     ],
   }),
   defineArrayMember({
@@ -68,10 +73,27 @@ const sections = [
     fields: [
       ...head,
       {
-        name: "industries",
+        name: "tiles",
         type: "array",
-        of: [{ type: "reference", to: [{ type: "industry" }] }],
+        of: [
+          {
+            type: "object",
+            fields: [
+              {
+                name: "industry",
+                type: "reference",
+                to: [{ type: "industry" }],
+                validation: (r: Rule) => r.required(),
+              },
+              { name: "title", type: "string" },
+              { name: "text", type: "string" },
+              { name: "cta", title: "Link label", type: "string" },
+            ],
+            preview: { select: { title: "title" } },
+          },
+        ],
       },
+      { name: "footLink", type: "object", fields: link },
     ],
   }),
   defineArrayMember({
@@ -80,9 +102,13 @@ const sections = [
     type: "object",
     fields: [
       ...head,
+      { name: "primary", type: "object", fields: link },
+      { name: "secondary", type: "object", fields: link },
       {
         name: "steps",
         type: "array",
+        description: "Up to 3 steps, one per illustration.",
+        validation: (r: Rule) => r.max(3),
         of: [
           {
             type: "object",
@@ -101,24 +127,24 @@ const sections = [
     type: "object",
     fields: [
       ...head,
-      {
-        name: "transactions",
-        type: "array",
-        of: [{ type: "reference", to: [{ type: "transaction" }] }],
-      },
+      { name: "note", type: "string" },
+      { name: "footLink", type: "object", fields: link },
     ],
   }),
   defineArrayMember({
     name: "postsSection",
     title: "Latest insights",
     type: "object",
-    fields: [{ name: "title", type: "string" }],
+    fields: [
+      { name: "title", type: "string" },
+      { name: "allLink", type: "object", fields: link },
+    ],
   }),
   defineArrayMember({
     name: "faqSection",
     title: "FAQ",
     type: "object",
-    fields: [...head, faqList],
+    fields: [...head, faqList, { name: "cta", type: "object", fields: link }],
   }),
   defineArrayMember({
     name: "ctaBandSection",

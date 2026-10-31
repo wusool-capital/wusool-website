@@ -24,6 +24,12 @@ export const seo = defineType({
     }),
     defineField({ name: "ogTitle", title: "OG title", type: "string" }),
     defineField({
+      name: "ogDescription",
+      title: "OG description",
+      type: "text",
+      rows: 2,
+    }),
+    defineField({
       name: "ogImage",
       title: "OG image (1200 x 630)",
       type: "image",
@@ -48,6 +54,15 @@ export const faqItem = defineType({
       type: "text",
       rows: 4,
       validation: (r) => r.required(),
+    }),
+    defineField({
+      name: "link",
+      description: "Optional: turns a phrase of the answer into a link.",
+      type: "object",
+      fields: [
+        { name: "text", title: "Phrase in the answer", type: "string" },
+        { name: "href", title: "Link", type: "string" },
+      ],
     }),
   ],
   preview: { select: { title: "question" } },

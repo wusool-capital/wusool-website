@@ -589,8 +589,8 @@ async function report(i: Item): Promise<Doc> {
 
 // --- Run ------------------------------------------------------------------
 
-// The last run time. Re-runs refuse to overwrite documents edited in Studio
-// after it, unless --force is passed.
+// The last run time. Re-runs refuse to overwrite migrated documents edited in
+// Studio after it, unless --force is passed. Other documents are never touched.
 const MARKER = "migration.webflow";
 
 async function guardEdits() {
@@ -602,7 +602,7 @@ async function guardEdits() {
     return;
   }
   const edited: string[] = await client.fetch(
-    `*[_updatedAt > $t && !(_type match "sanity.*") && _id != $m]._id`,
+    `*[_updatedAt > $t && (_id match "webflow-*" || _id match "drafts.webflow-*" || _type in ["insights", "report"])]._id`,
     { t: marker.lastRun, m: MARKER },
   );
   if (edited.length) {
