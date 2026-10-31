@@ -21,6 +21,8 @@ module.exports = {
         "http://localhost:8787/industries/technology",
         "http://localhost:8787/insights",
         "http://localhost:8787/insights/gcc-padel-report-2026",
+        "http://localhost:8787/reports",
+        "http://localhost:8787/reports/padel-in-the-gulf",
         "http://localhost:8787/styleguide",
       ],
       numberOfRuns: 3,
@@ -29,7 +31,7 @@ module.exports = {
       // Each entry asserts on the median run, so one lucky run cannot pass.
       assertMatrix: [
         {
-          matchingUrlPattern: "^(?!.*/styleguide$)",
+          matchingUrlPattern: "^(?!.*/styleguide$)(?!.*/reports/)",
           aggregationMethod: "median-run",
           assertions: thresholds,
         },
@@ -38,6 +40,18 @@ module.exports = {
           matchingUrlPattern: "/styleguide$",
           aggregationMethod: "median-run",
           assertions: { ...thresholds, "categories:seo": "off" },
+        },
+        // The tools app allows framing only from wusoolcapital.com, so the
+        // report reader logs a console error on localhost and staging.
+        {
+          matchingUrlPattern: "/reports/",
+          aggregationMethod: "median-run",
+          assertions: {
+            ...thresholds,
+            "categories:best-practices": "off",
+            "errors-in-console": "off",
+            "inspector-issues": "off",
+          },
         },
       ],
     },

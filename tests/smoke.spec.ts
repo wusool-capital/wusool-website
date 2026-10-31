@@ -10,6 +10,8 @@ const pages = [
   "/insights",
   "/insights/gcc-padel-report-2026",
   "/insights/topic/sell-your-business",
+  "/reports",
+  "/reports/padel-in-the-gulf",
   "/styleguide",
 ];
 // Links to pages later features build (see scripts/check-dist.mjs).
@@ -48,7 +50,13 @@ for (const path of pages) {
       if (isPending) continue;
       expect((await request.get(href)).status(), href).toBe(200);
     }
-    expect(errors).toEqual([]);
+    // The tools app only allows framing from wusoolcapital.com, so its report
+    // reader is refused on localhost and staging. Production is unaffected.
+    expect(
+      errors.filter(
+        (e) => !e.includes("frame-ancestors https://wusoolcapital.com"),
+      ),
+    ).toEqual([]);
   });
 }
 
@@ -385,4 +393,41 @@ test("padel report insight renders exhibits natively, text once", async ({
   const first = (await page.locator(".prose p").first().textContent()) ?? "";
   const body = (await page.locator("article").textContent()) ?? "";
   expect(body.split(first.trim()).length - 1).toBe(1);
+});
+
+test("every published report has its landing content in the raw HTML", async ({
+  request,
+  isMobile,
+}) => {
+  test.skip(isMobile, "content check, desktop only");
+  const reports: { slug: string; title: string; excerpt: string }[] = (
+    await (
+      await request.get(
+        sanity(
+          '*[_type == "report" && !(_id in path("drafts.**"))]{"slug": slug.current, title, excerpt}',
+        ),
+      )
+    ).json()
+  ).result;
+  expect(reports.length).toBeGreaterThan(0);
+  for (const r of reports) {
+    const res = await request.get(`/reports/${r.slug}`);
+    expect(res.status(), r.slug).toBe(200);
+    const html = await res.text();
+    expect(html).toMatch(new RegExp(`<h1[^>]*>${r.title}</h1>`));
+    expect(html).toContain(r.excerpt.replace(/'/g, "&#39;"));
+    expect(html).toContain(
+      `<link rel="canonical" href="https://www.wusoolcapital.com/reports/${r.slug}">`,
+    );
+    const ld = JSON.parse(
+      html.match(
+        /<script type="application\/ld\+json">([\s\S]*?)<\/script>/,
+      )?.[1] ?? "{}",
+    );
+    const report = ld["@graph"].find(
+      (n: { "@type": string }) => n["@type"] === "Report",
+    );
+    expect(report?.headline, r.slug).toBe(r.title);
+    expect(html).toContain(`data-tool="report" data-report="${r.slug}"`);
+  }
 });

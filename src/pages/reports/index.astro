@@ -1,0 +1,92 @@
+---
+// Reports list (PRD 4): every published report as a wide card.
+import Base from "../../layouts/Base.astro";
+import Breadcrumbs from "../../components/insights/Breadcrumbs.astro";
+import InsightCard from "../../components/insights/InsightCard.astro";
+import { reportCards, cardImage, topicOf } from "../../lib/insights";
+import { SITE, WEBSITE_ID, graph, breadcrumbs } from "../../lib/schema";
+
+const reports = await reportCards();
+const url = `${SITE}/reports`;
+const title = "GCC M&A Reports | Wusool Capital";
+const description =
+  "In-depth GCC M&A reports and playbooks from Wusool Capital, free to read with a short form.";
+const jsonLd = graph([
+  {
+    "@type": "CollectionPage",
+    "@id": `${url}#webpage`,
+    url,
+    name: title,
+    description,
+    isPartOf: { "@id": WEBSITE_ID },
+    breadcrumb: { "@id": `${url}#breadcrumb` },
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: reports.map((r, n) => ({
+        "@type": "ListItem",
+        position: n + 1,
+        url: `${SITE}/reports/${r.slug}`,
+        name: r.title,
+      })),
+    },
+  },
+  breadcrumbs(url, [
+    { name: "Home", url: `${SITE}/` },
+    { name: "Reports", url },
+  ]),
+]);
+---
+
+<Base title={title} description={description} jsonLd={jsonLd}>
+  <header class="head">
+    <div class="wrap">
+      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: "Reports" }]} />
+      <h1>GCC M&A reports</h1>
+      <p class="lede">
+        In-depth reports and playbooks on GCC deals, free to read with a short
+        form.
+      </p>
+    </div>
+  </header>
+  <section class="section section--flush-top" aria-labelledby="all-reports">
+    <h2 id="all-reports" class="visually-hidden">
+      All reports
+    </h2>
+    <div class="wrap list">
+      {reports.map((r, n) => (
+        <InsightCard
+          href={`/reports/${r.slug}`}
+          image={cardImage("reports", r)}
+          title={r.title}
+          excerpt={r.excerpt}
+          topic={topicOf(r.silo)?.silo}
+          size="wide"
+          eager={n === 0}
+        />
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .head {
+    padding: var(--space-10) 0 var(--space-12);
+  }
+  h1 {
+    margin-top: var(--space-6);
+    font-size: var(--text-h1);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+  }
+  .lede {
+    max-width: var(--measure-lede);
+    margin-top: var(--space-4);
+    color: var(--muted);
+    font-size: var(--text-lg);
+  }
+  .list {
+    display: grid;
+    gap: var(--space-4);
+  }
+</style>
