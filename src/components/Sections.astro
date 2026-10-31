@@ -22,6 +22,7 @@ import ProgressMock from "./mocks/ProgressMock.astro";
 import Note from "./team/Note.astro";
 import TeamGrid from "./team/TeamGrid.astro";
 import Roles from "./team/Roles.astro";
+import { COMPANY_SLUG } from "../lib/team";
 import {
   faqItems,
   visibleSections,
@@ -103,6 +104,8 @@ const flush = (i: number) =>
   plain.has(rendered[i - 1]?._type) &&
   !!rendered[i - 1]?.title;
 const src = (part: string) => `${page}-${part}`;
+// The company's team entry has no author page, so it never shows as a person.
+const person = (m: { slug: string }) => m.slug !== COMPANY_SLUG;
 ---
 
 {rendered.map((s, i) => {
@@ -371,7 +374,7 @@ const src = (part: string) => `${page}-${part}`;
             <Note
               title={s.title}
               paragraphs={s.paragraphs ?? []}
-              signers={s.signers ?? []}
+              signers={(s.signers ?? []).filter(person)}
             />
           </div>
         </section>
@@ -381,7 +384,7 @@ const src = (part: string) => `${page}-${part}`;
         <section class:list={["section", flush(i) && "section--flush-top"]}>
           <div class="wrap">
             <SectionHead title={s.title} />
-            <TeamGrid members={s.members ?? []} />
+            <TeamGrid members={(s.members ?? []).filter(person)} />
             {has(s.cta) && (
               <div class="after reveal">
                 <Button

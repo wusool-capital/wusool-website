@@ -112,7 +112,7 @@ const jsonLd = graph([
     publisher: { "@id": ORG_ID },
     ...(i.author && {
       author: byCompany
-        ? { "@id": ORG_ID }
+        ? { "@type": "Organization", "@id": ORG_ID, name: "Wusool Capital" }
         : {
             "@type": "Person",
             "@id": personId(i.author.slug),

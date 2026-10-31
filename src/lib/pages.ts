@@ -89,7 +89,7 @@ export async function loadPage(id: string): Promise<PageData> {
       "deals": *[_type == "transaction"] | order(sortOrder asc){
         category, status, sector, country, year, "summary": oneLineDescription
       },
-      "roles": *[_type == "career" && status == "Open" && (!defined(validThrough) || validThrough > now())]
+      "roles": *[_type == "career" && status == "Open" && (!defined(validThrough) || string::split(validThrough, "T")[0] >= string::split(now(), "T")[0])]
         | order(datePosted desc){name, "slug": slug.current, location, employmentType, department}
     }`,
     { id },
