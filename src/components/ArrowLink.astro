@@ -1,23 +1,37 @@
 ---
-// Text link with a trailing arrow. Renders a span when `href` is not set,
-// for use inside a card that is already a link.
+// Text link with a trailing arrow. With `form` it is a button that opens a
+// tools app form (embed.js). Without `href` it is a span, for use inside a
+// card that is already a link.
 import Icon from "./Icon.astro";
 
 interface Props {
   href?: string;
+  form?: "get-started" | "buyers";
   source?: string;
   class?: string;
 }
-const { href, source, class: className } = Astro.props;
-const Tag = href ? "a" : "span";
+const { href, form, source, class: className } = Astro.props;
+const Tag = form ? "button" : href ? "a" : "span";
 ---
 
-<Tag class:list={["link", className]} href={href} data-source={source}>
+<Tag
+  class:list={["link", className]}
+  href={form ? undefined : href}
+  type={form ? "button" : undefined}
+  data-form={form}
+  data-source={source}
+>
   <slot />
   <Icon name="arrow-right" />
 </Tag>
 
 <style>
+  button.link {
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
   .link {
     display: inline-flex;
     align-items: center;

@@ -41,7 +41,10 @@ export function organization(s: OrgSettings): Node {
       addressRegion: "Dubai",
       addressCountry: "AE",
     },
-    areaServed: s.areaServed.map((name) => ({ "@type": "Country", name })),
+    areaServed: (s.areaServed ?? []).map((name) => ({
+      "@type": "Country",
+      name,
+    })),
     sameAs: s.sameAs,
   };
 }
@@ -82,6 +85,42 @@ export function faqPage(
       "@type": "Question",
       name: i.question,
       acceptedAnswer: { "@type": "Answer", text: i.answer },
+    })),
+  };
+}
+
+export function service(
+  url: string,
+  s: { name?: string; serviceType?: string; description?: string },
+  areaServed: string[],
+): Node {
+  return {
+    "@type": "Service",
+    "@id": `${url}#service`,
+    name: s.name,
+    serviceType: s.serviceType,
+    description: s.description,
+    url,
+    provider: { "@id": ORG_ID },
+    areaServed: (areaServed ?? []).map((name) => ({
+      "@type": "Country",
+      name,
+    })),
+  };
+}
+
+export function breadcrumbs(
+  url: string,
+  items: { name: string; url: string }[],
+): Node {
+  return {
+    "@type": "BreadcrumbList",
+    "@id": `${url}#breadcrumb`,
+    itemListElement: items.map((i, n) => ({
+      "@type": "ListItem",
+      position: n + 1,
+      name: i.name,
+      item: i.url,
     })),
   };
 }

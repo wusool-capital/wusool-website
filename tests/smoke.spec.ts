@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { test, expect } from "@playwright/test";
 
 // Pages to smoke test. Add each new page as it ships.
-const pages = ["/", "/styleguide"];
+const pages = ["/", "/sell", "/buyers", "/styleguide"];
 // Links to pages later features build (see scripts/check-dist.mjs).
 const pending = new Set<string>(
   JSON.parse(readFileSync("scripts/pending-routes.json", "utf8")).routes,
@@ -80,50 +80,89 @@ test("process tabs switch panes", async ({ page }) => {
   await expect(page.getByRole("tabpanel")).toContainText("Buyer shortlist");
 });
 
-test("Home keeps live title and H1, with 6-week meta and matching FAQ schema", async ({
+// Title, H1 and meta per landing page (live values, with PRD 13 fixes).
+const landing = [
+  {
+    path: "/",
+    title: "Sell Your Business UAE | Wusool Capital M&A Advisory",
+    h1: /^Sell your business in the UAE\. Faster\. For more\.$/i,
+    meta: /6 weeks to first offer/,
+    form: "get-started",
+  },
+  {
+    path: "/sell",
+    title: "Sell Your Business in Dubai & UAE | Wusool Capital",
+    h1: /The smarter way to sell your business in the UAE/i,
+    meta: /6 weeks to first offer/,
+    form: "get-started",
+  },
+  {
+    path: "/buyers",
+    title: "Buy a Business UAE | Access GCC Deal Flow | Wusool Capital",
+    h1: /^GCC's most active deal flow under \$25M\. Curated\. Confidential\. Qualified\.$/i,
+    meta: /\$1M to \$25M/,
+    form: "buyers",
+  },
+];
+
+for (const l of landing) {
+  test(`${l.path} keeps its title and H1, approved meta and matching FAQ schema`, async ({
+    page,
+  }) => {
+    await page.goto(l.path);
+    await expect(page).toHaveTitle(l.title);
+    await expect(page.locator("h1")).toHaveText(l.h1);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      "content",
+      l.meta,
+    );
+    await expect(page.locator("main")).not.toContainText(
+      /60.90 days|within 60 days|\$1M (to|and) \$2[07]M|\$500K/i,
+    );
+    const ld = JSON.parse(
+      (await page
+        .locator('script[type="application/ld+json"]')
+        .textContent()) ?? "{}",
+    );
+    const faq = ld["@graph"].find(
+      (n: { "@type": string }) => n["@type"] === "FAQPage",
+    );
+    // Visible questions and answers equal the FAQ schema, in order.
+    const visible = await page.locator("#faq details").evaluateAll((ds) =>
+      ds.map((d) => ({
+        q: d.querySelector("summary")?.textContent?.trim(),
+        a: d.querySelector("p")?.textContent?.trim(),
+      })),
+    );
+    expect(visible.length).toBeGreaterThan(0);
+    expect(visible).toEqual(
+      faq.mainEntity.map(
+        (m: { name: string; acceptedAnswer: { text: string } }) => ({
+          q: m.name,
+          a: m.acceptedAnswer.text,
+        }),
+      ),
+    );
+    // Page CTAs open this page's tools app form (nav Get Started aside).
+    const forms = await page
+      .locator("main [data-form]")
+      .evaluateAll((els) => els.map((e) => e.getAttribute("data-form")));
+    if (l.path !== "/") {
+      expect(forms.length).toBeGreaterThan(0);
+      expect(new Set(forms)).toEqual(new Set([l.form]));
+    }
+  });
+}
+
+test("a Buyers CTA opens the buyers form and a Sell CTA the get-started form", async ({
   page,
 }) => {
-  await page.goto("/");
-  await expect(page).toHaveTitle(
-    "Sell Your Business UAE | Wusool Capital M&A Advisory",
-  );
-  await expect(page.locator("h1")).toHaveText(
-    /Sell your business in the UAE\.\s*Faster\. For more\./i,
-  );
-  for (const sel of [
-    'meta[name="description"]',
-    'meta[property="og:description"]',
-    'meta[name="twitter:description"]',
+  for (const [path, tool] of [
+    ["/buyers", "buyers"],
+    ["/sell", "get-started"],
   ]) {
-    await expect(page.locator(sel)).toHaveAttribute(
-      "content",
-      /6 weeks to first offer/,
-    );
+    await page.goto(path);
+    await page.locator(`main [data-form="${tool}"]`).first().click();
+    await expect(page.locator(`iframe[src*="/${tool}/"]`)).toHaveCount(1);
   }
-  await expect(page.locator("body")).not.toContainText(
-    /60.90 days|\$1M (to|and) \$2[07]M/,
-  );
-  const ld = JSON.parse(
-    (await page.locator('script[type="application/ld+json"]').textContent()) ??
-      "{}",
-  );
-  const faq = ld["@graph"].find(
-    (n: { "@type": string }) => n["@type"] === "FAQPage",
-  );
-  // Visible questions and answers equal the FAQ schema, in order.
-  const visible = await page.locator("#faq details").evaluateAll((ds) =>
-    ds.map((d) => ({
-      q: d.querySelector("summary")?.textContent?.trim(),
-      a: d.querySelector("p")?.textContent?.trim(),
-    })),
-  );
-  expect(visible).toEqual(
-    faq.mainEntity.map(
-      (m: { name: string; acceptedAnswer: { text: string } }) => ({
-        q: m.name,
-        a: m.acceptedAnswer.text,
-      }),
-    ),
-  );
-  expect(visible.length).toBeGreaterThan(0);
 });

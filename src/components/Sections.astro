@@ -1,0 +1,402 @@
+---
+// Renders a landing page's sections in the order set in Studio, one design
+// component per section type. Missing content skips a part, never the build.
+import Hero from "./Hero.astro";
+import Button from "./Button.astro";
+import ArrowLink from "./ArrowLink.astro";
+import SectionHead from "./SectionHead.astro";
+import Stats from "./Stats.astro";
+import Compare from "./Compare.astro";
+import IndustryGrid from "./IndustryGrid.astro";
+import Process from "./Process.astro";
+import DealsTable from "./DealsTable.astro";
+import Posts from "./Posts.astro";
+import Faq from "./Faq.astro";
+import FeatureCards from "./FeatureCards.astro";
+import Steps from "./Steps.astro";
+import ValuationMock from "./mocks/ValuationMock.astro";
+import BuyersMock from "./mocks/BuyersMock.astro";
+import BusinessMock from "./mocks/BusinessMock.astro";
+import ShortlistMock from "./mocks/ShortlistMock.astro";
+import ProgressMock from "./mocks/ProgressMock.astro";
+import {
+  faqItems,
+  type Deal,
+  type Link,
+  type Post,
+  type Section,
+} from "../lib/pages";
+
+interface Props {
+  sections: Section[];
+  deals: Deal[];
+  posts: Post[];
+  // Prefix of the data-source attribute on CTAs, e.g. "home".
+  page: string;
+}
+const { sections, deals, posts, page } = Astro.props;
+const has = (l?: Link): l is Required<Pick<Link, "label">> & Link =>
+  !!(l?.label && (l.href || l.form));
+
+// Industry icons live in the repo, keyed by industry slug.
+const icons = import.meta.glob<string>("../assets/industries/*.svg", {
+  query: "?url",
+  import: "default",
+  eager: true,
+});
+const icon = (slug: string) =>
+  icons[`../assets/industries/${slug}.svg`] ??
+  icons["../assets/industries/business-services.svg"];
+
+// A large glyph per topic for the lead insight card.
+const glyphs: Record<string, string> = {
+  "Sell Your Business": "storefront",
+  "Business Valuation": "chart-line-up",
+  "Exit Strategy": "sign-out",
+  "Buy a Business": "handshake",
+  "GCC M&A Market": "globe-hemisphere-east",
+  "Entrepreneurship Through Acquisition (ETA) GCC": "compass",
+};
+const post = (p: Post) => ({
+  href: `/insights/${p.slug}`,
+  title: p.title,
+  excerpt: p.excerpt,
+});
+
+// Real transactions when Sanity has them, otherwise the section's examples.
+const dealRows = (s: Section): Deal[] =>
+  deals.length ? deals : (s.examples ?? []);
+// Anchor ids go on the first section of each type only, so ids stay unique.
+const anchors: Record<string, string> = {
+  comparisonSection: "compare",
+  sectorGridSection: "industries",
+  processSection: "process",
+  dealsSection: "transactions",
+  postsSection: "insights",
+  faqSection: "faq",
+};
+const anchor = (s: Section) =>
+  sections.find((x) => x._type === s._type) === s
+    ? anchors[s._type]
+    : undefined;
+
+const rendered = sections.filter((s) =>
+  s._type === "dealsSection"
+    ? dealRows(s).length > 0
+    : s._type === "postsSection"
+      ? posts.length === 3
+      : true,
+);
+// Spacing as in index.html: a plain section right after another plain one
+// drops its top padding.
+const plain = new Set([
+  "comparisonSection",
+  "dealsSection",
+  "sectorGridSection",
+  "postsSection",
+  "featureCardsSection",
+]);
+const flush = (i: number) =>
+  plain.has(rendered[i]._type) &&
+  plain.has(rendered[i - 1]?._type) &&
+  !!rendered[i - 1]?.title;
+const src = (part: string) => `${page}-${part}`;
+---
+
+{rendered.map((s, i) => {
+  switch (s._type) {
+    case "heroSection": {
+      const [first, second] = (s.ctas ?? []).filter(has);
+      return (
+        <Hero label={s.label} title={s.title} soft={s.soft} sub={s.sub}>
+          <Fragment slot="ctas">
+            {first && (
+              <Button
+                href={first.href}
+                form={first.form}
+                variant="light"
+                source={src("hero")}
+              >
+                {first.label}
+              </Button>
+            )}
+            {second && (
+              <Button
+                href={second.href}
+                form={second.form}
+                variant="ghost-dark"
+                source={src("hero")}
+              >
+                {second.label}
+              </Button>
+            )}
+          </Fragment>
+          {s.visual === "buyer" ? (
+            <>
+              <ShortlistMock />
+              <ProgressMock />
+            </>
+          ) : (
+            <>
+              <ValuationMock />
+              <BuyersMock />
+            </>
+          )}
+        </Hero>
+      );
+    }
+    case "statsSection":
+      return <Stats items={s.items ?? []} />;
+    case "comparisonSection":
+      return (
+        <section
+          class:list={["section", flush(i) && "section--flush-top"]}
+          id={anchor(s)}
+        >
+          <div class="wrap">
+            <SectionHead title={s.title} lede={s.lede} />
+            <Compare
+              old={{ title: s.oldTitle, items: s.oldItems ?? [] }}
+              better={{ title: s.newTitle, items: s.newItems ?? [] }}
+            />
+            {has(s.cta) && (
+              <div class="after reveal">
+                <Button
+                  href={s.cta.href}
+                  form={s.cta.form}
+                  source={src("compare")}
+                >
+                  {s.cta.label}
+                </Button>
+              </div>
+            )}
+          </div>
+        </section>
+      );
+    case "sectorGridSection":
+      return (
+        <section
+          class:list={["section", flush(i) && "section--flush-top"]}
+          id={anchor(s)}
+        >
+          <div class="wrap">
+            <SectionHead title={s.title} lede={s.lede} />
+            <IndustryGrid
+              items={(s.tiles ?? [])
+                .filter(
+                  (t: { slug?: string; title?: string }) => t.slug && t.title,
+                )
+                .map(
+                  (t: {
+                    slug: string;
+                    title: string;
+                    text: string;
+                    cta: string;
+                  }) => ({
+                    href: `/industries/${t.slug}`,
+                    icon: icon(t.slug),
+                    title: t.title,
+                    text: t.text,
+                    cta: t.cta,
+                  }),
+                )}
+            />
+            {has(s.footLink) && (
+              <div class="after reveal">
+                <ArrowLink
+                  href={s.footLink.href}
+                  form={s.footLink.form}
+                  source={src("industries")}
+                >
+                  {s.footLink.label}
+                </ArrowLink>
+              </div>
+            )}
+          </div>
+        </section>
+      );
+    case "processSection":
+      return (
+        <section class="section section--surface" id={anchor(s)}>
+          <div class="wrap">
+            <SectionHead label={s.label} title={s.title} lede={s.lede} />
+            <Process steps={(s.steps ?? []).slice(0, 3)}>
+              <Fragment slot="ctas">
+                {has(s.primary) && (
+                  <Button
+                    href={s.primary.href}
+                    form={s.primary.form}
+                    source={src("process")}
+                  >
+                    {s.primary.label}
+                  </Button>
+                )}
+                {has(s.secondary) && (
+                  <ArrowLink
+                    href={s.secondary.href}
+                    form={s.secondary.form}
+                    source={src("process")}
+                  >
+                    {s.secondary.label}
+                  </ArrowLink>
+                )}
+              </Fragment>
+              <BusinessMock slot="pane-0" />
+              <ShortlistMock slot="pane-1" />
+              <ProgressMock slot="pane-2" />
+            </Process>
+          </div>
+        </section>
+      );
+    case "stepsSection":
+      return (
+        <section class="section section--surface">
+          <div class="wrap">
+            <SectionHead label={s.label} title={s.title} lede={s.lede} />
+            <Steps
+              steps={(s.steps ?? []).filter((x: { title?: string }) => x.title)}
+            />
+            {has(s.cta) && (
+              <div class="after reveal">
+                <Button
+                  href={s.cta.href}
+                  form={s.cta.form}
+                  source={src("steps")}
+                >
+                  {s.cta.label}
+                </Button>
+              </div>
+            )}
+          </div>
+        </section>
+      );
+    case "featureCardsSection":
+      return s.title ? (
+        <section class:list={["section", flush(i) && "section--flush-top"]}>
+          <div class="wrap">
+            <SectionHead label={s.label} title={s.title} lede={s.lede} />
+            <FeatureCards cards={s.cards ?? []} source={src("cards")} />
+            {has(s.cta) && (
+              <div class="after reveal">
+                <Button
+                  href={s.cta.href}
+                  form={s.cta.form}
+                  source={src("cards")}
+                >
+                  {s.cta.label}
+                </Button>
+              </div>
+            )}
+          </div>
+        </section>
+      ) : (
+        <div class="points">
+          <div class="wrap">
+            <FeatureCards
+              cards={s.cards ?? []}
+              headings={false}
+              source={src("points")}
+            />
+          </div>
+        </div>
+      );
+    case "dealsSection":
+      return (
+        <section
+          class:list={["section", flush(i) && "section--flush-top"]}
+          id={anchor(s)}
+        >
+          <div class="wrap">
+            <SectionHead label={s.label} title={s.title} lede={s.lede} />
+            <DealsTable
+              note={deals.length ? s.note : s.exampleNote}
+              rows={dealRows(s).map((d) => ({
+                mandate: d.category,
+                status: d.status,
+                closed: d.status === "Closed" || d.status === "Completed",
+                sector: d.sector,
+                country: d.country,
+                year: d.year,
+                summary: d.summary,
+              }))}
+            >
+              {has(s.footLink) && (
+                <ArrowLink
+                  href={s.footLink.href}
+                  form={s.footLink.form}
+                  source={src("deals")}
+                >
+                  {s.footLink.label}
+                </ArrowLink>
+              )}
+            </DealsTable>
+          </div>
+        </section>
+      );
+    case "postsSection":
+      return (
+        <section
+          class:list={["section", flush(i) && "section--flush-top"]}
+          id={anchor(s)}
+        >
+          <div class="wrap">
+            <div class="posts-head">
+              <SectionHead title={s.title} />
+              {has(s.allLink) && (
+                <ArrowLink
+                  href={s.allLink.href}
+                  class="reveal"
+                  source={src("insights")}
+                >
+                  {s.allLink.label}
+                </ArrowLink>
+              )}
+            </div>
+            <Posts
+              lead={{
+                ...post(posts[0]),
+                glyph: glyphs[posts[0].silo] ?? "newspaper",
+              }}
+              side={posts.slice(1).map(post)}
+            />
+          </div>
+        </section>
+      );
+    case "faqSection":
+      return (
+        <section class="section section--surface" id={anchor(s)}>
+          <div class="wrap">
+            <Faq items={faqItems(s)}>
+              <SectionHead label={s.label} title={s.title} lede={s.lede} />
+              {has(s.cta) && (
+                <Button href={s.cta.href} form={s.cta.form} source={src("faq")}>
+                  {s.cta.label}
+                </Button>
+              )}
+            </Faq>
+          </div>
+        </section>
+      );
+    default:
+      return null;
+  }
+})}
+
+<style>
+  .after {
+    margin-top: var(--space-8);
+  }
+  .posts-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-6);
+  }
+  .points {
+    padding: var(--space-7) 0 0;
+  }
+  .points :global(.cards) {
+    margin-top: 0;
+  }
+</style>

@@ -3,9 +3,17 @@ import { faqList } from "./objects";
 
 // Section blocks of a landing page. Layout is code; content and order are
 // editable (PRD 6). One block per index.html section.
+// A link, or a button that opens a tools app form instead (embed.js modal).
 const link = [
   { name: "label", type: "string" },
   { name: "href", type: "string" },
+  {
+    name: "form",
+    title: "Opens form",
+    description: "Leave empty for a normal link.",
+    type: "string",
+    options: { list: ["get-started", "buyers"] },
+  },
 ];
 const head = [
   { name: "label", type: "string" },
@@ -24,6 +32,13 @@ const sections = [
       { name: "title", type: "string" },
       { name: "soft", title: "Second line", type: "string" },
       { name: "sub", type: "text", rows: 2 },
+      {
+        name: "visual",
+        title: "Illustration",
+        type: "string",
+        options: { list: ["seller", "buyer"] },
+        initialValue: "seller",
+      },
       {
         name: "ctas",
         type: "array",
@@ -127,8 +142,85 @@ const sections = [
     type: "object",
     fields: [
       ...head,
-      { name: "note", type: "string" },
+      { name: "note", title: "Note under real deals", type: "string" },
       { name: "footLink", type: "object", fields: link },
+      {
+        name: "exampleNote",
+        title: "Note under example deals",
+        description: "Says the rows are indicative examples.",
+        type: "string",
+      },
+      {
+        name: "examples",
+        title: "Example deals",
+        description: "Shown only while Sanity has no transactions.",
+        type: "array",
+        of: [
+          {
+            type: "object",
+            fields: [
+              { name: "category", type: "string" },
+              { name: "status", type: "string" },
+              { name: "sector", type: "string" },
+              { name: "country", type: "string" },
+              { name: "year", type: "string" },
+              { name: "summary", type: "string" },
+            ],
+            preview: { select: { title: "summary" } },
+          },
+        ],
+      },
+    ],
+  }),
+  defineArrayMember({
+    name: "featureCardsSection",
+    title: "Feature cards",
+    type: "object",
+    fields: [
+      ...head,
+      {
+        name: "cards",
+        type: "array",
+        of: [
+          {
+            type: "object",
+            fields: [
+              { name: "eyebrow", type: "string" },
+              {
+                name: "title",
+                type: "string",
+                validation: (r: Rule) => r.required(),
+              },
+              { name: "text", type: "text", rows: 2 },
+              { name: "link", type: "object", fields: link },
+            ],
+            preview: { select: { title: "title" } },
+          },
+        ],
+      },
+      { name: "cta", type: "object", fields: link },
+    ],
+  }),
+  defineArrayMember({
+    name: "stepsSection",
+    title: "Numbered steps",
+    type: "object",
+    fields: [
+      ...head,
+      {
+        name: "steps",
+        type: "array",
+        of: [
+          {
+            type: "object",
+            fields: [
+              { name: "title", type: "string" },
+              { name: "text", type: "text", rows: 3 },
+            ],
+          },
+        ],
+      },
+      { name: "cta", type: "object", fields: link },
     ],
   }),
   defineArrayMember({
@@ -175,6 +267,17 @@ export const page = defineType({
       validation: (r) => r.required(),
     }),
     defineField({ name: "seo", type: "seo" }),
+    defineField({
+      name: "service",
+      title: "Service (structured data)",
+      description: "For service pages such as Sell and Buyers.",
+      type: "object",
+      fields: [
+        { name: "name", type: "string" },
+        { name: "serviceType", type: "string" },
+        { name: "description", type: "text", rows: 2 },
+      ],
+    }),
     defineField({ name: "sections", type: "array", of: sections }),
   ],
 });

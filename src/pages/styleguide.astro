@@ -14,6 +14,8 @@ import Process from "../components/Process.astro";
 import DealsTable from "../components/DealsTable.astro";
 import Posts from "../components/Posts.astro";
 import Faq from "../components/Faq.astro";
+import FeatureCards from "../components/FeatureCards.astro";
+import Steps from "../components/Steps.astro";
 import ValuationMock from "../components/mocks/ValuationMock.astro";
 import BuyersMock from "../components/mocks/BuyersMock.astro";
 import BusinessMock from "../components/mocks/BusinessMock.astro";
@@ -168,6 +170,64 @@ const colors = [
     <div class="wrap">
       <SectionHead title="Latest from Wusool Capital" />
       <Posts lead={d.posts.lead} side={d.posts.side} />
+    </div>
+  </section>
+
+  <section class="section section--flush-top">
+    <div class="wrap">
+      <SectionHead
+        title="Feature cards"
+        lede="Toolkit, value points and benefits."
+      />
+      <FeatureCards
+        cards={[
+          {
+            eyebrow: "Valuation Tool",
+            title: "Curious what your business is worth?",
+            text: "Get an instant valuation report based on real M&A transaction data.",
+            link: { label: "Get a Free Valuation", href: "/valuation-tool" },
+          },
+          {
+            eyebrow: "Deal Readiness",
+            title: "Are you ready to sell?",
+            text: "Know what buyers will scrutinize before going to market.",
+            link: { label: "Start the Process", form: "get-started" },
+          },
+          {
+            title: "Confidential process",
+            text: "NDAs managed, data rooms secured.",
+          },
+        ]}
+      />
+    </div>
+  </section>
+
+  <section class="section section--surface">
+    <div class="wrap">
+      <SectionHead
+        title="Numbered steps"
+        lede="For processes longer than the three illustrated tabs."
+      />
+      <Steps
+        steps={[
+          {
+            title: "Apply to join (5 minutes)",
+            text: "A short application about your criteria.",
+          },
+          {
+            title: "Qualification review (48 hours)",
+            text: "We assess your application.",
+          },
+          {
+            title: "Receive curated deal alerts",
+            text: "Only deals that fit your criteria.",
+          },
+          {
+            title: "Access data room and submit offer",
+            text: "We manage the full process.",
+          },
+        ]}
+      />
     </div>
   </section>
 
