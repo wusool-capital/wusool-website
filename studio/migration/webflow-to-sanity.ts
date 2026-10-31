@@ -39,6 +39,12 @@ const WF = {
   careers: "6a8c79398c73fd4a4dfa0f6c",
   reports: "6ac64c92647fc1acb46497de",
 };
+// Report slug to its public companion insight slug (PRD 6.1).
+const COMPANIONS: Record<string, string> = {
+  "padel-in-the-gulf": "gcc-padel-report-2026",
+  "how-to-fund-a-buyout-in-the-uae-and-gcc-2026-playbook":
+    "buyouts-in-the-gcc-lbo-mbo-funding",
+};
 const OLD_SANITY =
   "https://itidwo8t.apicdn.sanity.io/v2024-01-01/data/query/production";
 const SETTINGS = {
@@ -75,29 +81,39 @@ async function wf(path: string) {
   return res.json();
 }
 
-// Items with option IDs replaced by their names. Archived items are skipped.
+// Webflow test items that are never migrated (PRD 13, fix 3).
+const SKIP_SLUGS = new Set(["test-report"]);
+
+async function pages(path: string): Promise<Item[]> {
+  const all: Item[] = [];
+  for (let offset = 0; ; offset += 100) {
+    const page = await wf(`${path}?limit=100&offset=${offset}`);
+    all.push(...page.items);
+    if (all.length >= page.pagination.total) break;
+  }
+  return all;
+}
+
+// Items with option IDs replaced by their names. An item counts as published
+// only if it is on the live site; everything else becomes a Sanity draft.
 async function items(collectionId: string): Promise<Item[]> {
   const { fields } = await wf(`/collections/${collectionId}`);
   const options = new Map<string, string>();
   for (const f of fields)
     for (const o of f.validations?.options ?? []) options.set(o.id, o.name);
-  const all: Item[] = [];
-  for (let offset = 0; ; offset += 100) {
-    const page = await wf(
-      `/collections/${collectionId}/items?limit=100&offset=${offset}`,
-    );
-    all.push(...page.items);
-    if (all.length >= page.pagination.total) break;
-  }
+  const all = await pages(`/collections/${collectionId}/items`);
+  const live = new Set(
+    (await pages(`/collections/${collectionId}/items/live`)).map((i) => i.id),
+  );
   for (const i of all) {
+    i.isDraft = !live.has(i.id);
     for (const [k, v] of Object.entries(i.fieldData)) {
       if (typeof v === "string" && options.has(v))
         i.fieldData[k] = options.get(v);
     }
   }
-  // Archived items and test items (slug "test-...") are not migrated.
   const skipped = all.filter(
-    (i) => i.isArchived || i.fieldData.slug.startsWith("test-"),
+    (i) => i.isArchived || SKIP_SLUGS.has(i.fieldData.slug),
   );
   for (const i of skipped) console.log(`skip ${i.fieldData.slug}`);
   return all.filter((i) => !skipped.includes(i));
@@ -137,7 +153,10 @@ async function image(field?: { url?: string; alt?: string | null }) {
 
 const parse = (html: string) => new JSDOM(html).window.document;
 const text = (el: Element) =>
-  (el.textContent ?? "").replace(/\s+/g, " ").trim();
+  (el.textContent ?? "")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 
 // Deterministic keys, so a re-run writes identical documents.
 function keys(prefix: string) {
@@ -191,7 +210,10 @@ async function portableText(html: string | undefined, keyPrefix: string) {
   });
 }
 
-// FAQ HTML to Q&A pairs. Handles <h3>Q</h3><p>A</p> and "Q: ... A: ..." text.
+// FAQ HTML to Q&A pairs. A question is a heading, a paragraph led by bold
+// text ending in "?", or "Q: ..." text. A heading that only titles the list
+// ("FAQ") is skipped. Every pair is checked in checkFaqs() before writing.
+const FAQ_TITLE = /^(faq'?s?|frequently asked questions)$/i;
 function faq(html: string | undefined, keyPrefix: string) {
   if (!html) return undefined;
   const pairs: { question: string; answer: string }[] = [];
@@ -199,11 +221,22 @@ function faq(html: string | undefined, keyPrefix: string) {
     "h1,h2,h3,h4,h5,h6,p,li",
   )) {
     const t = text(el);
-    if (!t) continue;
+    if (!t || FAQ_TITLE.test(t)) continue;
+    const lead = el.firstElementChild;
+    const bold =
+      el.tagName === "P" &&
+      lead &&
+      /^(STRONG|B)$/.test(lead.tagName) &&
+      t.startsWith(text(lead)) &&
+      text(lead).endsWith("?")
+        ? text(lead)
+        : undefined;
     const qa = t.match(/^Q:\s*(.*?)(?:\s*A:\s*(.*))?$/i);
-    if (/^H\d$/.test(el.tagName) || qa) {
-      pairs.push({ question: qa ? qa[1] : t, answer: qa?.[2] ?? "" });
-    } else if (pairs.length) {
+    if (/^H\d$/.test(el.tagName)) pairs.push({ question: t, answer: "" });
+    else if (bold)
+      pairs.push({ question: bold, answer: t.slice(bold.length).trim() });
+    else if (qa) pairs.push({ question: qa[1], answer: qa[2] ?? "" });
+    else if (pairs.length) {
       const last = pairs[pairs.length - 1];
       last.answer = [last.answer, t.replace(/^A:\s*/i, "")]
         .filter(Boolean)
@@ -212,6 +245,18 @@ function faq(html: string | undefined, keyPrefix: string) {
   }
   const key = keys(keyPrefix);
   return pairs.map((p) => ({ _key: key(), _type: "faqItem", ...p }));
+}
+
+// Fails the run if any FAQ pair lost its question or answer.
+function checkFaqs(docs: Doc[]) {
+  const bad = docs.flatMap((d) =>
+    ((d.faq as { question: string; answer: string }[]) ?? [])
+      .filter((p) => !p.question || !p.answer || FAQ_TITLE.test(p.question))
+      .map(
+        (p) => `${(d.slug as { current: string })?.current}: "${p.question}"`,
+      ),
+  );
+  if (bad.length) throw new Error(`Broken FAQ pairs:\n${bad.join("\n")}`);
 }
 
 // Key takeaways HTML to a list of strings.
@@ -345,7 +390,8 @@ async function insightFields(f: Fields) {
     excerpt: f.excerpt,
     featuredImage: await image(f["featured-image"]),
     heroImage: await image(f["hero-image"]),
-    ogImage: await image(f["og-image"]),
+    ogImage: await image({ url: f["og-image"]?.url }),
+    author: ref(f.author),
     lastUpdated: f["last-updated"],
     readingTime: f["reading-time"],
     wordCount: f["word-count"],
@@ -368,7 +414,6 @@ async function insight(i: Item): Promise<Doc> {
     slug: slug(f.slug),
     contentType: f["content-type"],
     silo: f["primary-silo"],
-    author: ref(f.author),
     body: await portableText(f["body-content"], "p"),
     h1: f["h1-tag"],
     seoTitle: f["seo-title"],
@@ -410,7 +455,9 @@ async function copyAssets(value: unknown): Promise<unknown> {
 
 async function oldSanity(type: string): Promise<Doc[]> {
   const url = `${OLD_SANITY}?query=${encodeURIComponent(`*[_type == "${type}"]`)}`;
-  const { result } = await (await fetch(url)).json();
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Old Sanity ${type}: ${res.status}`);
+  const { result } = await res.json();
   return Promise.all(
     result.map(async (d: Doc) => {
       // System fields and the old free-text author are not carried over.
@@ -423,7 +470,8 @@ async function oldSanity(type: string): Promise<Doc[]> {
   );
 }
 
-// Old Sanity doc plus the fields that exist only in Webflow, matched by slug.
+// Old Sanity doc with the Webflow values laid over it, matched by slug.
+// Empty Webflow values never overwrite old values.
 async function merged(
   type: string,
   wfItems: Item[],
@@ -437,7 +485,11 @@ async function merged(
   const docs = await Promise.all(
     old.map(async (d) => {
       const wfItem = bySlug.get((d.slug as { current: string }).current);
-      return { ...d, ...(wfItem ? await webflowOnly(wfItem.fieldData) : {}) };
+      const overlay = wfItem ? await webflowOnly(wfItem.fieldData) : {};
+      const filled = Object.entries(overlay).filter(
+        ([, v]) => v !== undefined && v !== null && v !== "",
+      );
+      return { ...d, ...Object.fromEntries(filled) };
     }),
   );
   // Webflow items with no document in the old project are migrated from Webflow.
@@ -446,8 +498,14 @@ async function merged(
 
 async function reportFields(f: Fields) {
   return {
+    silo: f["primary-silo"],
+    publishedAt: f["published-date"],
+    seoTitle: f["seo-title"],
+    seoDescription: f["seo-description"],
+    ogTitle: f["og-title"],
+    bannerPinned: f["pin-to-banner"],
     featuredImage: await image(f["featured-image"]),
-    ogImage: await image(f["og-image"]),
+    ogImage: await image({ url: f["og-image"]?.url }),
     readingTime: f["reading-time"],
     featured: f.featured,
     lastUpdated: f["last-updated"],
@@ -464,17 +522,55 @@ async function report(i: Item): Promise<Doc> {
     _type: "report",
     title: f.name,
     slug: slug(f.slug),
-    silo: f["primary-silo"],
-    publishedAt: f["published-date"],
-    seoTitle: f["seo-title"],
-    seoDescription: f["seo-description"],
-    ogTitle: f["og-title"],
-    bannerPinned: f["pin-to-banner"],
     ...(await reportFields(f)),
   };
 }
 
 // --- Run ------------------------------------------------------------------
+
+// The last run time. Re-runs refuse to overwrite documents edited in Studio
+// after it, unless --force is passed.
+const MARKER = "migration.webflow";
+
+async function guardEdits() {
+  const marker = await client.getDocument(MARKER);
+  if (!marker || process.argv.includes("--force")) return;
+  const edited: string[] = await client.fetch(
+    `*[_updatedAt > $t && !(_type match "sanity.*") && _id != $m]._id`,
+    { t: marker.lastRun, m: MARKER },
+  );
+  if (edited.length) {
+    throw new Error(
+      `Edited in Sanity since the last run, would be overwritten:\n${edited.join("\n")}\nRun with --force to overwrite.`,
+    );
+  }
+}
+
+// Removes migrated documents whose Webflow item was deleted, archived, or
+// switched between draft and published since the last run.
+async function removeStale(written: Set<string>) {
+  const ids: string[] = await client.fetch(
+    `*[_id match "webflow-*" || _id match "drafts.webflow-*"]._id`,
+  );
+  const stale = ids.filter((i) => !written.has(i));
+  for (const i of stale) console.log(`remove ${i}`);
+  if (stale.length) {
+    const tx = client.transaction();
+    for (const i of stale) tx.delete(i);
+    await tx.commit();
+  }
+}
+
+// One count per document, whether it exists as published, draft or both.
+async function distinctCounts(types: string[]) {
+  const rows: { _id: string; _type: string }[] = await client.fetch(
+    `*[_type in $types]{_id, _type}`,
+    { types },
+  );
+  const ids = new Map(types.map((t) => [t, new Set<string>()]));
+  for (const r of rows) ids.get(r._type)?.add(r._id.replace(/^drafts\./, ""));
+  return Object.fromEntries(types.map((t) => [t, ids.get(t)?.size ?? 0]));
+}
 
 const clean = (d: Doc) => JSON.parse(JSON.stringify(d)) as Doc; // drops undefined fields
 
@@ -512,8 +608,24 @@ async function main() {
     ...(await Promise.all(sanityInsights.rest.map(insight))),
     ...sanityReports.docs,
     ...(await Promise.all(sanityReports.rest.map(report))),
-    { _id: "siteSettings", _type: "siteSettings", ...SETTINGS },
   ].map(clean);
+  checkFaqs(docs);
+
+  // Companion insight references, by slug.
+  const idBySlug = new Map(
+    docs
+      .filter((d) => d._type === "insights")
+      .map((d) => [
+        (d.slug as { current: string }).current,
+        d._id.replace(/^drafts\./, ""),
+      ]),
+  );
+  for (const d of docs.filter((d) => d._type === "report")) {
+    const companion = idBySlug.get(
+      COMPANIONS[(d.slug as { current: string }).current],
+    );
+    if (companion) d.companionInsight = { _type: "reference", _ref: companion };
+  }
 
   const expected: Record<string, number> = {
     teamMember: wfTeam.length,
@@ -525,6 +637,7 @@ async function main() {
   };
 
   if (!DRY) {
+    await guardEdits();
     // Batches stay under the 4 MB request limit (report HTML is large).
     let tx = client.transaction();
     let size = 0;
@@ -539,6 +652,18 @@ async function main() {
       size += bytes;
     }
     await tx.commit();
+    // Settings are written once and then edited in Studio only.
+    await client.createIfNotExists({
+      _id: "siteSettings",
+      _type: "siteSettings",
+      ...SETTINGS,
+    });
+    await removeStale(new Set(docs.map((d) => d._id)));
+    await client.createOrReplace({
+      _id: MARKER,
+      _type: "migrationRun",
+      lastRun: await client.fetch("now()"),
+    });
   }
 
   // Count check: Webflow items (non-archived) against Sanity documents.
@@ -549,11 +674,7 @@ async function main() {
           docs.filter((d) => d._type === t).length,
         ]),
       )
-    : await client.fetch(
-        `{${Object.keys(expected)
-          .map((t) => `"${t}": count(*[_type == "${t}"])`)
-          .join(", ")}}`,
-      );
+    : await distinctCounts(Object.keys(expected));
   let ok = true;
   console.log(`${DRY ? "Dry run" : "Migrated"} to ${projectId}/${dataset}`);
   for (const t of Object.keys(expected)) {

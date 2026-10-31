@@ -14,7 +14,7 @@ const client = createClient({
 });
 
 async function webflow(slug: string) {
-  const url = `https://api.webflow.com/v2/collections/69aaa645fa60624091050e8e/items?slug=${slug}`;
+  const url = `https://api.webflow.com/v2/collections/69aaa645fa60624091050e8e/items?slug=${encodeURIComponent(slug)}`;
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${process.env.WEBFLOW_TOKEN}` },
   });
@@ -24,6 +24,15 @@ async function webflow(slug: string) {
 // Leaf text blocks, so nested lists are not counted twice.
 const BLOCKS =
   "p, h1, h2, h3, h4, h5, h6, blockquote, figcaption, li:not(:has(p)), th, td";
+// Question count read straight from the HTML: lines ending in "?" that are
+// headings or bold text.
+const questions = (s = "") =>
+  [...html(s).querySelectorAll("h1,h2,h3,h4,h5,h6,strong,b")].filter(
+    (e) =>
+      !e.closest("h1,h2,h3,h4,h5,h6")?.contains(e.parentElement) &&
+      !(/^(STRONG|B)$/.test(e.tagName) && e.closest("h1,h2,h3,h4,h5,h6")) &&
+      (e.textContent ?? "").trim().endsWith("?"),
+  ).length;
 const words = (s: string) => s.split(/\s+/).filter(Boolean).length;
 const html = (s = "") => new JSDOM(s).window.document;
 
@@ -96,12 +105,7 @@ for (const slug of slugs) {
       blocks.filter((b) => b._type === "image").length,
       false,
     ],
-    [
-      "FAQ pairs",
-      html(f["faq-content"]).querySelectorAll("h1,h2,h3,h4,h5,h6").length,
-      d?.faq?.length ?? 0,
-      false,
-    ],
+    ["FAQ pairs", questions(f["faq-content"]), d?.faq?.length ?? 0, false],
     [
       "takeaways",
       html(f["key-takeaways"]).querySelectorAll("li").length,

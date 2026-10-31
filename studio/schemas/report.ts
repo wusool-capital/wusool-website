@@ -101,6 +101,7 @@ export const report = defineType({
     defineField({
       name: "gateId",
       title: "Tools app gate id",
+      description: "Leave empty: the tools app uses the report slug.",
       type: "string",
       group: "gate",
     }),
