@@ -174,8 +174,13 @@ test("Home announcement strip links the pinned report and stays closed", async (
   const strip = page.locator("[data-strip]");
   await expect(strip).toBeVisible();
   await expect(strip.locator("a")).toHaveAttribute("href", /^\/reports\//);
+  // The strip sits above the nav.
+  const stripBox = await strip.boundingBox();
+  const navBox = await page.locator(".header").boundingBox();
+  expect((stripBox?.y ?? 0) < (navBox?.y ?? 0)).toBe(true);
   await strip.getByRole("button", { name: "Close banner" }).click();
   await expect(strip).toBeHidden();
+  await expect(page.locator(".logo")).toBeFocused();
   await page.reload();
   await expect(page.locator("[data-strip]")).toBeHidden();
 });
@@ -188,6 +193,13 @@ test("top and footer areas match the sections they touch", async ({ page }) => {
   ]) {
     await page.goto(path);
     await expect(page.locator("body")).toHaveAttribute("data-top", top);
+    // The nav itself takes that background.
+    await expect(page.locator(".header")).toHaveCSS(
+      "background-color",
+      top === "surface"
+        ? "rgba(255, 255, 255, 0.96)"
+        : "rgba(245, 245, 245, 0.96)",
+    );
     await expect(page.locator("body")).toHaveAttribute(
       "data-bottom",
       "surface",

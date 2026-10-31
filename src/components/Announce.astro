@@ -1,6 +1,6 @@
 ---
-// Announcement strip under the nav for the report pinned to the banner, as on
-// the live site. Closing it hides it for that report (stored in the browser).
+// Announcement strip above the nav for the report pinned to the banner, in
+// the live site's style. It scrolls away with the page. Closing it hides it for that report (stored in the browser).
 import Icon from "./Icon.astro";
 
 interface Props {
@@ -41,7 +41,6 @@ const { href, slug, lead, title, cta } = Astro.props;
     overflow: hidden;
     isolation: isolate;
     background: var(--surface);
-    box-shadow: var(--shadow-strip);
     font-size: var(--text-14);
   }
   .strip[hidden] {
@@ -113,7 +112,7 @@ const { href, slug, lead, title, cta } = Astro.props;
     border: 0;
     border-radius: var(--r-item);
     background: transparent;
-    color: var(--muted);
+    color: var(--navy);
     font-size: var(--text-lg);
     transform: translateY(-50%);
     cursor: pointer;
@@ -122,7 +121,7 @@ const { href, slug, lead, title, cta } = Astro.props;
     background: var(--close-hover);
     color: var(--navy);
   }
-  @media (max-width: 767px) {
+  @media (max-width: 720px) {
     .strip {
       padding: var(--space-2) var(--space-10);
     }

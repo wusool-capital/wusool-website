@@ -78,9 +78,9 @@ const canonical = new URL(path, Astro.site).href;
     />
   </head>
   <body data-top={top} data-bottom={bottom}>
+    <slot name="announce" />
     <div class="masthead">
       <Nav />
-      <slot name="announce" />
     </div>
     <main>
       <slot />
