@@ -55,6 +55,15 @@ export const faqItem = defineType({
       rows: 4,
       validation: (r) => r.required(),
     }),
+    defineField({
+      name: "link",
+      description: "Optional: turns a phrase of the answer into a link.",
+      type: "object",
+      fields: [
+        { name: "text", title: "Phrase in the answer", type: "string" },
+        { name: "href", title: "Link", type: "string" },
+      ],
+    }),
   ],
   preview: { select: { title: "question" } },
 });
