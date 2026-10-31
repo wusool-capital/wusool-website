@@ -1,0 +1,32 @@
+{
+  "name": "wusool-studio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "sanity dev",
+    "build": "sanity build",
+    "deploy": "sanity deploy"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "sanity": "^6.21.0",
+    "styled-components": "^6.6.0"
+  },
+  "devDependencies": {
+    "@portabletext/block-tools": "^6.0.6",
+    "@sanity/client": "^8.14.1",
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "jsdom": "^29.1.1",
+    "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "undici": "^7.30.1",
+    "smol-toml": "^1.9.1",
+    "@vercel/frameworks": {
+      "js-yaml": "^4.1.1"
+    }
+  }
+}

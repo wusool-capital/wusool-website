@@ -23,6 +23,9 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            studio/package-lock.json
       - run: npm ci
       - run: npm audit --audit-level=high
       - run: npm run lint
@@ -33,3 +36,12 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - run: npm run lhci
+      # Sanity Studio and the migration scripts (separate package).
+      - run: npm ci
+        working-directory: studio
+      - run: npm audit --audit-level=high
+        working-directory: studio
+      - run: npx tsc -p .
+        working-directory: studio
+      - run: npx sanity schema validate
+        working-directory: studio
