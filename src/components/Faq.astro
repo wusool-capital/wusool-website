@@ -3,7 +3,7 @@
 import Icon from "./Icon.astro";
 
 interface Props {
-  items: { q: string; a: string }[];
+  items: { question: string; answer: string }[];
 }
 const { items } = Astro.props;
 ---
@@ -16,10 +16,10 @@ const { items } = Astro.props;
     {items.map((item, i) => (
       <details open={i === 0}>
         <summary>
-          {item.q}
+          {item.question}
           <Icon name="plus" />
         </summary>
-        <p>{item.a}</p>
+        <p>{item.answer}</p>
       </details>
     ))}
   </div>

@@ -1,5 +1,6 @@
 ---
-// Home: the "Home" landing page in Sanity, one component per section.
+// Home: the "Home" landing page in Sanity. Sections render in the order set
+// in Studio, one component per section type (PRD 6).
 import Base from "../layouts/Base.astro";
 import Announce from "../components/Announce.astro";
 import Hero from "../components/Hero.astro";
@@ -29,16 +30,18 @@ import {
   type OrgSettings,
 } from "../lib/schema";
 
-type Link = { label: string; href: string };
-type Section = { _type: string; _key: string; [k: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
+type Link = { label?: string; href?: string };
+// Section fields come from Studio; each block below checks what it needs.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Section = { _type: string; _key: string; [k: string]: any };
 
 const data = await query<{
   page: {
     seo: {
       title: string;
       description: string;
-      ogTitle: string;
-      ogDescription: string;
+      ogTitle?: string;
+      ogDescription?: string;
       ogImage?: string;
     };
     sections: Section[];
@@ -66,19 +69,12 @@ const data = await query<{
   },
   "deals": *[_type == "transaction"] | order(sortOrder asc)
 }`);
-if (!data.page) throw new Error("Sanity: page-home is missing");
-
+if (!data.page?.seo?.title || !data.page.seo.description) {
+  throw new Error("Sanity: the Home page needs an SEO title and description");
+}
 const { page, settings, banner, posts, deals } = data;
-const section = (type: string) =>
-  page.sections.find((s) => s._type === type) as Section;
-const hero = section("heroSection");
-const stats = section("statsSection");
-const compare = section("comparisonSection");
-const sectors = section("sectorGridSection");
-const process = section("processSection");
-const dealsHead = section("dealsSection");
-const postsHead = section("postsSection");
-const faq = section("faqSection");
+const sections = page.sections ?? [];
+const has = (l?: Link): l is Required<Link> => !!(l?.label && l?.href);
 
 // Industry icons live in the repo, keyed by industry slug.
 const icons = import.meta.glob<string>("../assets/industries/*.svg", {
@@ -86,7 +82,9 @@ const icons = import.meta.glob<string>("../assets/industries/*.svg", {
   import: "default",
   eager: true,
 });
-const icon = (slug: string) => icons[`../assets/industries/${slug}.svg`];
+const icon = (slug: string) =>
+  icons[`../assets/industries/${slug}.svg`] ??
+  icons["../assets/industries/business-services.svg"];
 
 // A large glyph per topic for the lead insight card.
 const glyphs: Record<string, string> = {
@@ -103,14 +101,36 @@ const post = (p: (typeof posts)[number]) => ({
   excerpt: p.excerpt,
 });
 
+// The FAQ schema uses exactly the questions shown on the page.
+const faqItems: { question: string; answer: string }[] = (
+  sections.find((s) => s._type === "faqSection")?.faq ?? []
+).filter((i: { question?: string; answer?: string }) => i.question && i.answer);
+
 const url = `${SITE}/`;
 const jsonLd = graph([
   organization(settings),
   website(),
   webPage(url, page.seo.title, page.seo.description),
-  faqPage(url, faq.faq),
+  ...(faqItems.length ? [faqPage(url, faqItems)] : []),
 ]);
-const [primaryCta, secondaryCta] = hero.ctas as Link[];
+
+// Section spacing as in index.html: a section that follows a plain section
+// on the page background drops its top padding.
+const plain = new Set([
+  "comparisonSection",
+  "dealsSection",
+  "sectorGridSection",
+  "postsSection",
+]);
+const rendered = sections.filter((s) =>
+  s._type === "dealsSection"
+    ? deals.length > 0
+    : s._type === "postsSection"
+      ? posts.length === 3
+      : true,
+);
+const flush = (i: number) =>
+  plain.has(rendered[i]._type) && plain.has(rendered[i - 1]?._type);
 ---
 
 <Base
@@ -133,142 +153,197 @@ const [primaryCta, secondaryCta] = hero.ctas as Link[];
     />
   )}
 
-  <Hero label={hero.label} title={hero.title} soft={hero.soft} sub={hero.sub}>
-    <Fragment slot="ctas">
-      <Button href={primaryCta.href} variant="light" source="home-hero">
-        {primaryCta.label}
-      </Button>
-      <Button href={secondaryCta.href} variant="ghost-dark" source="home-hero">
-        {secondaryCta.label}
-      </Button>
-    </Fragment>
-    <ValuationMock />
-    <BuyersMock />
-  </Hero>
-
-  <Stats items={stats.items} />
-
-  <section class="section" id="compare">
-    <div class="wrap">
-      <SectionHead title={compare.title} lede={compare.lede} />
-      <Compare
-        old={{ title: compare.oldTitle, items: compare.oldItems }}
-        better={{ title: compare.newTitle, items: compare.newItems }}
-      />
-      <div class="after reveal">
-        <Button href={compare.cta.href} source="home-compare">
-          {compare.cta.label}
-        </Button>
-      </div>
-    </div>
-  </section>
-
-  <section class="section section--flush-top" id="industries">
-    <div class="wrap">
-      <SectionHead title={sectors.title} lede={sectors.lede} />
-      <IndustryGrid
-        items={sectors.tiles.map(
-          (t: { slug: string; title: string; text: string; cta: string }) => ({
-            href: `/industries/${t.slug}`,
-            icon: icon(t.slug),
-            title: t.title,
-            text: t.text,
-            cta: t.cta,
-          }),
-        )}
-      />
-      <div class="after reveal">
-        <ArrowLink href={sectors.footLink.href} source="home-industries">
-          {sectors.footLink.label}
-        </ArrowLink>
-      </div>
-    </div>
-  </section>
-
-  <section class="section section--surface" id="process">
-    <div class="wrap">
-      <SectionHead
-        label={process.label}
-        title={process.title}
-        lede={process.lede}
-      />
-      <Process steps={process.steps}>
-        <Fragment slot="ctas">
-          <Button href={process.primary.href} source="home-process">
-            {process.primary.label}
-          </Button>
-          <ArrowLink href={process.secondary.href} source="home-process">
-            {process.secondary.label}
-          </ArrowLink>
-        </Fragment>
-        <BusinessMock slot="pane-0" />
-        <ShortlistMock slot="pane-1" />
-        <ProgressMock slot="pane-2" />
-      </Process>
-    </div>
-  </section>
-
-  {deals.length > 0 && (
-    <section class="section" id="transactions">
-      <div class="wrap">
-        <SectionHead
-          label={dealsHead.label}
-          title={dealsHead.title}
-          lede={dealsHead.lede}
-        />
-        <DealsTable
-          note={dealsHead.note}
-          rows={deals.map((d) => ({
-            mandate: d.category,
-            status: d.status,
-            closed: d.status === "Closed" || d.status === "Completed",
-            sector: d.sector,
-            country: d.country,
-            year: d.year,
-            summary: d.oneLineDescription,
-          }))}
-        >
-          <ArrowLink href={dealsHead.footLink.href}>
-            {dealsHead.footLink.label}
-          </ArrowLink>
-        </DealsTable>
-      </div>
-    </section>
-  )}
-
-  {posts.length === 3 && (
-    <section
-      class:list={["section", deals.length > 0 && "section--flush-top"]}
-      id="insights"
-    >
-      <div class="wrap">
-        <div class="posts-head">
-          <SectionHead title={postsHead.title} />
-          <ArrowLink href={postsHead.allLink.href} class="reveal">
-            {postsHead.allLink.label}
-          </ArrowLink>
-        </div>
-        <Posts
-          lead={{
-            ...post(posts[0]),
-            glyph: glyphs[posts[0].silo] ?? "newspaper",
-          }}
-          side={posts.slice(1).map(post)}
-        />
-      </div>
-    </section>
-  )}
-
-  <section class="section section--surface" id="faq">
-    <div class="wrap">
-      <Faq items={faq.faq}>
-        <SectionHead label={faq.label} title={faq.title} lede={faq.lede} />
-        <Button href={faq.cta.href} source="home-faq">
-          {faq.cta.label}
-        </Button>
-      </Faq>
-    </div>
-  </section>
+  {rendered.map((s, i) => {
+    switch (s._type) {
+      case "heroSection": {
+        const [first, second] = (s.ctas ?? []).filter(has);
+        return (
+          <Hero label={s.label} title={s.title} soft={s.soft} sub={s.sub}>
+            <Fragment slot="ctas">
+              {first && (
+                <Button href={first.href} variant="light" source="home-hero">
+                  {first.label}
+                </Button>
+              )}
+              {second && (
+                <Button
+                  href={second.href}
+                  variant="ghost-dark"
+                  source="home-hero"
+                >
+                  {second.label}
+                </Button>
+              )}
+            </Fragment>
+            <ValuationMock />
+            <BuyersMock />
+          </Hero>
+        );
+      }
+      case "statsSection":
+        return <Stats items={s.items ?? []} />;
+      case "comparisonSection":
+        return (
+          <section
+            class:list={["section", flush(i) && "section--flush-top"]}
+            id="compare"
+          >
+            <div class="wrap">
+              <SectionHead title={s.title} lede={s.lede} />
+              <Compare
+                old={{ title: s.oldTitle, items: s.oldItems ?? [] }}
+                better={{ title: s.newTitle, items: s.newItems ?? [] }}
+              />
+              {has(s.cta) && (
+                <div class="after reveal">
+                  <Button href={s.cta.href} source="home-compare">
+                    {s.cta.label}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      case "sectorGridSection":
+        return (
+          <section
+            class:list={["section", flush(i) && "section--flush-top"]}
+            id="industries"
+          >
+            <div class="wrap">
+              <SectionHead title={s.title} lede={s.lede} />
+              <IndustryGrid
+                items={(s.tiles ?? [])
+                  .filter(
+                    (t: { slug?: string; title?: string }) => t.slug && t.title,
+                  )
+                  .map(
+                    (t: {
+                      slug: string;
+                      title: string;
+                      text: string;
+                      cta: string;
+                    }) => ({
+                      href: `/industries/${t.slug}`,
+                      icon: icon(t.slug),
+                      title: t.title,
+                      text: t.text,
+                      cta: t.cta,
+                    }),
+                  )}
+              />
+              {has(s.footLink) && (
+                <div class="after reveal">
+                  <ArrowLink href={s.footLink.href} source="home-industries">
+                    {s.footLink.label}
+                  </ArrowLink>
+                </div>
+              )}
+            </div>
+          </section>
+        );
+      case "processSection":
+        return (
+          <section class="section section--surface" id="process">
+            <div class="wrap">
+              <SectionHead label={s.label} title={s.title} lede={s.lede} />
+              <Process steps={(s.steps ?? []).slice(0, 3)}>
+                <Fragment slot="ctas">
+                  {has(s.primary) && (
+                    <Button href={s.primary.href} source="home-process">
+                      {s.primary.label}
+                    </Button>
+                  )}
+                  {has(s.secondary) && (
+                    <ArrowLink href={s.secondary.href} source="home-process">
+                      {s.secondary.label}
+                    </ArrowLink>
+                  )}
+                </Fragment>
+                <BusinessMock slot="pane-0" />
+                <ShortlistMock slot="pane-1" />
+                <ProgressMock slot="pane-2" />
+              </Process>
+            </div>
+          </section>
+        );
+      case "dealsSection":
+        return (
+          <section
+            class:list={["section", flush(i) && "section--flush-top"]}
+            id="transactions"
+          >
+            <div class="wrap">
+              <SectionHead label={s.label} title={s.title} lede={s.lede} />
+              <DealsTable
+                note={s.note}
+                rows={deals.map((d) => ({
+                  mandate: d.category,
+                  status: d.status,
+                  closed: d.status === "Closed" || d.status === "Completed",
+                  sector: d.sector,
+                  country: d.country,
+                  year: d.year,
+                  summary: d.oneLineDescription,
+                }))}
+              >
+                {has(s.footLink) && (
+                  <ArrowLink href={s.footLink.href} source="home-deals">
+                    {s.footLink.label}
+                  </ArrowLink>
+                )}
+              </DealsTable>
+            </div>
+          </section>
+        );
+      case "postsSection":
+        return (
+          <section
+            class:list={["section", flush(i) && "section--flush-top"]}
+            id="insights"
+          >
+            <div class="wrap">
+              <div class="posts-head">
+                <SectionHead title={s.title} />
+                {has(s.allLink) && (
+                  <ArrowLink
+                    href={s.allLink.href}
+                    class="reveal"
+                    source="home-insights"
+                  >
+                    {s.allLink.label}
+                  </ArrowLink>
+                )}
+              </div>
+              <Posts
+                lead={{
+                  ...post(posts[0]),
+                  glyph: glyphs[posts[0].silo] ?? "newspaper",
+                }}
+                side={posts.slice(1).map(post)}
+              />
+            </div>
+          </section>
+        );
+      case "faqSection":
+        return (
+          <section class="section section--surface" id="faq">
+            <div class="wrap">
+              <Faq items={faqItems}>
+                <SectionHead label={s.label} title={s.title} lede={s.lede} />
+                {has(s.cta) && (
+                  <Button href={s.cta.href} source="home-faq">
+                    {s.cta.label}
+                  </Button>
+                )}
+              </Faq>
+            </div>
+          </section>
+        );
+      default:
+        return null;
+    }
+  })}
 </Base>
 
 <style>

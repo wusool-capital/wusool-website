@@ -22,6 +22,10 @@ const strings = (items: string[]) => items;
 
 const ogPath = process.argv.slice(2).find((a) => !a.startsWith("-"));
 if (!ogPath) throw new Error("Pass the OG image path");
+if (await client.getDocument("page-home")) {
+  console.log("Home page exists, left as is");
+  process.exit(0);
+}
 const og = await client.assets.upload("image", readFileSync(ogPath), {
   filename: "og-home.jpg",
 });

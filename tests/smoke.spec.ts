@@ -110,5 +110,20 @@ test("Home keeps live title and H1, with 6-week meta and matching FAQ schema", a
   const faq = ld["@graph"].find(
     (n: { "@type": string }) => n["@type"] === "FAQPage",
   );
-  await expect(page.locator("#faq details")).toHaveCount(faq.mainEntity.length);
+  // Visible questions and answers equal the FAQ schema, in order.
+  const visible = await page.locator("#faq details").evaluateAll((ds) =>
+    ds.map((d) => ({
+      q: d.querySelector("summary")?.textContent?.trim(),
+      a: d.querySelector("p")?.textContent?.trim(),
+    })),
+  );
+  expect(visible).toEqual(
+    faq.mainEntity.map(
+      (m: { name: string; acceptedAnswer: { text: string } }) => ({
+        q: m.name,
+        a: m.acceptedAnswer.text,
+      }),
+    ),
+  );
+  expect(visible.length).toBeGreaterThan(0);
 });

@@ -186,15 +186,18 @@ export const posts = {
 
 export const faq = [
   {
-    q: "How much does it cost to sell my business in the UAE?",
-    a: "Wusool Capital works mainly on a success-fee basis: we earn our main fee when your deal closes. A retainer is applied depending on the documentation needed before we start the process.",
+    question: "How much does it cost to sell my business in the UAE?",
+    answer:
+      "Wusool Capital works mainly on a success-fee basis: we earn our main fee when your deal closes. A retainer is applied depending on the documentation needed before we start the process.",
   },
   {
-    q: "How long does it take to receive an offer on my business?",
-    a: "Our target is your first offer within 6 weeks of signing the mandate. That timeline depends on how prepared your financials are and how cleanly your business fits buyer criteria, but that's the benchmark we work to. Most traditional advisors in the UAE take six months just to get to market.",
+    question: "How long does it take to receive an offer on my business?",
+    answer:
+      "Our target is your first offer within 6 weeks of signing the mandate. That timeline depends on how prepared your financials are and how cleanly your business fits buyer criteria, but that's the benchmark we work to. Most traditional advisors in the UAE take six months just to get to market.",
   },
   {
-    q: "What types of businesses does Wusool Capital work with?",
-    a: "We focus on UAE and GCC businesses valued between $1M and $25M across Technology, F&B, Healthcare, Business Services, Manufacturing, Retail, Logistics, and Education. If your business is outside those sectors, get in touch; we'll tell you honestly whether we're the right fit.",
+    question: "What types of businesses does Wusool Capital work with?",
+    answer:
+      "We focus on UAE and GCC businesses valued between $1M and $25M across Technology, F&B, Healthcare, Business Services, Manufacturing, Retail, Logistics, and Education. If your business is outside those sectors, get in touch; we'll tell you honestly whether we're the right fit.",
   },
 ];

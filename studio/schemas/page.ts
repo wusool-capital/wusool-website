@@ -1,4 +1,4 @@
-import { defineArrayMember, defineField, defineType } from "sanity";
+import { defineArrayMember, defineField, defineType, type Rule } from "sanity";
 import { faqList } from "./objects";
 
 // Section blocks of a landing page. Layout is code; content and order are
@@ -24,7 +24,12 @@ const sections = [
       { name: "title", type: "string" },
       { name: "soft", title: "Second line", type: "string" },
       { name: "sub", type: "text", rows: 2 },
-      { name: "ctas", type: "array", of: [{ type: "object", fields: link }] },
+      {
+        name: "ctas",
+        type: "array",
+        of: [{ type: "object", fields: link }],
+        validation: (r: Rule) => r.max(2),
+      },
     ],
   }),
   defineArrayMember({
@@ -78,6 +83,7 @@ const sections = [
                 name: "industry",
                 type: "reference",
                 to: [{ type: "industry" }],
+                validation: (r: Rule) => r.required(),
               },
               { name: "title", type: "string" },
               { name: "text", type: "string" },
@@ -101,6 +107,8 @@ const sections = [
       {
         name: "steps",
         type: "array",
+        description: "Up to 3 steps, one per illustration.",
+        validation: (r: Rule) => r.max(3),
         of: [
           {
             type: "object",
@@ -121,11 +129,6 @@ const sections = [
       ...head,
       { name: "note", type: "string" },
       { name: "footLink", type: "object", fields: link },
-      {
-        name: "transactions",
-        type: "array",
-        of: [{ type: "reference", to: [{ type: "transaction" }] }],
-      },
     ],
   }),
   defineArrayMember({

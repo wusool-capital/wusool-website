@@ -12,10 +12,34 @@ const CSS_BUDGET = 100 * 1024;
 const PENDING = new Set(
   JSON.parse(readFileSync("scripts/pending-routes.json", "utf8")).routes,
 );
-// "/insights/*" covers every page under /insights/.
-const pending = (path) =>
-  PENDING.has(path) ||
-  [...PENDING].some((r) => r.endsWith("/*") && path.startsWith(r.slice(0, -1)));
+// "/insights/*" covers pages under /insights/ not built yet. Their slug must
+// still exist in Sanity, so a typo or a deleted document fails the check.
+const SANITY =
+  "https://qjvm6ww8.api.sanity.io/v2025-01-01/data/query/production?perspective=published&query=";
+const TYPES = {
+  "/insights/": "insights",
+  "/industries/": "industry",
+  "/reports/": "report",
+};
+const slugs = await (
+  await fetch(
+    SANITY +
+      encodeURIComponent(
+        `{${Object.entries(TYPES)
+          .map(([p, t]) => `"${p}": *[_type == "${t}"].slug.current`)
+          .join(", ")}}`,
+      ),
+  )
+).json();
+const pending = (path) => {
+  if (PENDING.has(path)) return true;
+  const prefix = Object.keys(TYPES).find((p) => path.startsWith(p));
+  return (
+    !!prefix &&
+    PENDING.has(`${prefix}*`) &&
+    slugs.result[prefix].includes(path.slice(prefix.length))
+  );
+};
 
 const files = (dir) =>
   readdirSync(dir).flatMap((f) => {

@@ -28,6 +28,7 @@ export default [
         console: "readonly",
         Buffer: "readonly",
         URL: "readonly",
+        fetch: "readonly",
         module: "writable",
       },
     },
