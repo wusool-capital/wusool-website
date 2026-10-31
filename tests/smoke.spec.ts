@@ -568,5 +568,6 @@ test("legal pages carry the live text, the entity name and no em dashes", async 
     expect(html).toContain("DOPAMINE INNOVATION CONSULTANCY - FZCO");
     expect(html).not.toContain("—");
     expect(html).not.toContain("TBD");
+    expect(html).not.toContain("dopaminecap");
   }
 });
