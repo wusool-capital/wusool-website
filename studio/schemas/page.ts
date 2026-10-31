@@ -36,7 +36,7 @@ const sections = [
         name: "visual",
         title: "Illustration",
         type: "string",
-        options: { list: ["seller", "buyer"] },
+        options: { list: ["seller", "buyer", "none"] },
         initialValue: "seller",
       },
       {
@@ -267,6 +267,18 @@ export const page = defineType({
       validation: (r) => r.required(),
     }),
     defineField({ name: "seo", type: "seo" }),
+    defineField({
+      name: "closingCta",
+      title: "Closing CTA",
+      description:
+        "Replaces the site-wide closing call to action on this page.",
+      type: "object",
+      fields: [
+        { name: "title", type: "string" },
+        { name: "text", type: "string" },
+        { name: "button", type: "object", fields: link },
+      ],
+    }),
     defineField({
       name: "service",
       title: "Service (structured data)",

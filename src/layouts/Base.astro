@@ -6,6 +6,7 @@ import favicon from "../assets/logo/favicon.svg?url";
 import Nav from "../components/Nav.astro";
 import ClosingFooter from "../components/ClosingFooter.astro";
 import ConsentBanner from "../components/ConsentBanner.astro";
+import type { Props as CtaProps } from "../components/CtaBand.astro";
 
 interface Props {
   title: string;
@@ -14,8 +15,22 @@ interface Props {
   // Open Graph and Twitter. Title and description fall back to the page's.
   og?: { title?: string; description?: string; image?: string };
   jsonLd?: object;
+  // Background of the first section under the hero and of the last section,
+  // so the top and the footer area match them.
+  top?: "page" | "surface";
+  bottom?: "page" | "surface";
+  closing?: CtaProps;
 }
-const { title, description, noindex = false, og = {}, jsonLd } = Astro.props;
+const {
+  title,
+  description,
+  noindex = false,
+  og = {},
+  jsonLd,
+  top = "page",
+  bottom = "page",
+  closing,
+} = Astro.props;
 // Build output is file format (/sell.html), so drop the .html for the public URL.
 const path = Astro.url.pathname.replace(/(index)?\.html$/, "");
 const canonical = new URL(path, Astro.site).href;
@@ -62,13 +77,15 @@ const canonical = new URL(path, Astro.site).href;
       content="4Ypgg9qt_cisqft7Q6uWebm3SLH6eQQ87rUlCILJPFc"
     />
   </head>
-  <body>
+  <body data-top={top} data-bottom={bottom}>
     <slot name="announce" />
-    <Nav />
+    <div class="masthead">
+      <Nav />
+    </div>
     <main>
       <slot />
     </main>
-    <ClosingFooter />
+    <ClosingFooter cta={closing} />
     <ConsentBanner />
     <script
       is:inline

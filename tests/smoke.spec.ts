@@ -166,3 +166,55 @@ test("a Buyers CTA opens the buyers form and a Sell CTA the get-started form", a
     await expect(page.locator(`iframe[src*="/${tool}/"]`)).toHaveCount(1);
   }
 });
+
+test("Home announcement strip links the pinned report and stays closed", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const strip = page.locator("[data-strip]");
+  await expect(strip).toBeVisible();
+  await expect(strip.locator("a")).toHaveAttribute("href", /^\/reports\//);
+  // The strip sits above the nav.
+  const stripBox = await strip.boundingBox();
+  const navBox = await page.locator(".header").boundingBox();
+  expect((stripBox?.y ?? 0) < (navBox?.y ?? 0)).toBe(true);
+  await strip.getByRole("button", { name: "Close banner" }).click();
+  await expect(strip).toBeHidden();
+  await expect(page.locator(".logo")).toBeFocused();
+  await page.reload();
+  await expect(page.locator("[data-strip]")).toBeHidden();
+});
+
+test("top and footer areas match the sections they touch", async ({ page }) => {
+  for (const [path, top] of [
+    ["/", "page"],
+    ["/sell", "surface"],
+    ["/buyers", "page"],
+  ]) {
+    await page.goto(path);
+    await expect(page.locator("body")).toHaveAttribute("data-top", top);
+    // The nav itself takes that background.
+    await expect(page.locator(".header")).toHaveCSS(
+      "background-color",
+      top === "surface"
+        ? "rgba(255, 255, 255, 0.96)"
+        : "rgba(245, 245, 245, 0.96)",
+    );
+    await expect(page.locator("body")).toHaveAttribute(
+      "data-bottom",
+      "surface",
+    );
+  }
+});
+
+test("Buyers has its own closing CTA that opens the buyers form", async ({
+  page,
+}) => {
+  await page.goto("/buyers");
+  const band = page.locator(".band");
+  await expect(band.locator("h2")).toHaveText(
+    "Looking to buy a business in the UAE or GCC?",
+  );
+  await expect(band.locator('[data-form="buyers"]')).toHaveCount(1);
+  await expect(page.locator(".hero .visual")).toHaveCount(0);
+});

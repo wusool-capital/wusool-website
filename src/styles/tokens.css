@@ -18,7 +18,11 @@
   --on-navy-border: rgb(255 255 255 / 0.25);
   --on-navy-border-hover: rgb(255 255 255 / 0.6);
   --hover-tint: rgb(0 5 35 / 0.05);
-  --header-bg: rgb(245 245 245 / 0.85);
+  --header-bg: rgb(245 245 245 / 0.96);
+  --header-bg-surface: rgb(255 255 255 / 0.96);
+  --flow: rgb(127 180 206 / 0.77);
+  --flow-angle: 70deg;
+  --close-hover: rgb(0 5 35 / 0.06);
   --glow-strong: rgb(198 225 238 / 0.16);
   --glow-soft: rgb(198 225 238 / 0.08);
   --glow-closing: rgb(198 225 238 / 0.14);
@@ -120,6 +124,9 @@
   --chip-pad: 3px 10px;
   --blur: 12px;
   --banner-btn-min: 120px;
+  --strip-h: 48px;
+  --close-size: 32px;
+  --strip-pad-x: 120px;
   --banner-text-basis: 480px;
   --nudge: 3px;
   --lift: -3px;
@@ -160,6 +167,7 @@
   --delay-step: 0.15s;
   --delay-bar: 0.5s;
   --tab-interval: 6s;
+  --dur-flow: 20s;
 
   /* Layers */
   --z-header: 40;

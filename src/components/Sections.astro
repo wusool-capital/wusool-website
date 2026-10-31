@@ -21,6 +21,7 @@ import ShortlistMock from "./mocks/ShortlistMock.astro";
 import ProgressMock from "./mocks/ProgressMock.astro";
 import {
   faqItems,
+  visibleSections,
   type Deal,
   type Link,
   type Post,
@@ -80,13 +81,7 @@ const anchor = (s: Section) =>
     ? anchors[s._type]
     : undefined;
 
-const rendered = sections.filter((s) =>
-  s._type === "dealsSection"
-    ? dealRows(s).length > 0
-    : s._type === "postsSection"
-      ? posts.length === 3
-      : true,
-);
+const rendered = visibleSections(sections, deals, posts);
 // Spacing as in index.html: a plain section right after another plain one
 // drops its top padding.
 const plain = new Set([
@@ -131,7 +126,7 @@ const src = (part: string) => `${page}-${part}`;
               </Button>
             )}
           </Fragment>
-          {s.visual === "buyer" ? (
+          {s.visual === "none" ? null : s.visual === "buyer" ? (
             <>
               <ShortlistMock />
               <ProgressMock />
