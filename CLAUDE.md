@@ -60,6 +60,8 @@ For copy, comments, commit messages and reports: no em dashes, no "it's not X, i
 
 - `npm run dev`: local dev server.
 - `npm run gates`: every local gate (lint, Astro check, `check:tokens`, build, `check:dist`, npm audit, Playwright, Lighthouse CI).
+- `cd studio && npm run dev`: Sanity Studio locally (project `qjvm6ww8`, dataset `production`).
+- `cd studio && npx sanity exec migration/webflow-to-sanity.ts` (add `-- --dry-run` to only count): re-runnable Webflow to Sanity migration. Needs `WEBFLOW_TOKEN` and `SANITY_WRITE_TOKEN` in the git-ignored `.env`. `migration/review.ts -- <slugs>` compares migrated insights with Webflow.
 - `npm run preview`: serve `dist/` with `wrangler dev` on port 8787, with `_headers` applied.
 
 ## Gates

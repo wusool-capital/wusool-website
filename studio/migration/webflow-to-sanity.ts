@@ -7,6 +7,7 @@
 // Needs WEBFLOW_TOKEN (read-only) and SANITY_WRITE_TOKEN in ../.env.
 import { createClient } from "@sanity/client";
 import { Schema } from "@sanity/schema";
+import { builtinTypes } from "@sanity/schema/_internal";
 import { htmlToBlocks } from "@portabletext/block-tools";
 import { JSDOM } from "jsdom";
 import { schemaTypes } from "../schemas";
@@ -60,7 +61,7 @@ const client = createClient({
 });
 const richTextType = Schema.compile({
   name: "default",
-  types: schemaTypes,
+  types: [...builtinTypes, ...schemaTypes],
 }).get("richText");
 
 // --- Webflow --------------------------------------------------------------
@@ -94,7 +95,12 @@ async function items(collectionId: string): Promise<Item[]> {
         i.fieldData[k] = options.get(v);
     }
   }
-  return all.filter((i) => !i.isArchived);
+  // Archived items and test items (slug "test-...") are not migrated.
+  const skipped = all.filter(
+    (i) => i.isArchived || i.fieldData.slug.startsWith("test-"),
+  );
+  for (const i of skipped) console.log(`skip ${i.fieldData.slug}`);
+  return all.filter((i) => !skipped.includes(i));
 }
 
 // --- Assets ---------------------------------------------------------------
@@ -146,10 +152,27 @@ async function portableText(html: string | undefined, keyPrefix: string) {
   );
   const refs = new Map<string, string>();
   for (const src of srcs) if (src) refs.set(src, await upload("image", src));
+  const key = keys(keyPrefix);
   return htmlToBlocks(html, richTextType as never, {
     parseHtml: parse,
-    keyGenerator: keys(keyPrefix),
+    keyGenerator: key,
     rules: [
+      {
+        // Tables keep their rows and cells (text only).
+        deserialize(el) {
+          if ((el as Element).tagName !== "TABLE") return undefined;
+          const rows = [...(el as Element).querySelectorAll("tr")];
+          return {
+            _type: "table",
+            headerRow: rows[0]?.querySelector("th") !== null,
+            rows: rows.map((tr) => ({
+              _key: key(),
+              _type: "row",
+              cells: [...tr.querySelectorAll("th, td")].map(text),
+            })),
+          };
+        },
+      },
       {
         deserialize(el) {
           if ((el as Element).tagName !== "IMG") return undefined;
@@ -406,13 +429,49 @@ async function merged(
   wfItems: Item[],
   webflowOnly: (f: Fields) => Promise<object>,
 ) {
+  const old = await oldSanity(type);
+  const oldSlugs = new Set(
+    old.map((d) => (d.slug as { current: string }).current),
+  );
   const bySlug = new Map(wfItems.map((i) => [i.fieldData.slug, i]));
-  return Promise.all(
-    (await oldSanity(type)).map(async (d) => {
+  const docs = await Promise.all(
+    old.map(async (d) => {
       const wfItem = bySlug.get((d.slug as { current: string }).current);
       return { ...d, ...(wfItem ? await webflowOnly(wfItem.fieldData) : {}) };
     }),
   );
+  // Webflow items with no document in the old project are migrated from Webflow.
+  return { docs, rest: wfItems.filter((i) => !oldSlugs.has(i.fieldData.slug)) };
+}
+
+async function reportFields(f: Fields) {
+  return {
+    featuredImage: await image(f["featured-image"]),
+    ogImage: await image(f["og-image"]),
+    readingTime: f["reading-time"],
+    featured: f.featured,
+    lastUpdated: f["last-updated"],
+    ctaText: f["cta-text"],
+    ctaUrl: f["cta-url"],
+    excerpt: f.excerpt,
+  };
+}
+
+async function report(i: Item): Promise<Doc> {
+  const f = i.fieldData;
+  return {
+    _id: id(i),
+    _type: "report",
+    title: f.name,
+    slug: slug(f.slug),
+    silo: f["primary-silo"],
+    publishedAt: f["published-date"],
+    seoTitle: f["seo-title"],
+    seoDescription: f["seo-description"],
+    ogTitle: f["og-title"],
+    bannerPinned: f["pin-to-banner"],
+    ...(await reportFields(f)),
+  };
 }
 
 // --- Run ------------------------------------------------------------------
@@ -438,6 +497,8 @@ async function main() {
     ].map(items),
   );
   const managed = wfInsights.filter((i) => i.fieldData["sanity-managed"]);
+  const sanityInsights = await merged("insights", managed, insightFields);
+  const sanityReports = await merged("report", wfReports, reportFields);
 
   const docs: Doc[] = [
     ...(await Promise.all(wfTeam.map(teamMember))),
@@ -447,17 +508,10 @@ async function main() {
     ...(await Promise.all(
       wfInsights.filter((i) => !i.fieldData["sanity-managed"]).map(insight),
     )),
-    ...(await merged("insights", managed, insightFields)),
-    ...(await merged("report", wfReports, async (f) => ({
-      featuredImage: await image(f["featured-image"]),
-      ogImage: await image(f["og-image"]),
-      readingTime: f["reading-time"],
-      featured: f.featured,
-      lastUpdated: f["last-updated"],
-      ctaText: f["cta-text"],
-      ctaUrl: f["cta-url"],
-      excerpt: f.excerpt,
-    }))),
+    ...sanityInsights.docs,
+    ...(await Promise.all(sanityInsights.rest.map(insight))),
+    ...sanityReports.docs,
+    ...(await Promise.all(sanityReports.rest.map(report))),
     { _id: "siteSettings", _type: "siteSettings", ...SETTINGS },
   ].map(clean);
 
@@ -471,11 +525,20 @@ async function main() {
   };
 
   if (!DRY) {
-    for (let n = 0; n < docs.length; n += 20) {
-      const tx = client.transaction();
-      for (const d of docs.slice(n, n + 20)) tx.createOrReplace(d);
-      await tx.commit();
+    // Batches stay under the 4 MB request limit (report HTML is large).
+    let tx = client.transaction();
+    let size = 0;
+    for (const d of docs) {
+      const bytes = JSON.stringify(d).length;
+      if (size && size + bytes > 3_000_000) {
+        await tx.commit();
+        tx = client.transaction();
+        size = 0;
+      }
+      tx.createOrReplace(d);
+      size += bytes;
     }
+    await tx.commit();
   }
 
   // Count check: Webflow items (non-archived) against Sanity documents.

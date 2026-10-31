@@ -125,6 +125,26 @@ export const richText = defineType({
       fields: [{ name: "report", type: "reference", to: [{ type: "report" }] }],
     }),
     defineArrayMember({
+      name: "table",
+      type: "object",
+      fields: [
+        { name: "headerRow", title: "First row is a header", type: "boolean" },
+        {
+          name: "rows",
+          type: "array",
+          of: [
+            {
+              type: "object",
+              name: "row",
+              fields: [
+                { name: "cells", type: "array", of: [{ type: "string" }] },
+              ],
+            },
+          ],
+        },
+      ],
+    }),
+    defineArrayMember({
       name: "faqBlock",
       title: "FAQ",
       type: "object",
