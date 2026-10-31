@@ -111,6 +111,8 @@ import Icon from "./Icon.astro";
   }
   .menu {
     position: absolute;
+    /* Above the hover bridge, so the bridge never takes a click. */
+    z-index: var(--z-menu);
     top: calc(100% + var(--space-2));
     left: 0;
     min-width: var(--menu-w);
@@ -127,15 +129,21 @@ import Icon from "./Icon.astro";
       transform var(--dur-fast) var(--ease) var(--menu-close-delay),
       visibility 0s calc(var(--dur-fast) + var(--menu-close-delay));
   }
-  /* Invisible bridge over the gap above the menu, so the pointer can cross
-     from the link to the menu without leaving the hovered item. */
-  .menu::before {
+  /* The item's hover area reaches down to its menu, as wide as the button,
+     so crossing the gap never leaves the hovered item. */
+  .links > li:has(> .menu)::after {
     content: "";
     position: absolute;
+    top: 100%;
     right: 0;
-    bottom: 100%;
     left: 0;
-    height: calc(var(--space-2) + 1px);
+    z-index: var(--z-bridge);
+    /* Gap plus the menu's rounded corner, so the corner is covered too. */
+    height: calc(var(--space-2) + var(--r-menu));
+  }
+  /* Moving to another item closes the previous menu at once. */
+  .links:has(> li:hover) > li:not(:hover) > .menu {
+    transition-delay: 0s;
   }
   .menu--wide {
     display: grid;
