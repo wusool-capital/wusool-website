@@ -37,6 +37,7 @@ export interface PageData {
       ogImage?: string;
     };
     service?: { name?: string; serviceType?: string; description?: string };
+    closingCta?: { title?: string; text?: string; button?: Link };
     sections: Section[];
   };
   settings: OrgSettings;
@@ -51,6 +52,7 @@ export async function loadPage(id: string): Promise<PageData> {
       "page": *[_id == $id][0]{
         seo{..., "ogImage": ogImage.asset._ref},
         service,
+        closingCta,
         sections[]{..., _type == "sectorGridSection" => {tiles[]{..., "slug": industry->slug.current}}}
       },
       "settings": *[_id == "siteSettings"][0],
@@ -77,3 +79,22 @@ export const faqItems = (section?: Section): Faq[] =>
 // The page's FAQ schema uses its first FAQ section.
 export const faqOf = (sections: Section[]): Faq[] =>
   faqItems(sections.find((s) => s._type === "faqSection"));
+
+// Sections that render: deals need rows, latest insights need 3 posts.
+export const visibleSections = (
+  sections: Section[],
+  deals: Deal[],
+  posts: Post[],
+) =>
+  sections.filter((s) =>
+    s._type === "dealsSection"
+      ? (deals.length || s.examples?.length) > 0
+      : s._type === "postsSection"
+        ? posts.length === 3
+        : true,
+  );
+
+// Sections drawn on the white surface; the rest sit on the grey page.
+const SURFACE = new Set(["processSection", "stepsSection", "faqSection"]);
+export const tone = (s?: Section): "page" | "surface" =>
+  s && SURFACE.has(s._type) ? "surface" : "page";

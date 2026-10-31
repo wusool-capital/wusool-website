@@ -166,3 +166,43 @@ test("a Buyers CTA opens the buyers form and a Sell CTA the get-started form", a
     await expect(page.locator(`iframe[src*="/${tool}/"]`)).toHaveCount(1);
   }
 });
+
+test("Home announcement strip links the pinned report and stays closed", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const strip = page.locator("[data-strip]");
+  await expect(strip).toBeVisible();
+  await expect(strip.locator("a")).toHaveAttribute("href", /^\/reports\//);
+  await strip.getByRole("button", { name: "Close banner" }).click();
+  await expect(strip).toBeHidden();
+  await page.reload();
+  await expect(page.locator("[data-strip]")).toBeHidden();
+});
+
+test("top and footer areas match the sections they touch", async ({ page }) => {
+  for (const [path, top] of [
+    ["/", "page"],
+    ["/sell", "surface"],
+    ["/buyers", "page"],
+  ]) {
+    await page.goto(path);
+    await expect(page.locator("body")).toHaveAttribute("data-top", top);
+    await expect(page.locator("body")).toHaveAttribute(
+      "data-bottom",
+      "surface",
+    );
+  }
+});
+
+test("Buyers has its own closing CTA that opens the buyers form", async ({
+  page,
+}) => {
+  await page.goto("/buyers");
+  const band = page.locator(".band");
+  await expect(band.locator("h2")).toHaveText(
+    "Looking to buy a business in the UAE or GCC?",
+  );
+  await expect(band.locator('[data-form="buyers"]')).toHaveCount(1);
+  await expect(page.locator(".hero .visual")).toHaveCount(0);
+});

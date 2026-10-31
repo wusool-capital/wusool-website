@@ -206,13 +206,13 @@ const sell = {
           eyebrow: "Buyer Match Preview",
           title: "See who's buying businesses like yours",
           text: "See how many active buyers in our network are looking for businesses like yours right now, by sector and deal size.",
-          link: link("Are You Ready to Sell?", "/deal-readiness-tool"),
+          link: link("Start the Process", "/sell", "get-started"),
         },
         {
           eyebrow: "Deal Readiness Report",
           title: "Are you ready to sell your business?",
           text: "Know exactly what buyers will scrutinize before going to market. Get a sector-specific checklist sent to your inbox.",
-          link: link("Start the Process", "/sell", "get-started"),
+          link: link("Are You Ready to Sell?", "/deal-readiness-tool"),
         },
       ]),
     },
@@ -323,6 +323,11 @@ const buyers = {
     ogDescription:
       "Pre-qualified M&A deal flow across the UAE and GCC. Tech, F&B, Healthcare, Business Services. Apply to join Wusool Capital's buyer network.",
   },
+  closingCta: {
+    title: "Looking to buy a business in the UAE or GCC?",
+    text: "Join the buyer network for curated, confidential deal flow. Free for buyers.",
+    button: link("Join the Buyer Network", "/buyers", "buyers"),
+  },
   service: {
     name: "Buyer Network for GCC Business Acquisitions",
     serviceType: "M&A deal flow access",
@@ -336,7 +341,7 @@ const buyers = {
       title: "GCC's most active deal flow under $25M.",
       soft: "Curated. Confidential. Qualified.",
       sub: "Wusool Capital matches serious acquirers with pre-qualified businesses for sale across the UAE and GCC. Application-only. No noise, no cold outreach.",
-      visual: "buyer",
+      visual: "none",
       ctas: items([link("Join the Buyer Network", "/buyers", "buyers")]),
     },
     {

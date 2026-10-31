@@ -1,41 +1,92 @@
 ---
-// Pill announcement above the header. Driven by the pinned report later.
+// Announcement strip under the nav for the report pinned to the banner, as on
+// the live site. Closing it hides it for that report (stored in the browser).
 import Icon from "./Icon.astro";
 
 interface Props {
   href: string;
+  slug: string;
   lead: string;
   title: string;
   cta: string;
 }
-const { href, lead, title, cta } = Astro.props;
+const { href, slug, lead, title, cta } = Astro.props;
 ---
 
-<div class="announce">
+<div class="strip" data-strip data-slug={slug}>
+  <span class="flow" aria-hidden="true"></span>
   <a href={href} data-source="announcement">
     {lead} <strong>{title}</strong>
     <span class="go">
       {cta} <Icon name="arrow-right" />
     </span>
   </a>
+  <button type="button" class="close" aria-label="Close banner">
+    <Icon name="x" />
+  </button>
 </div>
 
+<script>
+  import "../scripts/announce";
+</script>
+
 <style>
-  .announce {
+  .strip {
+    position: relative;
     display: flex;
+    align-items: center;
     justify-content: center;
-    padding: var(--space-3) var(--space-4) 0;
+    min-height: var(--strip-h);
+    padding: var(--space-2) var(--strip-pad-x);
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--surface);
+    box-shadow: var(--shadow-strip);
+    font-size: var(--text-14);
+  }
+  .strip[hidden] {
+    display: none;
+  }
+  .flow {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: repeating-linear-gradient(
+      var(--flow-angle),
+      var(--flow) 0%,
+      var(--flow) 7.14%,
+      transparent 14.29%,
+      var(--flow) 21.43%,
+      transparent 28.57%,
+      var(--flow) 35.71%,
+      transparent 42.86%,
+      var(--flow) 50%
+    );
+    background-size: 200% 100%;
+    filter: saturate(2);
+    mask-image:
+      linear-gradient(to bottom, var(--surface), transparent),
+      radial-gradient(circle at top center, var(--surface), transparent);
+    mask-composite: intersect;
+    pointer-events: none;
+    animation: flow var(--dur-flow) var(--ease-linear) infinite;
+  }
+  @keyframes flow {
+    from {
+      background-position: 0% 0;
+    }
+    to {
+      background-position: 100% 0;
+    }
   }
   a {
     display: inline-flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-2-5);
-    padding: var(--space-1-5) var(--space-2) var(--space-1-5) var(--space-3-5);
-    border: 1px solid var(--line);
-    border-radius: var(--r-pill);
-    background: var(--surface);
-    color: var(--muted);
-    font-size: var(--text-14);
+    justify-content: center;
+    gap: var(--space-1) var(--space-2);
+    color: var(--ink);
+    text-align: center;
   }
   strong {
     color: var(--navy);
@@ -45,25 +96,38 @@ const { href, lead, title, cta } = Astro.props;
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
-    padding: var(--nudge) var(--space-2-5);
-    border-radius: var(--r-pill);
-    background: var(--sky-soft);
     color: var(--navy);
     font-weight: var(--weight-medium);
+    text-decoration: underline;
+    text-underline-offset: var(--nudge);
   }
-  @media (max-width: 720px) {
-    a {
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: var(--space-1) var(--space-2);
-      padding: var(--space-2) var(--space-3);
-      border-radius: var(--r-card);
-      font-size: var(--text-sm);
-      text-align: center;
+  .close {
+    position: absolute;
+    top: 50%;
+    right: var(--space-20);
+    display: grid;
+    place-items: center;
+    width: var(--close-size);
+    height: var(--close-size);
+    padding: 0;
+    border: 0;
+    border-radius: var(--r-item);
+    background: transparent;
+    color: var(--muted);
+    font-size: var(--text-lg);
+    transform: translateY(-50%);
+    cursor: pointer;
+  }
+  .close:hover {
+    background: var(--close-hover);
+    color: var(--navy);
+  }
+  @media (max-width: 767px) {
+    .strip {
+      padding: var(--space-2) var(--space-10);
     }
-    strong,
-    .go {
-      white-space: nowrap;
+    .close {
+      right: var(--space-2);
     }
   }
 </style>

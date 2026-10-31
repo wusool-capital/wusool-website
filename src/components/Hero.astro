@@ -7,11 +7,15 @@ interface Props {
   sub: string;
 }
 const { label, title, soft, sub } = Astro.props;
+// The illustration column shows only when the page passes one.
+const visual = Astro.slots.has("default")
+  ? (await Astro.slots.render("default")).trim()
+  : "";
 ---
 
 <section class="hero">
   <div class="wrap">
-    <div class="panel on-navy">
+    <div class:list={["panel", "on-navy", !visual && "panel--text"]}>
       <div class="copy">
         {label && <span class="label appear">{label}</span>}
         <h1 class="appear d2">
@@ -24,9 +28,7 @@ const { label, title, soft, sub } = Astro.props;
           <slot name="ctas" />
         </div>
       </div>
-      <div class="visual" aria-hidden="true">
-        <slot />
-      </div>
+      {visual && <div class="visual" aria-hidden="true" set:html={visual} />}
     </div>
   </div>
 </section>
@@ -59,6 +61,13 @@ const { label, title, soft, sub } = Astro.props;
   }
   .copy {
     position: relative;
+  }
+  .panel--text {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .panel--text .sub {
+    max-width: var(--measure-lede);
   }
   .label {
     display: inline-block;

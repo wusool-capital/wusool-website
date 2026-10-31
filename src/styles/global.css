@@ -99,6 +99,23 @@ p {
   white-space: nowrap;
 }
 
+/* The sticky top (nav and announcement) and the footer area take the
+   background of the section they touch, so there is no stray band. */
+.masthead {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+}
+[data-top="surface"] .header {
+  background: var(--header-bg-surface);
+}
+[data-top="surface"] .hero {
+  background: var(--surface);
+}
+[data-bottom="surface"] .closing {
+  background: var(--surface);
+}
+
 /* Scroll reveal: hidden only when scripts run and motion is allowed. */
 @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
   .reveal {

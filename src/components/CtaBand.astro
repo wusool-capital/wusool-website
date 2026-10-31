@@ -1,14 +1,30 @@
 ---
-// Closing call to action at the top of the navy footer panel.
+// Closing call to action at the top of the navy footer panel. A page can
+// replace the site-wide default.
 import { closingCta } from "../data/site";
 import Button from "./Button.astro";
+
+export interface Props {
+  title?: string;
+  text?: string;
+  label?: string;
+  href?: string;
+  form?: "get-started" | "buyers";
+}
+const page = Astro.props;
+const cta = page.title && page.label ? page : closingCta;
 ---
 
 <div class="band reveal">
-  <h2>{closingCta.title}</h2>
-  <p>{closingCta.text}</p>
-  <Button href={closingCta.href} variant="light" source="closing-cta">
-    {closingCta.label}
+  <h2>{cta.title}</h2>
+  {cta.text && <p>{cta.text}</p>}
+  <Button
+    href={cta.href}
+    form={"form" in cta ? cta.form : undefined}
+    variant="light"
+    source="closing-cta"
+  >
+    {cta.label}
   </Button>
 </div>
 
