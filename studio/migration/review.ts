@@ -73,6 +73,17 @@ for (const slug of slugs) {
         [],
     )
     .join(" ");
+  const order = headingOrder(blocks);
+  // The first heading must not repeat the page title or H1.
+  const firstHeading = blocks.find((b) => /^h\d$/.test(b.style ?? ""));
+  const firstText = (firstHeading?.children ?? [])
+    .map((c) => c.text)
+    .join("")
+    .trim()
+    .toLowerCase();
+  const repeated =
+    !!firstText &&
+    [d?.title, d?.h1].some((t) => t?.trim().toLowerCase() === firstText);
   const same = (a: unknown, b: unknown) => (a ?? "") === (b ?? "");
   const rows: [string, string | number, string | number, boolean][] = [
     ["title", f.name, d?.title, same(f.name, d?.title)],
@@ -99,7 +110,18 @@ for (const slug of slugs) {
     ],
     [
       "headings",
-      body.querySelectorAll("h1,h2,h3,h4,h5,h6").length,
+      // Webflow count minus a leading H1 that repeats the title (dropped).
+      body.querySelectorAll("h1,h2,h3,h4,h5,h6").length -
+        (body.body.firstElementChild?.tagName === "H1" &&
+        [f.name, f["h1-tag"]].some(
+          (t) =>
+            t?.trim().toLowerCase() ===
+            (body.body.firstElementChild?.textContent ?? "")
+              .trim()
+              .toLowerCase(),
+        )
+          ? 1
+          : 0),
       blocks.filter((b) => /^h\d$/.test(b.style ?? "")).length,
       false,
     ],
@@ -125,9 +147,10 @@ for (const slug of slugs) {
     [
       "heading order",
       "H2 first, no skips",
-      headingOrder(blocks),
-      headingOrder(blocks) === "H2 first, no skips",
+      order,
+      order === "H2 first, no skips",
     ],
+    ["title repeated", "no", repeated ? "yes" : "no", !repeated],
     ["author", f.author ? "set" : "none", d?.author ?? "none", false],
   ];
   console.log(`\n${slug}`);

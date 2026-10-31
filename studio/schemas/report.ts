@@ -109,7 +109,7 @@ export const report = defineType({
     defineField({
       name: "body",
       type: "array",
-      of: [{ type: "block" }],
+      of: [{ type: "block", styles: [{ title: "Normal", value: "normal" }] }],
       group: "gate",
     }),
     defineField({ name: "html", type: "text", group: "gate", hidden: true }),

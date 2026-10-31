@@ -62,13 +62,35 @@ export const faqList = defineField({
 
 // Rich text with the custom blocks of PRD 6: exhibit, stat, quote, CTA,
 // report download and FAQ.
+// Headings must start at H2 and never skip a level.
+const headingOrder = (blocks?: { style?: string }[]) => {
+  let previous = 1;
+  for (const b of blocks ?? []) {
+    const level = Number(b.style?.match(/^h(\d)$/)?.[1] ?? 0);
+    if (!level) continue;
+    if (level > previous + 1)
+      return `Heading levels skip from H${previous} to H${level}. Use H${previous + 1}.`;
+    previous = level;
+  }
+  return true;
+};
+
 export const richText = defineType({
   name: "richText",
   title: "Rich text",
   type: "array",
+  validation: (r) => r.custom(headingOrder).warning(),
   of: [
     defineArrayMember({
       type: "block",
+      // No H1 (the page title is the only H1) and no level below H4.
+      styles: [
+        { title: "Normal", value: "normal" },
+        { title: "Heading 2", value: "h2" },
+        { title: "Heading 3", value: "h3" },
+        { title: "Heading 4", value: "h4" },
+        { title: "Quote", value: "blockquote" },
+      ],
       marks: {
         annotations: [
           {

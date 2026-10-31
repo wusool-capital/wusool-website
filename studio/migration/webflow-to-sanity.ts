@@ -64,7 +64,28 @@ const client = createClient({
   apiVersion: "2025-01-01",
   token: SANITY_WRITE_TOKEN,
   useCdn: false,
+  maxRetries: 5,
 });
+
+// Network calls retry a few times: the Sanity and Webflow APIs time out now
+// and then. Every write here is idempotent, so a retry is safe.
+async function retry<T>(fn: () => Promise<T>, tries = 4): Promise<T> {
+  for (let n = 1; ; n++) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (n >= tries) throw e;
+      await new Promise((r) => setTimeout(r, 1000 * 2 ** n));
+    }
+  }
+}
+const get = (url: string, init?: RequestInit) =>
+  retry(async () => {
+    const res = await fetch(url, init);
+    if (res.status >= 500 || res.status === 429)
+      throw new Error(`${res.status} ${url}`);
+    return res;
+  });
 const richTextType = Schema.compile({
   name: "default",
   types: [...builtinTypes, ...schemaTypes],
@@ -73,7 +94,7 @@ const richTextType = Schema.compile({
 // --- Webflow --------------------------------------------------------------
 
 async function wf(path: string) {
-  const res = await fetch(`https://api.webflow.com/v2${path}`, {
+  const res = await get(`https://api.webflow.com/v2${path}`, {
     headers: { Authorization: `Bearer ${WEBFLOW_TOKEN}` },
   });
   if (!res.ok)
@@ -126,14 +147,13 @@ async function upload(kind: "image" | "file", url: string): Promise<string> {
   if (DRY) return `${kind}-dry-run`;
   const hit = uploaded.get(url);
   if (hit) return hit;
-  const res = await fetch(url);
+  const res = await get(url);
   if (!res.ok) throw new Error(`Download ${url}: ${res.status}`);
   const filename = decodeURIComponent(url.split("/").pop() ?? "asset");
   // Sanity stores assets by content hash, so a re-run reuses the same asset.
-  const asset = await client.assets.upload(
-    kind,
-    Buffer.from(await res.arrayBuffer()),
-    { filename },
+  const data = Buffer.from(await res.arrayBuffer());
+  const asset = await retry(() =>
+    client.assets.upload(kind, data, { filename }),
   );
   uploaded.set(url, asset._id);
   return asset._id;
@@ -164,7 +184,11 @@ function keys(prefix: string) {
   return () => `${prefix}${(n++).toString(36)}`;
 }
 
-async function portableText(html: string | undefined, keyPrefix: string) {
+async function portableText(
+  html: string | undefined,
+  keyPrefix: string,
+  titles: string[] = [],
+) {
   if (!html) return undefined;
   const srcs = [...parse(html).querySelectorAll("img")].map(
     (i) => i.getAttribute("src") ?? "",
@@ -208,21 +232,38 @@ async function portableText(html: string | undefined, keyPrefix: string) {
       },
     ],
   });
-  return headings(blocks as { style?: string }[]);
+  return headings(blocks as Styled[], titles);
 }
 
-// The page template owns the only H1. Body headings start at H2 and never
-// skip a level (H2 then H4 becomes H2 then H3), for SEO and AI extraction.
-function headings<T extends { style?: string }>(blocks: T[]) {
-  let previous = 1;
-  for (const b of blocks) {
+// The page template owns the only H1. A leading body heading that repeats
+// the page title is dropped. The rest becomes a clean outline: the top level
+// is H2 and no level is skipped, keeping parent and sibling relations
+// (H3, H4, H3 becomes H2, H3, H2). Good for SEO, the TOC and AI extraction.
+type Styled = { style?: string; children?: { text?: string }[] };
+const plain = (b: Styled) =>
+  (b.children ?? [])
+    .map((c) => c.text ?? "")
+    .join("")
+    .trim()
+    .toLowerCase();
+
+function headings<T extends Styled>(blocks: T[], titles: string[] = []) {
+  const first = blocks[0];
+  const out =
+    first?.style === "h1" &&
+    titles.some((t) => t && t.trim().toLowerCase() === plain(first))
+      ? blocks.slice(1)
+      : blocks;
+  const stack: number[] = [];
+  for (const b of out) {
     const m = b.style?.match(/^h(\d)$/);
     if (!m) continue;
-    const level = Math.min(Math.max(Number(m[1]), 2), previous + 1);
-    b.style = `h${level}`;
-    previous = level;
+    const level = Number(m[1]);
+    while (stack.length && stack[stack.length - 1] >= level) stack.pop();
+    stack.push(level);
+    b.style = `h${Math.min(stack.length + 1, 6)}`;
   }
-  return blocks;
+  return out;
 }
 
 // FAQ HTML to Q&A pairs. A question is a heading, a paragraph led by bold
@@ -429,7 +470,7 @@ async function insight(i: Item): Promise<Doc> {
     slug: slug(f.slug),
     contentType: f["content-type"],
     silo: f["primary-silo"],
-    body: await portableText(f["body-content"], "p"),
+    body: await portableText(f["body-content"], "p", [f.name, f["h1-tag"]]),
     h1: f["h1-tag"],
     seoTitle: f["seo-title"],
     seoDescription: f["seo-description"],
@@ -470,7 +511,7 @@ async function copyAssets(value: unknown): Promise<unknown> {
 
 async function oldSanity(type: string): Promise<Doc[]> {
   const url = `${OLD_SANITY}?query=${encodeURIComponent(`*[_type == "${type}"]`)}`;
-  const res = await fetch(url);
+  const res = await get(url);
   if (!res.ok) throw new Error(`Old Sanity ${type}: ${res.status}`);
   const { result } = await res.json();
   return Promise.all(
@@ -504,7 +545,10 @@ async function merged(
       const filled = Object.entries(overlay).filter(
         ([, v]) => v !== undefined && v !== null && v !== "",
       );
-      return { ...d, ...Object.fromEntries(filled) };
+      const body = Array.isArray(d.body)
+        ? headings(d.body as Styled[], [d.title as string])
+        : d.body;
+      return { ...d, body, ...Object.fromEntries(filled) };
     }),
   );
   // Webflow items with no document in the old project are migrated from Webflow.
@@ -527,7 +571,8 @@ async function reportFields(f: Fields) {
     ctaText: f["cta-text"],
     ctaUrl: f["cta-url"],
     // The playbook's Webflow excerpt is placeholder text, so it is dropped.
-    excerpt: f.excerpt === "This is a test excerpt." ? undefined : f.excerpt,
+    excerpt:
+      f.excerpt?.trim() === "This is a test excerpt." ? undefined : f.excerpt,
   };
 }
 
@@ -551,6 +596,11 @@ const MARKER = "migration.webflow";
 async function guardEdits() {
   const marker = await client.getDocument(MARKER);
   if (!marker || process.argv.includes("--force")) return;
+  // A run that stopped half way left its own writes behind; they are not edits.
+  if (marker.inProgress) {
+    console.log("Previous run did not finish. Skipping the edit check.");
+    return;
+  }
   const edited: string[] = await client.fetch(
     `*[_updatedAt > $t && !(_type match "sanity.*") && _id != $m]._id`,
     { t: marker.lastRun, m: MARKER },
@@ -573,7 +623,7 @@ async function removeStale(written: Set<string>) {
   if (stale.length) {
     const tx = client.transaction();
     for (const i of stale) tx.delete(i);
-    await tx.commit();
+    await retry(() => tx.commit());
   }
 }
 
@@ -654,20 +704,29 @@ async function main() {
 
   if (!DRY) {
     await guardEdits();
+    await client.createOrReplace({
+      ...((await client.getDocument(MARKER)) ?? {
+        _id: MARKER,
+        _type: "migrationRun",
+      }),
+      inProgress: true,
+    });
     // Batches stay under the 4 MB request limit (report HTML is large).
     let tx = client.transaction();
     let size = 0;
     for (const d of docs) {
       const bytes = JSON.stringify(d).length;
       if (size && size + bytes > 3_000_000) {
-        await tx.commit();
+        const full = tx;
+        await retry(() => full.commit());
         tx = client.transaction();
         size = 0;
       }
       tx.createOrReplace(d);
       size += bytes;
     }
-    await tx.commit();
+    const last = tx;
+    await retry(() => last.commit());
     // Settings are written once and then edited in Studio only.
     await client.createIfNotExists({
       _id: "siteSettings",
