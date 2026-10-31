@@ -414,8 +414,17 @@ test("every published report has its landing content in the raw HTML", async ({
     const res = await request.get(`/reports/${r.slug}`);
     expect(res.status(), r.slug).toBe(200);
     const html = await res.text();
-    expect(html).toMatch(new RegExp(`<h1[^>]*>${r.title}</h1>`));
-    expect(html).toContain(r.excerpt.replace(/'/g, "&#39;"));
+    // Compare text the way Astro escapes it.
+    const esc = (t: string) =>
+      t
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    expect(html).toMatch(
+      new RegExp(`<h1[^>]*>${RegExp.escape(esc(r.title))}</h1>`),
+    );
+    expect(html).toContain(esc(r.excerpt));
     expect(html).toContain(
       `<link rel="canonical" href="https://www.wusoolcapital.com/reports/${r.slug}">`,
     );

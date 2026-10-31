@@ -29,6 +29,11 @@ if (!r.seoTitle || !r.seoDescription || !r.excerpt) {
   );
 }
 const url = `${SITE}/reports/${r.slug}`;
+// Height over width, from the Sanity asset ref ("image-<id>-<w>x<h>-<ext>").
+const previewRatio = (ref: string) => {
+  const [w, h] = ref.split("-")[2].split("x").map(Number);
+  return h / w;
+};
 const topic = topicOf(r.silo);
 const updated =
   // Shown only when it falls on a later day than publication.
@@ -67,7 +72,6 @@ const jsonLd = graph([
     mainEntityOfPage: { "@id": `${url}#webpage` },
     author: { "@id": ORG_ID },
     publisher: { "@id": ORG_ID },
-    isAccessibleForFree: true,
   },
   breadcrumbs(
     url,
@@ -119,14 +123,25 @@ const jsonLd = graph([
           </Button>
         </div>
       </div>
-      <img
-        class="cover"
-        src={cardImage("reports", r)}
-        alt=""
-        width="800"
-        height="420"
-        fetchpriority="high"
-      />
+      {r.preview ? (
+        <img
+          class="preview"
+          src={`/previews/${r.slug}.webp`}
+          alt={r.preview.alt ?? ""}
+          width="600"
+          height={Math.round(600 * previewRatio(r.preview.ref))}
+          fetchpriority="high"
+        />
+      ) : (
+        <img
+          class="cover"
+          src={cardImage("reports", r)}
+          alt=""
+          width="800"
+          height="420"
+          fetchpriority="high"
+        />
+      )}
     </div>
   </header>
 
@@ -139,15 +154,16 @@ const jsonLd = graph([
             <li>{item}</li>
           ))}
         </ul>
-        {r.insight && (
-          <p class="companion">
-            <ArrowLink href={`/insights/${r.insight.slug}`}>
-              Read the summary article
-            </ArrowLink>
-          </p>
-        )}
       </div>
     </section>
+  )}
+
+  {r.insight && (
+    <div class="wrap companion">
+      <ArrowLink href={`/insights/${r.insight.slug}`}>
+        Read the summary article
+      </ArrowLink>
+    </div>
   )}
 
   <section
@@ -163,6 +179,7 @@ const jsonLd = graph([
           src="https://tools.wusoolcapital.com/embed.js"
           data-tool="report"
           data-report={r.slug}
+          defer
         ></script>
       </div>
     </div>
@@ -177,7 +194,7 @@ const jsonLd = graph([
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
     gap: var(--space-12);
-    align-items: center;
+    align-items: start;
   }
   .topic {
     display: inline-block;
@@ -219,6 +236,14 @@ const jsonLd = graph([
     height: auto;
     border-radius: var(--r-card);
   }
+  .preview {
+    justify-self: center;
+    width: 100%;
+    max-width: var(--preview-w);
+    height: auto;
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-menu);
+  }
   h2 {
     font-size: var(--text-range);
     font-weight: var(--weight-semibold);
@@ -239,7 +264,7 @@ const jsonLd = graph([
     font-weight: var(--weight-medium);
   }
   .companion {
-    margin-top: var(--space-8);
+    padding-bottom: var(--section-y);
   }
   .reader {
     min-height: var(--defer-size);

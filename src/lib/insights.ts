@@ -73,6 +73,7 @@ export interface Report extends ReportCard {
   lastUpdated?: string;
   readingTime?: string;
   inside?: string[];
+  preview?: { ref: string; alt?: string };
   insight?: { title: string; slug: string };
 }
 
@@ -80,7 +81,7 @@ export const allReports = () =>
   query<Report[]>(`*[_type == "report"] | order(publishedAt desc){
     title, "slug": slug.current, excerpt, silo, publishedAt, "image": featuredImage.asset._ref,
     seoTitle, seoDescription, ogTitle, "ogImage": ogImage.asset._ref, lastUpdated, readingTime,
-    inside, "insight": companionInsight->{"title": h1, "slug": slug.current}
+    inside, "preview": preview{"ref": asset._ref, alt}, "insight": companionInsight->{"title": h1, "slug": slug.current}
   }`);
 
 // Card and OG images: the uploaded image, else the generated branded cover.

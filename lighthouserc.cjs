@@ -48,9 +48,24 @@ module.exports = {
           aggregationMethod: "median-run",
           assertions: {
             ...thresholds,
+            // Every other Best Practices audit still has to pass.
             "categories:best-practices": "off",
-            "errors-in-console": "off",
-            "inspector-issues": "off",
+            ...Object.fromEntries(
+              [
+                "is-on-https",
+                "geolocation-on-start",
+                "notification-on-start",
+                "paste-preventing-inputs",
+                "image-aspect-ratio",
+                "image-size-responsive",
+                "viewport",
+                "font-size",
+                "doctype",
+                "charset",
+                "deprecations",
+                "third-party-cookies",
+              ].map((id) => [id, ["error", { minScore: 1 }]]),
+            ),
           },
         },
       ],
