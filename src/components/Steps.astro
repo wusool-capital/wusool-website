@@ -1,0 +1,56 @@
+---
+// Numbered steps in a two-column grid, as an ordered list.
+interface Props {
+  steps: { title: string; text?: string }[];
+}
+const { steps } = Astro.props;
+---
+
+<ol class="steps">
+  {steps.map((s, i) => (
+    <li class="step reveal">
+      <span class="n" aria-hidden="true">
+        {String(i + 1).padStart(2, "0")}
+      </span>
+      <h3>{s.title}</h3>
+      {s.text && <p>{s.text}</p>}
+    </li>
+  ))}
+</ol>
+
+<style>
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+    margin: var(--space-12) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .step {
+    padding: var(--space-7);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+  }
+  .n {
+    display: block;
+    margin-bottom: var(--space-4);
+    color: var(--navy);
+    font-size: var(--text-stat);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-stat);
+    letter-spacing: var(--tracking-num);
+    font-variant-numeric: tabular-nums;
+  }
+  p {
+    margin-top: var(--space-2);
+    color: var(--muted);
+    font-size: var(--text-15);
+  }
+  @media (max-width: 720px) {
+    .steps {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

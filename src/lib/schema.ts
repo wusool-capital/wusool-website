@@ -86,6 +86,39 @@ export function faqPage(
   };
 }
 
+export function service(
+  url: string,
+  s: { name?: string; serviceType?: string; description?: string },
+  areaServed: string[],
+): Node {
+  return {
+    "@type": "Service",
+    "@id": `${url}#service`,
+    name: s.name,
+    serviceType: s.serviceType,
+    description: s.description,
+    url,
+    provider: { "@id": ORG_ID },
+    areaServed: areaServed.map((name) => ({ "@type": "Country", name })),
+  };
+}
+
+export function breadcrumbs(
+  url: string,
+  items: { name: string; url: string }[],
+): Node {
+  return {
+    "@type": "BreadcrumbList",
+    "@id": `${url}#breadcrumb`,
+    itemListElement: items.map((i, n) => ({
+      "@type": "ListItem",
+      position: n + 1,
+      name: i.name,
+      item: i.url,
+    })),
+  };
+}
+
 export const graph = (nodes: Node[]) => ({
   "@context": "https://schema.org",
   "@graph": nodes,

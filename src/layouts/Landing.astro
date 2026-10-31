@@ -1,0 +1,81 @@
+---
+// A landing page document from Sanity: head, structured data and sections.
+// Home carries the full organization and website nodes; other pages refer to
+// them by @id and add a Service and breadcrumbs (PRD Appendix B).
+import Base from "./Base.astro";
+import Announce from "../components/Announce.astro";
+import Sections from "../components/Sections.astro";
+import { loadPage, faqOf } from "../lib/pages";
+import { imageUrl } from "../lib/sanity";
+import {
+  SITE,
+  graph,
+  organization,
+  website,
+  webPage,
+  faqPage,
+  service,
+  breadcrumbs,
+} from "../lib/schema";
+
+interface Props {
+  id: string;
+  // Breadcrumb name and data-source prefix, e.g. "Sell" and "sell".
+  name: string;
+  source: string;
+}
+const { id, name, source } = Astro.props;
+const { page, settings, banner, posts, deals } = await loadPage(id);
+const home = id === "page-home";
+const path = Astro.url.pathname.replace(/(index)?\.html$/, "");
+const url = home ? `${SITE}/` : `${SITE}${path}`;
+const faq = faqOf(page.sections);
+
+const crumbs = home
+  ? []
+  : [
+      breadcrumbs(url, [
+        { name: "Home", url: `${SITE}/` },
+        { name, url },
+      ]),
+    ];
+const jsonLd = graph([
+  ...(home ? [organization(settings), website()] : []),
+  {
+    ...webPage(url, page.seo.title, page.seo.description),
+    ...(home ? {} : { breadcrumb: { "@id": `${url}#breadcrumb` } }),
+  },
+  ...(page.service?.name
+    ? [service(url, page.service, settings.areaServed)]
+    : []),
+  ...(faq.length ? [faqPage(url, faq)] : []),
+  ...crumbs,
+]);
+---
+
+<Base
+  title={page.seo.title}
+  description={page.seo.description}
+  og={{
+    title: page.seo.ogTitle,
+    description: page.seo.ogDescription,
+    image: page.seo.ogImage && imageUrl(page.seo.ogImage, 1200, 630),
+  }}
+  jsonLd={jsonLd}
+>
+  {home && banner && (
+    <Announce
+      slot="announce"
+      href={`/reports/${banner.slug}`}
+      lead="Just released:"
+      title={banner.title}
+      cta="Get the playbook"
+    />
+  )}
+  <Sections
+    sections={page.sections}
+    deals={deals}
+    posts={posts}
+    page={source}
+  />
+</Base>

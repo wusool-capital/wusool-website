@@ -14,7 +14,12 @@ module.exports = {
     collect: {
       startServerCommand: "npx wrangler dev --port 8787",
       startServerReadyPattern: "Ready on",
-      url: ["http://localhost:8787/", "http://localhost:8787/styleguide"],
+      url: [
+        "http://localhost:8787/",
+        "http://localhost:8787/sell",
+        "http://localhost:8787/buyers",
+        "http://localhost:8787/styleguide",
+      ],
       numberOfRuns: 3,
     },
     assert: {

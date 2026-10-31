@@ -1,0 +1,98 @@
+---
+// Grid of cards: optional eyebrow, title, text and link. Card titles are H3
+// under a section heading, or plain text when the section has no heading.
+import ArrowLink from "./ArrowLink.astro";
+
+interface Card {
+  eyebrow?: string;
+  title: string;
+  text?: string;
+  link?: { label: string; href?: string; form?: "get-started" | "buyers" };
+}
+interface Props {
+  cards: Card[];
+  headings?: boolean;
+  source?: string;
+}
+const { cards, headings = true, source } = Astro.props;
+const Title = headings ? "h3" : "p";
+---
+
+<div class:list={["cards", cards.length === 4 && "cards--four"]}>
+  {cards.map((c) => (
+    <div class="card reveal">
+      {c.eyebrow && <span class="eyebrow">{c.eyebrow}</span>}
+      <Title class="title">{c.title}</Title>
+      {c.text && <p class="text">{c.text}</p>}
+      {c.link && (
+        <ArrowLink
+          class="more"
+          href={c.link.href}
+          form={c.link.form}
+          source={source}
+        >
+          {c.link.label}
+        </ArrowLink>
+      )}
+    </div>
+  ))}
+</div>
+
+<style>
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+    margin-top: var(--space-12);
+  }
+  .cards--four {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-6);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+  }
+  .card:first-child {
+    border-color: var(--sky);
+    background: var(--sky-soft);
+  }
+  .eyebrow {
+    margin-bottom: var(--space-3);
+    color: var(--muted);
+    font-size: var(--text-14);
+    font-weight: var(--weight-medium);
+  }
+  .title {
+    margin: 0;
+    color: var(--navy);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-h3);
+  }
+  .text {
+    margin-top: var(--space-2);
+    color: var(--muted);
+    font-size: var(--text-15);
+  }
+  .card :global(.more) {
+    margin-top: auto;
+    padding-top: var(--space-4-5);
+    font-size: var(--text-14);
+  }
+  @media (max-width: 1080px) {
+    .cards,
+    .cards--four {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 720px) {
+    .cards,
+    .cards--four {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
