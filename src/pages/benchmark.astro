@@ -1,0 +1,28 @@
+---
+import Landing from "../layouts/Landing.astro";
+import { toolApp } from "../lib/tools";
+
+const app = toolApp(
+  "/benchmark",
+  "SoftwareApplication",
+  "Wusool SME Benchmarking Tool",
+  "A free tool that benchmarks a GCC SME's revenue, EBITDA margin, growth, headcount and other core metrics against peer businesses in the region, returning an instant percentile ranking.",
+  "BusinessApplication",
+  {
+    featureList: [
+      "Revenue and EBITDA margin benchmarking",
+      "Revenue growth and gross margin comparison",
+      "Headcount and revenue-per-employee benchmarking",
+      "Customer concentration and recurring revenue scoring",
+      "Instant percentile ranking against GCC SME peers",
+    ],
+  },
+);
+---
+
+<Landing
+  id="page-benchmark"
+  name="SME benchmarking tool"
+  source="benchmark"
+  nodes={[app]}
+/>

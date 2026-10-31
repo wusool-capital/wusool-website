@@ -15,6 +15,9 @@ const pages = [
   "/team",
   "/careers",
   "/careers/senior-analyst-ma-advisory-dubai",
+  "/valuation-tool",
+  "/deal-readiness-tool",
+  "/benchmark",
   "/styleguide",
 ];
 // Links to pages later features build (see scripts/check-dist.mjs).
@@ -506,3 +509,30 @@ test("an open role has one JobPosting and is listed on Careers", async ({
     name: "Wusool Capital",
   });
 });
+
+for (const [path, tool, type] of [
+  ["/valuation-tool", "valuation", "WebApplication"],
+  ["/deal-readiness-tool", "readiness", "WebApplication"],
+  ["/benchmark", "benchmark", "SoftwareApplication"],
+]) {
+  test(`${path} has its H1, its tool embed and ${type} schema in the raw HTML`, async ({
+    request,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "content check, desktop only");
+    const html = await (await request.get(path)).text();
+    expect(html).toMatch(/<h1[^>]*>[^<]+/);
+    expect(html).toContain(
+      `src="https://tools.wusoolcapital.com/embed.js" data-tool="${tool}"`,
+    );
+    const ld = JSON.parse(
+      html.match(
+        /<script type="application\/ld\+json">([\s\S]*?)<\/script>/,
+      )?.[1] ?? "{}",
+    );
+    const app = ld["@graph"].find(
+      (n: { "@type": string }) => n["@type"] === type,
+    );
+    expect(app?.url).toBe(`https://www.wusoolcapital.com${path}`);
+  });
+}

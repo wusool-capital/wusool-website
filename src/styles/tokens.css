@@ -113,6 +113,8 @@
   /* Team card headshot. */
   --headshot: 120px;
   --headshot-lg: 240px;
+  /* Space held for an embedded tool before it reports its height. */
+  --tool-min-h: 100vh;
   --hero-min-h: min(640px, calc(100dvh - 140px));
   --hero-pad: 64px;
   --avatar: 34px;

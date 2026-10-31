@@ -366,6 +366,19 @@ const person = (m: { slug: string }) => m.slug !== COMPANY_SLUG;
           </div>
         </section>
       );
+    case "toolSection":
+      return (
+        <section class="section section--flush-top tool" id="tool">
+          <div class="wrap">
+            <script
+              is:inline
+              src="https://tools.wusoolcapital.com/embed.js"
+              data-tool={s.tool}
+              defer
+            ></script>
+          </div>
+        </section>
+      );
     case "noteSection":
       return (
         <section class="section">
@@ -437,6 +450,10 @@ const person = (m: { slug: string }) => m.slug !== COMPANY_SLUG;
     align-items: end;
     justify-content: space-between;
     gap: var(--space-6);
+  }
+  /* The tool frame starts one screen tall, then sizes to its content. */
+  .tool {
+    min-height: var(--tool-min-h);
   }
   .points {
     padding: var(--space-7) 0 0;

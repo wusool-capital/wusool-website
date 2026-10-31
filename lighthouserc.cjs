@@ -25,6 +25,8 @@ module.exports = {
         "http://localhost:8787/reports/padel-in-the-gulf",
         "http://localhost:8787/team",
         "http://localhost:8787/careers/senior-analyst-ma-advisory-dubai",
+        "http://localhost:8787/valuation-tool",
+        "http://localhost:8787/benchmark",
         "http://localhost:8787/styleguide",
       ],
       numberOfRuns: 3,
@@ -33,7 +35,8 @@ module.exports = {
       // Each entry asserts on the median run, so one lucky run cannot pass.
       assertMatrix: [
         {
-          matchingUrlPattern: "^(?!.*/styleguide$)(?!.*/reports/)",
+          matchingUrlPattern:
+            "^(?!.*/styleguide$)(?!.*/reports/)(?!.*/valuation-tool$)(?!.*/benchmark$)",
           aggregationMethod: "median-run",
           assertions: thresholds,
         },
@@ -44,9 +47,10 @@ module.exports = {
           assertions: { ...thresholds, "categories:seo": "off" },
         },
         // The tools app allows framing only from wusoolcapital.com, so the
-        // report reader logs a console error on localhost and staging.
+        // report reader and the tools log a console error on localhost and
+        // staging.
         {
-          matchingUrlPattern: "/reports/",
+          matchingUrlPattern: "/reports/|/valuation-tool$|/benchmark$",
           aggregationMethod: "median-run",
           assertions: {
             ...thresholds,

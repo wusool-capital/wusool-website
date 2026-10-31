@@ -1,0 +1,19 @@
+---
+import Landing from "../layouts/Landing.astro";
+import { toolApp } from "../lib/tools";
+
+const app = toolApp(
+  "/valuation-tool",
+  "WebApplication",
+  "Wusool Capital Business Valuation Tool",
+  "Instant business valuation tool for UAE and GCC founders. Get an estimated valuation range based on your sector, revenue and EBITDA, with no sign-up required.",
+  "FinanceApplication",
+);
+---
+
+<Landing
+  id="page-valuation-tool"
+  name="Valuation tool"
+  source="valuation-tool"
+  nodes={[app]}
+/>
