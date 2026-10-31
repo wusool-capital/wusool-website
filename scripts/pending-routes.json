@@ -1,29 +1,19 @@
 {
-  "_note": "Live-site paths that later features build. Links to them pass check-dist until then. Remove a path in the feature that builds it; the list must be empty by feature 12.",
+  "_note": "Live-site paths that later features build. Links to them pass check-dist and the smoke test until then. A trailing /* covers every page under that path. Remove entries in the feature that builds them; the list must be empty by feature 12.",
   "routes": [
     "/sell",
     "/buyers",
-    "/industries/manufacturing",
-    "/industries/construction",
-    "/industries/education",
-    "/industries/logistics",
-    "/industries/business-services",
-    "/industries/retail",
-    "/industries/beauty-wellness",
-    "/industries/technology",
-    "/industries/healthcare",
-    "/industries/food-beverage",
     "/valuation-tool",
     "/deal-readiness-tool",
     "/benchmark",
     "/insights",
-    "/insights/how-to-buy-a-business-in-abu-dhabi",
-    "/insights/entrepreneurship-through-acquisition-vs-search-fund",
-    "/insights/when-to-bring-in-ma-advisor-uae",
     "/reports",
     "/team",
     "/careers",
     "/privacy-policy",
-    "/terms"
+    "/terms",
+    "/industries/*",
+    "/insights/*",
+    "/reports/*"
   ]
 }

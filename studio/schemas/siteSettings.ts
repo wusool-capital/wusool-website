@@ -53,6 +53,30 @@ export const siteSettings = defineType({
     defineField({ name: "license", type: "string" }),
     defineField({ name: "email", type: "string" }),
     defineField({ name: "linkedinUrl", title: "LinkedIn URL", type: "url" }),
+    // Organization structured data (every page).
+    defineField({
+      name: "orgDescription",
+      title: "Organization description",
+      type: "text",
+      rows: 2,
+    }),
+    defineField({ name: "foundingDate", type: "string" }),
+    defineField({
+      name: "knowsAbout",
+      type: "array",
+      of: [defineArrayMember({ type: "string" })],
+    }),
+    defineField({
+      name: "areaServed",
+      type: "array",
+      of: [defineArrayMember({ type: "string" })],
+    }),
+    defineField({
+      name: "sameAs",
+      title: "Profiles (sameAs)",
+      type: "array",
+      of: [defineArrayMember({ type: "url" })],
+    }),
     defineField({ name: "nav", type: "array", of: [navLink] }),
     defineField({ name: "footerLinks", type: "array", of: [navLink] }),
     defineField({ name: "defaultSeo", type: "seo" }),

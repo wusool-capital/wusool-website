@@ -68,10 +68,26 @@ const sections = [
     fields: [
       ...head,
       {
-        name: "industries",
+        name: "tiles",
         type: "array",
-        of: [{ type: "reference", to: [{ type: "industry" }] }],
+        of: [
+          {
+            type: "object",
+            fields: [
+              {
+                name: "industry",
+                type: "reference",
+                to: [{ type: "industry" }],
+              },
+              { name: "title", type: "string" },
+              { name: "text", type: "string" },
+              { name: "cta", title: "Link label", type: "string" },
+            ],
+            preview: { select: { title: "title" } },
+          },
+        ],
       },
+      { name: "footLink", type: "object", fields: link },
     ],
   }),
   defineArrayMember({
@@ -80,6 +96,8 @@ const sections = [
     type: "object",
     fields: [
       ...head,
+      { name: "primary", type: "object", fields: link },
+      { name: "secondary", type: "object", fields: link },
       {
         name: "steps",
         type: "array",
@@ -101,6 +119,8 @@ const sections = [
     type: "object",
     fields: [
       ...head,
+      { name: "note", type: "string" },
+      { name: "footLink", type: "object", fields: link },
       {
         name: "transactions",
         type: "array",
@@ -112,13 +132,16 @@ const sections = [
     name: "postsSection",
     title: "Latest insights",
     type: "object",
-    fields: [{ name: "title", type: "string" }],
+    fields: [
+      { name: "title", type: "string" },
+      { name: "allLink", type: "object", fields: link },
+    ],
   }),
   defineArrayMember({
     name: "faqSection",
     title: "FAQ",
     type: "object",
-    fields: [...head, faqList],
+    fields: [...head, faqList, { name: "cta", type: "object", fields: link }],
   }),
   defineArrayMember({
     name: "ctaBandSection",

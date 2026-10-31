@@ -11,8 +11,11 @@ interface Props {
   title: string;
   description: string;
   noindex?: boolean;
+  // Open Graph and Twitter. Title and description fall back to the page's.
+  og?: { title?: string; description?: string; image?: string };
+  jsonLd?: object;
 }
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, og = {}, jsonLd } = Astro.props;
 // Build output is file format (/sell.html), so drop the .html for the public URL.
 const path = Astro.url.pathname.replace(/(index)?\.html$/, "");
 const canonical = new URL(path, Astro.site).href;
@@ -26,6 +29,25 @@ const canonical = new URL(path, Astro.site).href;
     <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Wusool Capital" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={og.title ?? title} />
+    <meta property="og:description" content={og.description ?? description} />
+    {og.image && <meta property="og:image" content={og.image} />}
+    {og.image && <meta property="og:image:width" content="1200" />}
+    {og.image && <meta property="og:image:height" content="630" />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={og.title ?? title} />
+    <meta name="twitter:description" content={og.description ?? description} />
+    {og.image && <meta name="twitter:image" content={og.image} />}
+    {jsonLd && (
+      <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(jsonLd).replace(/</g, "\\u003c")}
+      />
+    )}
     <link rel="icon" href={favicon} type="image/svg+xml" />
     <link
       rel="preload"

@@ -1,15 +1,285 @@
 ---
+// Home: the "Home" landing page in Sanity, one component per section.
 import Base from "../layouts/Base.astro";
+import Announce from "../components/Announce.astro";
+import Hero from "../components/Hero.astro";
+import Button from "../components/Button.astro";
+import ArrowLink from "../components/ArrowLink.astro";
+import SectionHead from "../components/SectionHead.astro";
+import Stats from "../components/Stats.astro";
+import Compare from "../components/Compare.astro";
+import IndustryGrid from "../components/IndustryGrid.astro";
+import Process from "../components/Process.astro";
+import DealsTable from "../components/DealsTable.astro";
+import Posts from "../components/Posts.astro";
+import Faq from "../components/Faq.astro";
+import ValuationMock from "../components/mocks/ValuationMock.astro";
+import BuyersMock from "../components/mocks/BuyersMock.astro";
+import BusinessMock from "../components/mocks/BusinessMock.astro";
+import ShortlistMock from "../components/mocks/ShortlistMock.astro";
+import ProgressMock from "../components/mocks/ProgressMock.astro";
+import { query, imageUrl } from "../lib/sanity";
+import {
+  SITE,
+  graph,
+  organization,
+  website,
+  webPage,
+  faqPage,
+  type OrgSettings,
+} from "../lib/schema";
+
+type Link = { label: string; href: string };
+type Section = { _type: string; _key: string; [k: string]: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+const data = await query<{
+  page: {
+    seo: {
+      title: string;
+      description: string;
+      ogTitle: string;
+      ogDescription: string;
+      ogImage?: string;
+    };
+    sections: Section[];
+  };
+  settings: OrgSettings;
+  banner?: { title: string; slug: string };
+  posts: { title: string; slug: string; excerpt: string; silo: string }[];
+  deals: {
+    category: string;
+    status: string;
+    sector: string;
+    country: string;
+    year: string;
+    oneLineDescription: string;
+  }[];
+}>(`{
+  "page": *[_id == "page-home"][0]{
+    seo{..., "ogImage": ogImage.asset._ref},
+    sections[]{..., _type == "sectorGridSection" => {tiles[]{..., "slug": industry->slug.current}}}
+  },
+  "settings": *[_id == "siteSettings"][0],
+  "banner": *[_type == "report" && bannerPinned == true][0]{title, "slug": slug.current},
+  "posts": *[_type == "insights" && hideFromListings != true] | order(featured desc, publishedAt desc)[0...3]{
+    title, "slug": slug.current, excerpt, silo
+  },
+  "deals": *[_type == "transaction"] | order(sortOrder asc)
+}`);
+if (!data.page) throw new Error("Sanity: page-home is missing");
+
+const { page, settings, banner, posts, deals } = data;
+const section = (type: string) =>
+  page.sections.find((s) => s._type === type) as Section;
+const hero = section("heroSection");
+const stats = section("statsSection");
+const compare = section("comparisonSection");
+const sectors = section("sectorGridSection");
+const process = section("processSection");
+const dealsHead = section("dealsSection");
+const postsHead = section("postsSection");
+const faq = section("faqSection");
+
+// Industry icons live in the repo, keyed by industry slug.
+const icons = import.meta.glob<string>("../assets/industries/*.svg", {
+  query: "?url",
+  import: "default",
+  eager: true,
+});
+const icon = (slug: string) => icons[`../assets/industries/${slug}.svg`];
+
+// A large glyph per topic for the lead insight card.
+const glyphs: Record<string, string> = {
+  "Sell Your Business": "storefront",
+  "Business Valuation": "chart-line-up",
+  "Exit Strategy": "sign-out",
+  "Buy a Business": "handshake",
+  "GCC M&A Market": "globe-hemisphere-east",
+  "Entrepreneurship Through Acquisition (ETA) GCC": "compass",
+};
+const post = (p: (typeof posts)[number]) => ({
+  href: `/insights/${p.slug}`,
+  title: p.title,
+  excerpt: p.excerpt,
+});
+
+const url = `${SITE}/`;
+const jsonLd = graph([
+  organization(settings),
+  website(),
+  webPage(url, page.seo.title, page.seo.description),
+  faqPage(url, faq.faq),
+]);
+const [primaryCta, secondaryCta] = hero.ctas as Link[];
 ---
 
 <Base
-  title="Wusool Capital | M&A advisory in the UAE"
-  description="Wusool Capital is an M&A advisory firm helping business owners in the UAE sell their companies to the right buyers."
+  title={page.seo.title}
+  description={page.seo.description}
+  og={{
+    title: page.seo.ogTitle,
+    description: page.seo.ogDescription,
+    image: page.seo.ogImage && imageUrl(page.seo.ogImage, 1200, 630),
+  }}
+  jsonLd={jsonLd}
 >
-  <section class="section">
+  {banner && (
+    <Announce
+      slot="announce"
+      href={`/reports/${banner.slug}`}
+      lead="Just released:"
+      title={banner.title}
+      cta="Get the playbook"
+    />
+  )}
+
+  <Hero label={hero.label} title={hero.title} soft={hero.soft} sub={hero.sub}>
+    <Fragment slot="ctas">
+      <Button href={primaryCta.href} variant="light" source="home-hero">
+        {primaryCta.label}
+      </Button>
+      <Button href={secondaryCta.href} variant="ghost-dark" source="home-hero">
+        {secondaryCta.label}
+      </Button>
+    </Fragment>
+    <ValuationMock />
+    <BuyersMock />
+  </Hero>
+
+  <Stats items={stats.items} />
+
+  <section class="section" id="compare">
     <div class="wrap">
-      <h1>Wusool Capital</h1>
-      <p>The new site is being built here.</p>
+      <SectionHead title={compare.title} lede={compare.lede} />
+      <Compare
+        old={{ title: compare.oldTitle, items: compare.oldItems }}
+        better={{ title: compare.newTitle, items: compare.newItems }}
+      />
+      <div class="after reveal">
+        <Button href={compare.cta.href} source="home-compare">
+          {compare.cta.label}
+        </Button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--flush-top" id="industries">
+    <div class="wrap">
+      <SectionHead title={sectors.title} lede={sectors.lede} />
+      <IndustryGrid
+        items={sectors.tiles.map(
+          (t: { slug: string; title: string; text: string; cta: string }) => ({
+            href: `/industries/${t.slug}`,
+            icon: icon(t.slug),
+            title: t.title,
+            text: t.text,
+            cta: t.cta,
+          }),
+        )}
+      />
+      <div class="after reveal">
+        <ArrowLink href={sectors.footLink.href} source="home-industries">
+          {sectors.footLink.label}
+        </ArrowLink>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--surface" id="process">
+    <div class="wrap">
+      <SectionHead
+        label={process.label}
+        title={process.title}
+        lede={process.lede}
+      />
+      <Process steps={process.steps}>
+        <Fragment slot="ctas">
+          <Button href={process.primary.href} source="home-process">
+            {process.primary.label}
+          </Button>
+          <ArrowLink href={process.secondary.href} source="home-process">
+            {process.secondary.label}
+          </ArrowLink>
+        </Fragment>
+        <BusinessMock slot="pane-0" />
+        <ShortlistMock slot="pane-1" />
+        <ProgressMock slot="pane-2" />
+      </Process>
+    </div>
+  </section>
+
+  {deals.length > 0 && (
+    <section class="section" id="transactions">
+      <div class="wrap">
+        <SectionHead
+          label={dealsHead.label}
+          title={dealsHead.title}
+          lede={dealsHead.lede}
+        />
+        <DealsTable
+          note={dealsHead.note}
+          rows={deals.map((d) => ({
+            mandate: d.category,
+            status: d.status,
+            closed: d.status === "Closed" || d.status === "Completed",
+            sector: d.sector,
+            country: d.country,
+            year: d.year,
+            summary: d.oneLineDescription,
+          }))}
+        >
+          <ArrowLink href={dealsHead.footLink.href}>
+            {dealsHead.footLink.label}
+          </ArrowLink>
+        </DealsTable>
+      </div>
+    </section>
+  )}
+
+  {posts.length === 3 && (
+    <section
+      class:list={["section", deals.length > 0 && "section--flush-top"]}
+      id="insights"
+    >
+      <div class="wrap">
+        <div class="posts-head">
+          <SectionHead title={postsHead.title} />
+          <ArrowLink href={postsHead.allLink.href} class="reveal">
+            {postsHead.allLink.label}
+          </ArrowLink>
+        </div>
+        <Posts
+          lead={{
+            ...post(posts[0]),
+            glyph: glyphs[posts[0].silo] ?? "newspaper",
+          }}
+          side={posts.slice(1).map(post)}
+        />
+      </div>
+    </section>
+  )}
+
+  <section class="section section--surface" id="faq">
+    <div class="wrap">
+      <Faq items={faq.faq}>
+        <SectionHead label={faq.label} title={faq.title} lede={faq.lede} />
+        <Button href={faq.cta.href} source="home-faq">
+          {faq.cta.label}
+        </Button>
+      </Faq>
     </div>
   </section>
 </Base>
+
+<style>
+  .after {
+    margin-top: var(--space-8);
+  }
+  .posts-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-6);
+  }
+</style>

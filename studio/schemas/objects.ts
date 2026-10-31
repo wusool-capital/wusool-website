@@ -24,6 +24,12 @@ export const seo = defineType({
     }),
     defineField({ name: "ogTitle", title: "OG title", type: "string" }),
     defineField({
+      name: "ogDescription",
+      title: "OG description",
+      type: "text",
+      rows: 2,
+    }),
+    defineField({
       name: "ogImage",
       title: "OG image (1200 x 630)",
       type: "image",
