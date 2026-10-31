@@ -224,6 +224,45 @@ const sections = [
     ],
   }),
   defineArrayMember({
+    name: "noteSection",
+    title: "Founders' note",
+    type: "object",
+    fields: [
+      { name: "title", type: "string" },
+      { name: "paragraphs", type: "array", of: [{ type: "text" }] },
+      {
+        name: "signers",
+        type: "array",
+        of: [{ type: "reference", to: [{ type: "teamMember" }] }],
+      },
+    ],
+  }),
+  defineArrayMember({
+    name: "teamSection",
+    title: "Team grid",
+    type: "object",
+    fields: [
+      { name: "title", type: "string" },
+      {
+        name: "members",
+        description: "In display order. Each links to its author page.",
+        type: "array",
+        of: [{ type: "reference", to: [{ type: "teamMember" }] }],
+      },
+      { name: "cta", type: "object", fields: link },
+    ],
+  }),
+  defineArrayMember({
+    name: "rolesSection",
+    title: "Open roles",
+    description: "Lists every open role from Careers.",
+    type: "object",
+    fields: [
+      { name: "title", type: "string" },
+      { name: "empty", title: "Text when no role is open", type: "string" },
+    ],
+  }),
+  defineArrayMember({
     name: "postsSection",
     title: "Latest insights",
     type: "object",

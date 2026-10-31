@@ -19,12 +19,17 @@ import BuyersMock from "./mocks/BuyersMock.astro";
 import BusinessMock from "./mocks/BusinessMock.astro";
 import ShortlistMock from "./mocks/ShortlistMock.astro";
 import ProgressMock from "./mocks/ProgressMock.astro";
+import Note from "./team/Note.astro";
+import TeamGrid from "./team/TeamGrid.astro";
+import Roles from "./team/Roles.astro";
+import { COMPANY_SLUG } from "../lib/team";
 import {
   faqItems,
   visibleSections,
   type Deal,
   type Link,
   type Post,
+  type Role,
   type Section,
 } from "../lib/pages";
 
@@ -32,10 +37,11 @@ interface Props {
   sections: Section[];
   deals: Deal[];
   posts: Post[];
+  roles?: Role[];
   // Prefix of the data-source attribute on CTAs, e.g. "home".
   page: string;
 }
-const { sections, deals, posts, page } = Astro.props;
+const { sections, deals, posts, roles = [], page } = Astro.props;
 const has = (l?: Link): l is Required<Pick<Link, "label">> & Link =>
   !!(l?.label && (l.href || l.form));
 
@@ -90,12 +96,16 @@ const plain = new Set([
   "sectorGridSection",
   "postsSection",
   "featureCardsSection",
+  "teamSection",
+  "rolesSection",
 ]);
 const flush = (i: number) =>
   plain.has(rendered[i]._type) &&
   plain.has(rendered[i - 1]?._type) &&
   !!rendered[i - 1]?.title;
 const src = (part: string) => `${page}-${part}`;
+// The company's team entry has no author page, so it never shows as a person.
+const person = (m: { slug: string }) => m.slug !== COMPANY_SLUG;
 ---
 
 {rendered.map((s, i) => {
@@ -354,6 +364,47 @@ const src = (part: string) => `${page}-${part}`;
               }}
               side={posts.slice(1).map(post)}
             />
+          </div>
+        </section>
+      );
+    case "noteSection":
+      return (
+        <section class="section">
+          <div class="wrap">
+            <Note
+              title={s.title}
+              paragraphs={s.paragraphs ?? []}
+              signers={(s.signers ?? []).filter(person)}
+            />
+          </div>
+        </section>
+      );
+    case "teamSection":
+      return (
+        <section class:list={["section", flush(i) && "section--flush-top"]}>
+          <div class="wrap">
+            <SectionHead title={s.title} />
+            <TeamGrid members={(s.members ?? []).filter(person)} />
+            {has(s.cta) && (
+              <div class="after reveal">
+                <Button
+                  href={s.cta.href}
+                  form={s.cta.form}
+                  source={src("team")}
+                >
+                  {s.cta.label}
+                </Button>
+              </div>
+            )}
+          </div>
+        </section>
+      );
+    case "rolesSection":
+      return (
+        <section class:list={["section", flush(i) && "section--flush-top"]}>
+          <div class="wrap">
+            <SectionHead title={s.title} />
+            <Roles roles={roles} empty={s.empty} />
           </div>
         </section>
       );

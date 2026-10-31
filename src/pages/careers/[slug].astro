@@ -1,0 +1,251 @@
+---
+// Role page. JobPosting is emitted once, and only while the role is open and
+// before its valid-through date (PRD Appendix B).
+import Base from "../../layouts/Base.astro";
+import Breadcrumbs from "../../components/insights/Breadcrumbs.astro";
+import Button from "../../components/Button.astro";
+import { query } from "../../lib/sanity";
+import { listItems, type Block } from "../../lib/portable";
+import { SITE, ORG_ID, WEBSITE_ID, graph, breadcrumbs } from "../../lib/schema";
+
+interface Career {
+  name: string;
+  slug: string;
+  department?: string;
+  location?: string;
+  employmentType?: string;
+  datePosted?: string;
+  validThrough?: string;
+  status?: string;
+  linkedinApplyUrl?: string;
+  shortDescription?: string;
+  responsibilities?: Block[];
+  requirements?: Block[];
+  metaTitle: string;
+  metaDescription: string;
+}
+
+export async function getStaticPaths() {
+  const careers = await query<Career[]>(`*[_type == "career"]{
+    name, "slug": slug.current, department, location, employmentType,
+    datePosted, validThrough, status, linkedinApplyUrl, shortDescription,
+    responsibilities, requirements, metaTitle, metaDescription
+  }`);
+  return careers.map((career) => ({
+    params: { slug: career.slug },
+    props: { career },
+  }));
+}
+
+const { career: c } = Astro.props as { career: Career };
+if (!c.metaTitle || !c.metaDescription) {
+  throw new Error(`Sanity: role ${c.slug} needs a meta title and description`);
+}
+const url = `${SITE}/careers/${c.slug}`;
+// Open through the whole valid-through day.
+const today = new Date().toISOString().slice(0, 10);
+const open =
+  c.status === "Open" &&
+  (!c.validThrough || c.validThrough.slice(0, 10) >= today);
+const responsibilities = listItems(c.responsibilities);
+const requirements = listItems(c.requirements);
+const crumbs = [
+  { name: "Home", href: "/" },
+  { name: "Careers", href: "/careers" },
+  { name: c.name },
+];
+const types: Record<string, string> = {
+  "Full-time": "FULL_TIME",
+  "Part-time": "PART_TIME",
+  Internship: "INTERN",
+  Contract: "CONTRACTOR",
+};
+const esc = (t: string) =>
+  t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const list = (items: string[]) =>
+  `<ul>${items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>`;
+// "Dubai, UAE (in person)" gives Dubai and AE.
+const city = c.location?.split(",")[0].trim();
+const inUae = /UAE|Emirates|Dubai|Abu Dhabi/i.test(c.location ?? "");
+const jsonLd = graph([
+  {
+    "@type": "WebPage",
+    "@id": `${url}#webpage`,
+    url,
+    name: c.metaTitle,
+    description: c.metaDescription,
+    isPartOf: { "@id": WEBSITE_ID },
+    breadcrumb: { "@id": `${url}#breadcrumb` },
+    inLanguage: "en",
+  },
+  ...(open
+    ? [
+        {
+          "@type": "JobPosting",
+          "@id": `${url}#job`,
+          title: c.name,
+          description: `<p>${esc(c.shortDescription ?? "")}</p><h3>Responsibilities</h3>${list(responsibilities)}<h3>Requirements</h3>${list(requirements)}`,
+          datePosted: c.datePosted,
+          validThrough: c.validThrough,
+          employmentType: c.employmentType && types[c.employmentType],
+          // Name inline: Google needs it on the posting itself.
+          hiringOrganization: {
+            "@type": "Organization",
+            "@id": ORG_ID,
+            name: "Wusool Capital",
+            sameAs: `${SITE}/`,
+          },
+          jobLocation: {
+            "@type": "Place",
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: city,
+              ...(inUae && { addressCountry: "AE" }),
+            },
+          },
+          directApply: false,
+        },
+      ]
+    : []),
+  breadcrumbs(
+    url,
+    crumbs.map((x) => ({
+      name: x.name,
+      url: x.href ? `${SITE}${x.href}` : url,
+    })),
+  ),
+]);
+const facts = [
+  ["Location", c.location],
+  ["Type", c.employmentType],
+  ["Team", c.department],
+  [
+    "Posted",
+    c.datePosted &&
+      new Date(c.datePosted).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }),
+  ],
+].filter(([, v]) => v) as [string, string][];
+---
+
+<Base
+  title={c.metaTitle}
+  description={c.metaDescription}
+  jsonLd={jsonLd}
+  noindex={!open}
+>
+  <header class="head">
+    <div class="wrap">
+      <Breadcrumbs items={crumbs} />
+      <h1>{c.name}</h1>
+      {c.shortDescription && <p class="lede">{c.shortDescription}</p>}
+      <dl class="facts">
+        {facts.map(([k, v]) => (
+          <div>
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))}
+      </dl>
+      {!open && <p class="closed">This role is closed.</p>}
+    </div>
+  </header>
+
+  <section class="section section--flush-top">
+    <div class="wrap">
+      <div class="body">
+        {responsibilities.length > 0 && (
+          <>
+            <h2>Responsibilities</h2>
+            <ul>
+              {responsibilities.map((r) => (
+                <li>{r}</li>
+              ))}
+            </ul>
+          </>
+        )}
+        {requirements.length > 0 && (
+          <>
+            <h2>What we're looking for</h2>
+            <ul>
+              {requirements.map((r) => (
+                <li>{r}</li>
+              ))}
+            </ul>
+          </>
+        )}
+        {open && c.linkedinApplyUrl && (
+          <div class="apply">
+            <Button href={c.linkedinApplyUrl} source={`career-${c.slug}`}>
+              Apply on LinkedIn
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .head {
+    padding: var(--space-10) 0 var(--space-12);
+  }
+  h1 {
+    max-width: var(--measure-h1);
+    margin-top: var(--space-8);
+    font-size: var(--text-h2);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-display);
+  }
+  .lede {
+    max-width: var(--measure-lede);
+    margin-top: var(--space-4);
+    color: var(--muted);
+    font-size: var(--text-lg);
+  }
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4) var(--space-10);
+    margin-top: var(--space-6);
+  }
+  dt {
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  dd {
+    margin: 0;
+    font-weight: var(--weight-medium);
+  }
+  .closed {
+    margin-top: var(--space-6);
+    font-weight: var(--weight-semibold);
+  }
+  .body {
+    max-width: var(--measure-body);
+  }
+  h2 {
+    margin-top: var(--space-10);
+    font-size: var(--text-range);
+    font-weight: var(--weight-semibold);
+  }
+  h2:first-child {
+    margin-top: 0;
+  }
+  ul {
+    margin-top: var(--space-4);
+    padding-left: var(--space-5);
+    font-size: var(--text-lg);
+    line-height: var(--leading-prose);
+  }
+  li + li {
+    margin-top: var(--space-2);
+  }
+  .apply {
+    margin-top: var(--space-10);
+  }
+</style>

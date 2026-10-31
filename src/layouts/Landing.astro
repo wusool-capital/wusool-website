@@ -23,9 +23,13 @@ interface Props {
   // Breadcrumb name and data-source prefix, e.g. "Sell" and "sell".
   name: string;
   source: string;
+  // Schema.org type of the page node, e.g. AboutPage on Team.
+  pageType?: string;
+  // Extra structured data nodes, e.g. a Person per team member.
+  nodes?: Record<string, unknown>[];
 }
-const { id, name, source } = Astro.props;
-const { page, settings, banner, posts, deals } = await loadPage(id);
+const { id, name, source, pageType, nodes = [] } = Astro.props;
+const { page, settings, banner, posts, deals, roles } = await loadPage(id);
 const home = id === "page-home";
 const path = Astro.url.pathname.replace(/(index)?\.html$/, "");
 const url = home ? `${SITE}/` : `${SITE}${path}`;
@@ -60,12 +64,14 @@ const jsonLd = graph([
   ...(home ? [organization(settings), website()] : []),
   {
     ...webPage(url, page.seo.title, page.seo.description),
+    ...(pageType ? { "@type": pageType } : {}),
     ...(home ? {} : { breadcrumb: { "@id": `${url}#breadcrumb` } }),
   },
   ...(page.service?.name
     ? [service(url, page.service, settings.areaServed)]
     : []),
   ...(faq.length ? [faqPage(url, faq)] : []),
+  ...nodes,
   ...crumbs,
 ]);
 ---
@@ -97,6 +103,7 @@ const jsonLd = graph([
     sections={page.sections}
     deals={deals}
     posts={posts}
+    roles={roles}
     page={source}
   />
 </Base>

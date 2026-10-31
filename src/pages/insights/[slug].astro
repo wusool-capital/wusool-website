@@ -23,6 +23,7 @@ import {
   type Insight,
 } from "../../lib/insights";
 import { renderBody } from "../../lib/portable";
+import { COMPANY_SLUG, personId } from "../../lib/team";
 import {
   SITE,
   ORG_ID,
@@ -73,6 +74,9 @@ const updated =
     ? i.lastUpdated
     : undefined;
 const image = ogImage("insights", i);
+// Articles signed by the company link to the team page, not a person page.
+const byCompany = i.author?.slug === COMPANY_SLUG;
+const authorHref = byCompany ? "/team" : `/team/${i.author?.slug}`;
 
 const crumbs = [
   { name: "Home", href: "/" },
@@ -106,12 +110,14 @@ const jsonLd = graph([
     mainEntityOfPage: { "@id": `${url}#webpage` },
     publisher: { "@id": ORG_ID },
     ...(i.author && {
-      author: {
-        "@type": "Person",
-        "@id": `${SITE}/team/${i.author.slug}#person`,
-        name: i.author.name,
-        url: `${SITE}/team/${i.author.slug}`,
-      },
+      author: byCompany
+        ? { "@type": "Organization", "@id": ORG_ID, name: "Wusool Capital" }
+        : {
+            "@type": "Person",
+            "@id": personId(i.author.slug),
+            name: i.author.name,
+            url: `${SITE}/team/${i.author.slug}`,
+          },
     }),
   },
   ...(faq.length ? [faqPage(url, faq)] : []),
@@ -146,7 +152,7 @@ const jsonLd = graph([
         {i.excerpt && <p class="lede">{i.excerpt}</p>}
         <p class="meta">
           {i.author && (
-            <a href={`/team/${i.author.slug}`} rel="author">
+            <a href={authorHref} rel="author">
               {i.author.name}
             </a>
           )}
@@ -227,7 +233,7 @@ const jsonLd = graph([
           </Button>
         </div>
         <ShareLinks url={url} title={i.h1} />
-        {i.author && <AuthorBox author={i.author} />}
+        {i.author && <AuthorBox author={i.author} href={authorHref} />}
       </div>
       {toc.length >= 4 && (
         <aside class="aside">

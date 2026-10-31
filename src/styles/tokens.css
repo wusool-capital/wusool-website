@@ -110,6 +110,9 @@
   --defer-size: 1200px;
   /* Report first-page preview width. */
   --preview-w: 420px;
+  /* Team card headshot. */
+  --headshot: 120px;
+  --headshot-lg: 240px;
   --hero-min-h: min(640px, calc(100dvh - 140px));
   --hero-pad: 64px;
   --avatar: 34px;

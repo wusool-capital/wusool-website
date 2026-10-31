@@ -1,0 +1,108 @@
+---
+// Team members as cards: headshot, name linking to the author page, role,
+// short bio and LinkedIn.
+import Icon from "../Icon.astro";
+import { imageUrl } from "../../lib/sanity";
+import type { Member } from "../../lib/pages";
+
+interface Props {
+  members: Member[];
+}
+const { members } = Astro.props;
+---
+
+<ul class="grid">
+  {members.map((m) => (
+    <li class="member reveal">
+      {m.headshot && (
+        <img
+          src={imageUrl(m.headshot, 240, 240, "webp")}
+          alt=""
+          width="120"
+          height="120"
+          loading="lazy"
+          decoding="async"
+        />
+      )}
+      <div>
+        <h3>
+          <a href={`/team/${m.slug}`}>{m.name}</a>
+        </h3>
+        {m.roleTitle && <p class="role">{m.roleTitle}</p>}
+        {m.shortBio && <p class="bio">{m.shortBio}</p>}
+        {m.linkedinUrl && (
+          <a class="social" href={m.linkedinUrl} rel="noopener">
+            <Icon name="linkedin-logo" />
+            <span>{m.name} on LinkedIn</span>
+          </a>
+        )}
+      </div>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: var(--space-12) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .member {
+    display: flex;
+    gap: var(--space-6);
+    padding: var(--space-6);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+  }
+  img {
+    flex: none;
+    width: var(--headshot);
+    height: var(--headshot);
+    border-radius: var(--r-card);
+    object-fit: cover;
+  }
+  h3 {
+    margin: 0;
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-h3);
+  }
+  h3 a {
+    color: var(--navy);
+  }
+  h3 a:hover {
+    text-decoration: underline;
+    text-underline-offset: var(--nudge);
+  }
+  .role {
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  .bio {
+    margin-top: var(--space-3);
+    color: var(--muted);
+    font-size: var(--text-15);
+  }
+  .social {
+    display: inline-flex;
+    gap: var(--space-2);
+    align-items: center;
+    margin-top: var(--space-4);
+    color: var(--navy);
+    font-size: var(--text-14);
+  }
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 560px) {
+    .member {
+      flex-direction: column;
+    }
+  }
+</style>

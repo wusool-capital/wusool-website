@@ -1,0 +1,64 @@
+---
+// Founders' note: a short letter with the signers' names linked to their
+// author pages.
+import SectionHead from "../SectionHead.astro";
+import type { Member } from "../../lib/pages";
+
+interface Props {
+  title: string;
+  paragraphs: string[];
+  signers: Member[];
+}
+const { title, paragraphs, signers } = Astro.props;
+---
+
+<SectionHead title={title} />
+<div class="letter">
+  {paragraphs.map((p) => (
+    <p>{p}</p>
+  ))}
+  {signers.length > 0 && (
+    <ul class="signers">
+      {signers.map((m) => (
+        <li>
+          <a href={`/team/${m.slug}`}>{m.name}</a>
+          {m.roleTitle && <span>{m.roleTitle}</span>}
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
+
+<style>
+  .letter {
+    max-width: var(--measure-body);
+    margin-top: var(--space-8);
+    font-size: var(--text-lg);
+    line-height: var(--leading-prose);
+  }
+  .letter p + p {
+    margin-top: var(--space-5);
+  }
+  .signers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4) var(--space-10);
+    margin: var(--space-8) 0 0;
+    padding: var(--space-6) 0 0;
+    border-top: 1px solid var(--line);
+    list-style: none;
+  }
+  .signers a {
+    display: block;
+    color: var(--navy);
+    font-weight: var(--weight-semibold);
+  }
+  .signers a:hover {
+    text-decoration: underline;
+    text-underline-offset: var(--nudge);
+  }
+  .signers span {
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+</style>

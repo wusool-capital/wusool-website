@@ -1,0 +1,15 @@
+---
+// Team page: an AboutPage with a Person node per team member (Appendix B).
+import Landing from "../layouts/Landing.astro";
+import { teamMembers, person } from "../lib/team";
+
+const members = await teamMembers();
+---
+
+<Landing
+  id="page-team"
+  name="Team"
+  source="team"
+  pageType="AboutPage"
+  nodes={members.map(person)}
+/>
