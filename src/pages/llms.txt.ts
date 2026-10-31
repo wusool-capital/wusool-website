@@ -26,7 +26,7 @@ export const GET: APIRoute = async () => {
     items.map((i) => `- ${i.title}: ${SITE}/${base}/${i.slug}`).join("\n");
   const text = `# Wusool Capital
 
-Wusool Capital is a Dubai-based M&A advisory firm helping UAE and GCC business owners sell their businesses. ${s.orgDescription}
+${s.orgDescription}
 
 - Deal size: ${s.dealSizeRange}
 - Fees: ${s.feeWording}

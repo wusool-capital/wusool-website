@@ -1,5 +1,6 @@
 // Writes dist/sitemap.xml after the build: every built page that is
-// indexable (no noindex), with its own canonical URL (PRD 8, fix 11).
+// indexable (no noindex), with its own canonical URL and, for articles and
+// reports, lastmod from the page's dateModified (PRD 8, fix 11).
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -14,17 +15,23 @@ const walk = (dir) => {
 };
 walk(DIST);
 
-const urls = pages
+const entries = pages
   .map((file) => readFileSync(file, "utf8"))
-  .filter((html) => !/<meta name="robots" content="[^"]*noindex/.test(html))
-  .map((html) => html.match(/<link rel="canonical" href="([^"]+)"/)?.[1])
-  .filter(Boolean)
-  .sort();
+  .filter((html) => !/<meta[^>]*name="robots"[^>]*noindex/.test(html))
+  .map((html) => ({
+    loc: html.match(/<link rel="canonical" href="([^"]+)"/)?.[1],
+    lastmod: html.match(/"dateModified":"([^"]+)"/)?.[1]?.slice(0, 10),
+  }))
+  .filter((e) => e.loc)
+  .sort((a, b) => a.loc.localeCompare(b.loc));
 
 writeFileSync(
   join(DIST, "sitemap.xml"),
-  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
-    .map((u) => `  <url><loc>${u}</loc></url>`)
+  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries
+    .map(
+      (e) =>
+        `  <url><loc>${e.loc}</loc>${e.lastmod ? `<lastmod>${e.lastmod}</lastmod>` : ""}</url>`,
+    )
     .join("\n")}\n</urlset>\n`,
 );
-console.log(`sitemap: ${urls.length} URLs`);
+console.log(`sitemap: ${entries.length} URLs`);

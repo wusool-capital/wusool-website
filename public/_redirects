@@ -2,3 +2,4 @@
 # or gets a 301). The test collections /insights-test and /reports-test are
 # not redirected: they return 404 (fix 3).
 /transactions /sell 301
+/transactions/ /sell 301
