@@ -46,6 +46,7 @@
   --text-cta: clamp(36px, 5vw, 64px);
   --text-post-lead: clamp(24px, 2.4vw, 32px);
   --leading-body: 1.55;
+  --leading-prose: 1.65;
   --leading-tight: 1.1;
   --leading-display: 1.04;
   --leading-snug: 1.25;

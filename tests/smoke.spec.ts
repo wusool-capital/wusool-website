@@ -2,7 +2,13 @@ import { readFileSync } from "node:fs";
 import { test, expect } from "@playwright/test";
 
 // Pages to smoke test. Add each new page as it ships.
-const pages = ["/", "/sell", "/buyers", "/styleguide"];
+const pages = [
+  "/",
+  "/sell",
+  "/buyers",
+  "/industries/technology",
+  "/styleguide",
+];
 // Links to pages later features build (see scripts/check-dist.mjs).
 const pending = new Set<string>(
   JSON.parse(readFileSync("scripts/pending-routes.json", "utf8")).routes,
@@ -217,4 +223,46 @@ test("Buyers has its own closing CTA that opens the buyers form", async ({
   );
   await expect(band.locator('[data-form="buyers"]')).toHaveCount(1);
   await expect(page.locator(".hero .visual")).toHaveCount(0);
+});
+
+// Every published industry in Sanity has a page with its title, H1 and FAQ.
+test("all industry pages render their Sanity content", async ({ page }) => {
+  const api =
+    "https://qjvm6ww8.api.sanity.io/v2025-01-01/data/query/production?perspective=published&query=";
+  const res = await fetch(
+    api +
+      encodeURIComponent(
+        '*[_type == "industry"]{"slug": slug.current, seoMetaTitle, heroHeadline, faq}',
+      ),
+  );
+  const industries: {
+    slug: string;
+    seoMetaTitle: string;
+    heroHeadline: string;
+    faq: { question: string; answer: string }[];
+  }[] = (await res.json()).result;
+  expect(industries.length).toBe(10);
+  for (const i of industries) {
+    const r = await page.goto(`/industries/${i.slug}`);
+    expect(r?.status(), i.slug).toBe(200);
+    await expect(page).toHaveTitle(i.seoMetaTitle);
+    expect(i.seoMetaTitle.length, i.slug).toBeLessThanOrEqual(60);
+    await expect(page.locator("h1")).toHaveText(i.heroHeadline);
+    const ld = JSON.parse(
+      (await page
+        .locator('script[type="application/ld+json"]')
+        .textContent()) ?? "{}",
+    );
+    const types = ld["@graph"].map((n: { "@type": string }) => n["@type"]);
+    expect(types).toEqual(["WebPage", "Service", "FAQPage", "BreadcrumbList"]);
+    const faq = ld["@graph"].find(
+      (n: { "@type": string }) => n["@type"] === "FAQPage",
+    );
+    await expect(page.locator("#faq summary")).toHaveText(
+      faq.mainEntity.map((m: { name: string }) => m.name),
+    );
+    await expect(page.locator("main")).not.toContainText(
+      /\$1M . \$27M|\$1M to \$27M/,
+    );
+  }
 });

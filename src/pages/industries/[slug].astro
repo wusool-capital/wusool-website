@@ -1,0 +1,192 @@
+---
+// Industry page: one per published industry document in Sanity.
+import Base from "../../layouts/Base.astro";
+import Hero from "../../components/Hero.astro";
+import Button from "../../components/Button.astro";
+import ArrowLink from "../../components/ArrowLink.astro";
+import SectionHead from "../../components/SectionHead.astro";
+import Facts from "../../components/Facts.astro";
+import Compare from "../../components/Compare.astro";
+import Faq from "../../components/Faq.astro";
+import ValuationMock from "../../components/mocks/ValuationMock.astro";
+import BuyersMock from "../../components/mocks/BuyersMock.astro";
+import { query, imageUrl } from "../../lib/sanity";
+import { html, listItems, type Block } from "../../lib/portable";
+import {
+  SITE,
+  graph,
+  webPage,
+  service,
+  faqPage,
+  breadcrumbs,
+} from "../../lib/schema";
+import type { Faq as FaqItem } from "../../lib/pages";
+
+interface Industry {
+  name: string;
+  slug: string;
+  heroHeadline: string;
+  heroSubtext: string;
+  sectorOverview?: Block[];
+  ebitdaMultipleRange?: string;
+  whatBuyersLookFor?: Block[];
+  commonDealKillers?: Block[];
+  dealTimeline?: string;
+  buyerTypes?: string;
+  dealSizeRange?: string;
+  faq?: FaqItem[];
+  seoMetaTitle: string;
+  seoMetaDescription: string;
+  ogImage?: string;
+  guide?: { href: string; label: string };
+  areaServed: string[];
+}
+
+export async function getStaticPaths() {
+  const industries = await query<
+    Industry[]
+  >(`*[_type == "industry"] | order(sortOrder asc){
+    name, "slug": slug.current, heroHeadline, heroSubtext, sectorOverview, ebitdaMultipleRange,
+    whatBuyersLookFor, commonDealKillers, dealTimeline, buyerTypes, dealSizeRange, faq,
+    seoMetaTitle, seoMetaDescription, "ogImage": featuredImage.asset._ref,
+    // The related guide shows only once its insight is published.
+    "guide": select(
+      count(*[_type == "insights" && "/insights/" + slug.current == ^.clusterArticleUrl]) > 0 =>
+        {"href": clusterArticleUrl, "label": clusterArticleLabel}
+    ),
+    "areaServed": *[_id == "siteSettings"][0].areaServed
+  }`);
+  return industries.map((industry) => ({
+    params: { slug: industry.slug },
+    props: { industry },
+  }));
+}
+
+const { industry: i } = Astro.props as { industry: Industry };
+if (!i.seoMetaTitle || !i.seoMetaDescription || !i.heroHeadline) {
+  throw new Error(
+    `Sanity: industry ${i.slug} needs an SEO title, description and hero headline`,
+  );
+}
+const url = `${SITE}/industries/${i.slug}`;
+const faq = (i.faq ?? []).filter((f) => f.question && f.answer);
+// "3–5x (strong brands: up to 3.5x)" shows as "3–5x" on the card.
+const range = i.ebitdaMultipleRange
+  ?.split(/ \(| \//)[0]
+  .replace(/ EBITDA$/, "");
+const killers = listItems(i.commonDealKillers);
+const wants = listItems(i.whatBuyersLookFor);
+
+const jsonLd = graph([
+  {
+    ...webPage(url, i.seoMetaTitle, i.seoMetaDescription),
+    breadcrumb: { "@id": `${url}#breadcrumb` },
+  },
+  service(
+    url,
+    {
+      name: `Sell-side M&A advisory for ${i.name} businesses in the UAE`,
+      serviceType: "Sell-side M&A advisory",
+      category: i.name,
+      description: i.heroSubtext,
+    },
+    i.areaServed,
+  ),
+  ...(faq.length ? [faqPage(url, faq)] : []),
+  breadcrumbs(url, [
+    { name: "Home", url: `${SITE}/` },
+    { name: i.name, url },
+  ]),
+]);
+---
+
+<Base
+  title={i.seoMetaTitle}
+  description={i.seoMetaDescription}
+  og={{ image: i.ogImage && imageUrl(i.ogImage, 1200, 630) }}
+  jsonLd={jsonLd}
+  bottom={faq.length ? "surface" : "page"}
+>
+  <Hero title={i.heroHeadline} sub={i.heroSubtext}>
+    <Fragment slot="ctas">
+      <Button
+        href="/valuation-tool"
+        variant="light"
+        source={`industry-${i.slug}-hero`}
+      >
+        Get Your Free Valuation
+      </Button>
+    </Fragment>
+    <ValuationMock sector={i.name} range={range} note="Typical range" />
+    <BuyersMock />
+  </Hero>
+
+  <Facts
+    items={[
+      { label: "EBITDA multiple", value: i.ebitdaMultipleRange },
+      { label: "To first offer", value: i.dealTimeline },
+      { label: "Buyer types", value: i.buyerTypes },
+      { label: "Deal-size range", value: i.dealSizeRange },
+    ]}
+  />
+
+  <section class="section">
+    <div class="wrap">
+      <SectionHead title="Sector overview" />
+      <div class="overview reveal" set:html={html(i.sectorOverview)} />
+      {(killers.length > 0 || wants.length > 0) && (
+        <Compare
+          old={{ title: "Common deal-killers", items: killers }}
+          better={{ title: "What buyers look for", items: wants }}
+        />
+      )}
+      <div class="after reveal">
+        <Button href="/valuation-tool" source={`industry-${i.slug}-body`}>
+          Get Your Free Valuation
+        </Button>
+        {i.guide && (
+          <ArrowLink href={i.guide.href} source={`industry-${i.slug}-guide`}>
+            Read the guide: {i.guide.label}
+          </ArrowLink>
+        )}
+      </div>
+    </div>
+  </section>
+
+  {faq.length > 0 && (
+    <section class="section section--surface" id="faq">
+      <div class="wrap">
+        <Faq items={faq}>
+          <SectionHead
+            label="Common questions"
+            title="FAQ's"
+            lede="Answers to frequently asked questions."
+          />
+          <Button form="get-started" source={`industry-${i.slug}-faq`}>
+            Talk to us
+          </Button>
+        </Faq>
+      </div>
+    </section>
+  )}
+</Base>
+
+<style>
+  .overview {
+    max-width: var(--measure-body);
+    margin-top: var(--space-6);
+    color: var(--ink);
+    font-size: var(--text-lg);
+    line-height: var(--leading-prose);
+  }
+  .overview :global(p + p) {
+    margin-top: var(--space-4);
+  }
+  .after {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-6);
+    margin-top: var(--space-8);
+  }
+</style>

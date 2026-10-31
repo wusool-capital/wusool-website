@@ -1,0 +1,64 @@
+---
+// Key figures as a definition list: label above, value below. Values can be
+// long, so they use body-size type instead of the large stat numbers.
+interface Props {
+  items: { label: string; value?: string }[];
+}
+const items = Astro.props.items.filter((i) => i.value);
+---
+
+<div class="facts">
+  <div class="wrap">
+    <dl class="grid reveal">
+      {items.map((i) => (
+        <div class="fact">
+          <dt>{i.label}</dt>
+          <dd>{i.value}</dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</div>
+
+<style>
+  .facts {
+    padding: var(--space-7) 0 0;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(var(--menu-w), 1fr));
+    margin: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+  }
+  .fact {
+    padding: var(--space-6) var(--space-7);
+  }
+  .fact + .fact {
+    border-left: 1px solid var(--line);
+  }
+  dt {
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  dd {
+    margin: var(--space-2) 0 0;
+    color: var(--navy);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-h3);
+  }
+  @media (max-width: 1080px) {
+    .fact + .fact {
+      border-left: 0;
+    }
+    .fact {
+      border-top: 1px solid var(--line);
+    }
+    .fact:first-child {
+      border-top: 0;
+    }
+  }
+</style>
