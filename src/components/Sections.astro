@@ -103,7 +103,7 @@ const flush = (i: number) =>
   plain.has(rendered[i - 1]?._type) &&
   !!rendered[i - 1]?.title;
 const src = (part: string) => `${page}-${part}`;
-// The company's team entry has no author page, so it never shows as a person.
+// The company's team entry is not a person, so it never signs the note.
 const person = (m: { slug: string }) => m.slug !== COMPANY_SLUG;
 ---
 
