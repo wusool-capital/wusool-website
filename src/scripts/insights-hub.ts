@@ -15,6 +15,14 @@ function applyFilters() {
     c.hidden = !ok;
     if (ok) shown++;
   }
+  // Hide sections the filters leave empty, so no heading stands alone.
+  document
+    .querySelectorAll<HTMLElement>("[data-browse] section")
+    .forEach((s) => {
+      s.hidden = ![...s.querySelectorAll<HTMLElement>(".card")].some(
+        (c) => !c.hidden,
+      );
+    });
   if (status)
     status.textContent =
       filters.topic || filters.format ? `${shown} matching` : "";
@@ -63,7 +71,7 @@ input?.addEventListener("input", async () => {
   if (filterBar) filterBar.hidden = searching;
   if (results) results.hidden = !searching;
   if (!searching) {
-    if (status) status.textContent = "";
+    applyFilters();
     return;
   }
   const found = await (await load()).search(q);

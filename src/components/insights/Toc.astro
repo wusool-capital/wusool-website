@@ -2,12 +2,14 @@
 // Table of contents for long articles: the article's H2s.
 interface Props {
   items: { id: string; text: string }[];
+  // Unique per page, since long articles render the list twice.
+  id: string;
 }
-const { items } = Astro.props;
+const { items, id } = Astro.props;
 ---
 
-<nav class="toc" aria-labelledby="toc-title">
-  <p id="toc-title" class="title">
+<nav class="toc" aria-labelledby={id}>
+  <p id={id} class="title">
     On this page
   </p>
   <ol>

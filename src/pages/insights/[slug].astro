@@ -185,7 +185,7 @@ const jsonLd = graph([
         {toc.length >= 4 && (
           <details class="toc-mobile">
             <summary>On this page</summary>
-            <Toc items={toc} />
+            <Toc items={toc} id="toc-mobile" />
           </details>
         )}
         <Prose html={first} />
@@ -230,7 +230,7 @@ const jsonLd = graph([
       </div>
       {toc.length >= 4 && (
         <aside class="aside">
-          <Toc items={toc} />
+          <Toc items={toc} id="toc-aside" />
         </aside>
       )}
     </div>

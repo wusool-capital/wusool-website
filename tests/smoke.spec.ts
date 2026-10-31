@@ -316,12 +316,29 @@ test("every published insight renders with Article schema", async ({
 
 test("insights hub lists every insight without JS and each card has an image", async ({
   browser,
+  request,
 }) => {
   const ctx = await browser.newContext({ javaScriptEnabled: false });
   const page = await ctx.newPage();
   await page.goto("/insights");
   const cards = page.locator("[data-browse] .card");
-  expect(await cards.count()).toBeGreaterThan(30);
+  const listed: number = (
+    await (
+      await request.get(
+        sanity(
+          'count(*[_type == "insights" && !(_id in path("drafts.**")) && hideFromListings != true])',
+        ),
+      )
+    ).json()
+  ).result;
+  const reports: number = (
+    await (
+      await request.get(
+        sanity('count(*[_type == "report" && !(_id in path("drafts.**"))])'),
+      )
+    ).json()
+  ).result;
+  expect(await cards.count()).toBe(listed + reports);
   const missing = await cards.evaluateAll(
     (cs) => cs.filter((c) => !c.querySelector("img[src]")).length,
   );

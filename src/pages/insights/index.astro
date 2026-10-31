@@ -71,7 +71,6 @@ const jsonLd = graph([
     breadcrumb: { "@id": `${url}#breadcrumb` },
     blogPost: insights.map((i) => ({
       "@type": "BlogPosting",
-      "@id": `${SITE}/insights/${i.slug}#article`,
       headline: i.title,
       url: `${SITE}/insights/${i.slug}`,
       datePublished: i.publishedAt,

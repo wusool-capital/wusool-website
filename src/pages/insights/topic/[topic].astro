@@ -9,6 +9,7 @@ import {
   listedInsights,
   cardImage,
   formatDate,
+  topicOf,
   type InsightCard as Card,
 } from "../../../lib/insights";
 import { SITE, WEBSITE_ID, graph, breadcrumbs } from "../../../lib/schema";
@@ -27,7 +28,12 @@ export async function getStaticPaths() {
     query<Topic[]>(`*[_id == "siteSettings"][0].topics`),
     listedInsights(),
   ]);
+  // Slugs come from the same list the article links use.
   return (topics ?? [])
+    .flatMap((topic) => {
+      const slug = topicOf(topic.silo)?.slug;
+      return slug ? [{ ...topic, slug }] : [];
+    })
     .map((topic) => ({
       topic,
       items: insights.filter((i) => i.silo === topic.silo),
@@ -63,7 +69,7 @@ const jsonLd = graph([
   breadcrumbs(url, [
     { name: "Home", url: `${SITE}/` },
     { name: "Insights", url: `${SITE}/insights` },
-    { name: topic.title, url },
+    { name: topic.silo, url },
   ]),
 ]);
 ---
@@ -75,7 +81,7 @@ const jsonLd = graph([
         items={[
           { name: "Home", href: "/" },
           { name: "Insights", href: "/insights" },
-          { name: topic.title },
+          { name: topic.silo },
         ]}
       />
       <h1>{topic.title}</h1>

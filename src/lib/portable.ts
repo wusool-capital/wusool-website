@@ -57,11 +57,13 @@ export interface Heading {
 }
 
 export function renderBody(blocks: Node[] = []) {
-  const ids = new Set<string>();
+  // Ids the article page uses itself.
+  const ids = new Set<string>(["faq", "toc-mobile", "toc-aside"]);
   const toc: Heading[] = [];
   const idFor = (text: string) => {
-    let id = slugify(text) || "section";
-    for (let n = 2; ids.has(id); n++) id = `${slugify(text)}-${n}`;
+    const base = slugify(text) || "section";
+    let id = base;
+    for (let n = 2; ids.has(id); n++) id = `${base}-${n}`;
     ids.add(id);
     return id;
   };
@@ -99,7 +101,10 @@ export function renderBody(blocks: Node[] = []) {
             caption?: string;
             image?: { asset?: { _ref: string }; alt?: string };
           };
-          if (!v.image?.asset) return "";
+          if (!v.image?.asset)
+            throw new Error(
+              `Sanity: exhibit "${v.title ?? ""}" has no image. Run scripts/convert-bundle.mjs.`,
+            );
           return `<figure class="pt-exhibit">${v.title ? `<h3 id="${idFor(v.title)}">${esc(v.title)}</h3>` : ""}${img(v.image.asset._ref, v.image.alt ?? v.title ?? "")}${v.caption ? `<figcaption>${esc(v.caption)}</figcaption>` : ""}</figure>`;
         },
         table: ({ value }) => {

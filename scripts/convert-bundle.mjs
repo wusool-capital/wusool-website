@@ -8,6 +8,7 @@
 //   node --env-file=.env scripts/convert-bundle.mjs <insight slug> [--write]
 //
 // Without --write it prints a summary and saves the images to a temp folder.
+/* global document -- page.evaluate callbacks run in the page */
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -42,7 +43,19 @@ const page = await browser.newPage({
   deviceScaleFactor: 2,
 });
 await page.goto(`file://${local}`);
-await page.waitForTimeout(8000);
+// Scroll the whole page so counters, charts and reveal animations all run.
+// The bundle scrolls inside a fixed-height host, so scroll that.
+const height = await page.evaluate(
+  () =>
+    document.querySelector(".sc-host")?.scrollHeight ??
+    document.body.scrollHeight,
+);
+await page.mouse.move(640, 450);
+for (let y = 0; y < height; y += 400) {
+  await page.mouse.wheel(0, 400);
+  await page.waitForTimeout(250);
+}
+await page.waitForTimeout(3000);
 
 const blocks = await page.evaluate(() => {
   let n = 0;
@@ -96,7 +109,6 @@ const blocks = await page.evaluate(() => {
   };
 
   let figure = 0;
-  // eslint-disable-next-line no-undef -- runs in the page
   for (const el of document.body.querySelectorAll("h2, h3, p, li, figure")) {
     if (el.closest("button, nav, header, footer")) continue;
     const inFigure = el.tagName !== "FIGURE" && el.closest("figure");
@@ -134,7 +146,10 @@ const blocks = await page.evaluate(() => {
         _key: key(),
         title: title || undefined,
         caption: caption || undefined,
-        alt: labels.slice(0, 600),
+        alt:
+          labels.length > 600
+            ? labels.slice(0, 600).replace(/\s\S*$/, "") + "…"
+            : labels,
         shot: figure++,
       });
       continue;
@@ -157,6 +172,9 @@ for (const b of blocks.filter((x) => x._type === "exhibit")) {
       .forEach((e) => (e.style.display = "none")),
   );
   const file = join(dir, `exhibit-${b.shot}.png`);
+  // Let its reveal finish, since the layout moves while it runs.
+  await fig.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(2500);
   await fig.screenshot({ path: file });
   b.file = file;
 }
