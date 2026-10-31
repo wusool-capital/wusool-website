@@ -80,6 +80,31 @@ export const siteSettings = defineType({
     defineField({ name: "nav", type: "array", of: [navLink] }),
     defineField({ name: "footerLinks", type: "array", of: [navLink] }),
     defineField({ name: "defaultSeo", type: "seo" }),
+    // One indexable hub page per primary silo at /insights/topic/{slug}.
+    defineField({
+      name: "topics",
+      title: "Insight topics",
+      type: "array",
+      of: [
+        defineArrayMember({
+          type: "object",
+          fields: [
+            { name: "silo", type: "string" },
+            { name: "slug", type: "string" },
+            { name: "title", title: "Page title (H1)", type: "string" },
+            { name: "intro", type: "text", rows: 3 },
+            { name: "seoTitle", title: "SEO title", type: "string" },
+            {
+              name: "seoDescription",
+              title: "SEO description",
+              type: "text",
+              rows: 2,
+            },
+          ],
+          preview: { select: { title: "title" } },
+        }),
+      ],
+    }),
   ],
   preview: { prepare: () => ({ title: "Site settings" }) },
 });

@@ -59,6 +59,7 @@
   --tracking-num-sm: -0.02em;
   --weight-medium: 500;
   --weight-semibold: 600;
+  --measure-h1: 26ch;
   --measure-h2: 22ch;
   --measure-lede: 58ch;
   --measure-body: 68ch;
@@ -105,6 +106,8 @@
   --menu-w: 260px;
   --menu-w-wide: 480px;
   --fact-min: 220px;
+  /* Placeholder height for below-fold sections rendered on demand. */
+  --defer-size: 1200px;
   --hero-min-h: min(640px, calc(100dvh - 140px));
   --hero-pad: 64px;
   --avatar: 34px;

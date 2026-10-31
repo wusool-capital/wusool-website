@@ -1,0 +1,6 @@
+import type { APIRoute } from "astro";
+import { coverPaths, jpgResponse } from "../../../lib/cover-routes";
+
+export const getStaticPaths = () => coverPaths("report");
+export const GET: APIRoute = ({ props }) =>
+  jpgResponse(props as never, "report");

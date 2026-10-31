@@ -1,0 +1,102 @@
+---
+// Article body typography (CLAUDE.md: 18px, 1.65 line height, 68ch measure).
+interface Props {
+  html: string;
+}
+---
+
+<div class="prose" set:html={Astro.props.html} />
+
+<style>
+  .prose {
+    max-width: var(--measure-body);
+    color: var(--ink);
+    font-size: var(--text-lg);
+    line-height: var(--leading-prose);
+  }
+  .prose :global(:where(p, ul, ol, figure, blockquote)) {
+    margin: 0 0 var(--space-5);
+  }
+  .prose :global(h2) {
+    max-width: none;
+    margin: var(--space-12) 0 var(--space-4);
+    font-size: var(--text-range);
+    line-height: var(--leading-snug);
+    scroll-margin-top: var(--sticky-top);
+  }
+  .prose :global(h3) {
+    margin: var(--space-8) 0 var(--space-3);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    scroll-margin-top: var(--sticky-top);
+  }
+  .prose :global(:where(ul, ol)) {
+    padding-left: var(--space-6);
+  }
+  .prose :global(li + li) {
+    margin-top: var(--space-2);
+  }
+  .prose :global(a) {
+    color: var(--navy);
+    text-decoration: underline;
+    text-underline-offset: var(--nudge);
+  }
+  .prose :global(strong) {
+    color: var(--navy);
+    font-weight: var(--weight-semibold);
+  }
+  .prose :global(img) {
+    width: 100%;
+    height: auto;
+    border-radius: var(--r-inner);
+  }
+  .prose :global(figcaption) {
+    margin-top: var(--space-2);
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  .prose :global(.pt-exhibit) {
+    padding: var(--space-5);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+  }
+  .prose :global(.pt-exhibit h3),
+  .prose :global(.pt-table h3) {
+    margin-top: 0;
+    font-size: var(--text-17);
+  }
+  .prose :global(.pt-scroll) {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--r-inner);
+  }
+  .prose :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-15);
+    line-height: var(--leading-body);
+  }
+  .prose :global(:where(th, td)) {
+    padding: var(--space-2-5) var(--space-3-5);
+    text-align: left;
+    vertical-align: top;
+  }
+  .prose :global(th) {
+    background: var(--navy);
+    color: var(--on-navy);
+    font-weight: var(--weight-semibold);
+  }
+  .prose :global(tbody tr:nth-child(even) td) {
+    background: var(--page);
+  }
+  .prose :global(blockquote) {
+    padding-left: var(--space-5);
+    border-left: 2px solid var(--navy);
+  }
+  .prose :global(cite) {
+    color: var(--muted);
+    font-size: var(--text-15);
+    font-style: normal;
+  }
+</style>

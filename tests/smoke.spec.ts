@@ -7,6 +7,9 @@ const pages = [
   "/sell",
   "/buyers",
   "/industries/technology",
+  "/insights",
+  "/insights/gcc-padel-report-2026",
+  "/insights/topic/sell-your-business",
   "/styleguide",
 ];
 // Links to pages later features build (see scripts/check-dist.mjs).
@@ -270,4 +273,116 @@ test("all industry pages render their Sanity content", async ({ page }) => {
       /\$1M . \$27M|\$1M to \$27M/,
     );
   }
+});
+
+const sanity = (groq: string) =>
+  "https://qjvm6ww8.api.sanity.io/v2025-01-01/data/query/production?query=" +
+  encodeURIComponent(groq);
+
+test("every published insight renders with Article schema", async ({
+  page,
+  request,
+  isMobile,
+}) => {
+  test.skip(isMobile, "content check, desktop only");
+  test.setTimeout(180_000);
+  const insights: { slug: string; seoTitle: string; h1: string }[] = (
+    await (
+      await request.get(
+        sanity(
+          '*[_type == "insights" && !(_id in path("drafts.**"))]{"slug": slug.current, seoTitle, h1}',
+        ),
+      )
+    ).json()
+  ).result;
+  expect(insights.length).toBeGreaterThan(30);
+  for (const i of insights) {
+    const r = await page.goto(`/insights/${i.slug}`);
+    expect(r?.status(), i.slug).toBe(200);
+    await expect(page).toHaveTitle(i.seoTitle);
+    await expect(page.locator("h1")).toHaveText(i.h1);
+    const ld = JSON.parse(
+      (await page
+        .locator('script[type="application/ld+json"]')
+        .textContent()) ?? "{}",
+    );
+    const article = ld["@graph"].find(
+      (n: { "@type": string }) => n["@type"] === "Article",
+    );
+    expect(article?.headline, i.slug).toBeTruthy();
+    expect(article?.image, i.slug).toBeTruthy();
+  }
+});
+
+test("insights hub lists every insight without JS and each card has an image", async ({
+  browser,
+  request,
+}) => {
+  const ctx = await browser.newContext({ javaScriptEnabled: false });
+  const page = await ctx.newPage();
+  await page.goto("/insights");
+  const cards = page.locator("[data-browse] .card");
+  const listed: number = (
+    await (
+      await request.get(
+        sanity(
+          'count(*[_type == "insights" && !(_id in path("drafts.**")) && hideFromListings != true])',
+        ),
+      )
+    ).json()
+  ).result;
+  const reports: number = (
+    await (
+      await request.get(
+        sanity('count(*[_type == "report" && !(_id in path("drafts.**"))])'),
+      )
+    ).json()
+  ).result;
+  expect(await cards.count()).toBe(listed + reports);
+  const missing = await cards.evaluateAll(
+    (cs) => cs.filter((c) => !c.querySelector("img[src]")).length,
+  );
+  expect(missing).toBe(0);
+  await ctx.close();
+});
+
+test("insights hub filters by topic and searches with Pagefind", async ({
+  page,
+}) => {
+  await page.goto("/insights");
+  const cards = page.locator("[data-browse] .card");
+  const all = await cards.count();
+  const chip = page
+    .locator('[data-filter="topic"][data-value]:not([data-value=""])')
+    .first();
+  await chip.click();
+  await expect(chip).toHaveAttribute("aria-pressed", "true");
+  const topic = await chip.getAttribute("data-value");
+  const visible = page.locator("[data-browse] .card:visible");
+  expect(await visible.count()).toBeLessThan(all);
+  for (const t of await visible.evaluateAll((cs) =>
+    cs.map((c) => (c as HTMLElement).dataset.topic),
+  ))
+    expect(t).toBe(topic);
+
+  await page.fill("#q", "valuation");
+  await expect(page.locator("[data-results-list] li").first()).toBeVisible();
+  await expect(page.locator("[data-browse]")).toBeHidden();
+  const href = await page
+    .locator("[data-results-list] a")
+    .first()
+    .getAttribute("href");
+  expect(href).toMatch(/^\/insights\/[a-z0-9-]+$/);
+});
+
+test("padel report insight renders exhibits natively, text once", async ({
+  page,
+}) => {
+  await page.goto("/insights/gcc-padel-report-2026");
+  await expect(page.locator("iframe")).toHaveCount(0);
+  expect(await page.locator(".pt-exhibit img").count()).toBeGreaterThan(10);
+  await expect(page.locator(".pt-table table").first()).toBeVisible();
+  const first = (await page.locator(".prose p").first().textContent()) ?? "";
+  const body = (await page.locator("article").textContent()) ?? "";
+  expect(body.split(first.trim()).length - 1).toBe(1);
 });

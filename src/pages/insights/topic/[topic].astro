@@ -1,0 +1,151 @@
+---
+// One indexable hub page per insight topic (PRD 6.2).
+import Base from "../../../layouts/Base.astro";
+import InsightCard from "../../../components/insights/InsightCard.astro";
+import Breadcrumbs from "../../../components/insights/Breadcrumbs.astro";
+import ArrowLink from "../../../components/ArrowLink.astro";
+import { query } from "../../../lib/sanity";
+import {
+  listedInsights,
+  cardImage,
+  formatDate,
+  topicOf,
+  type InsightCard as Card,
+} from "../../../lib/insights";
+import { SITE, WEBSITE_ID, graph, breadcrumbs } from "../../../lib/schema";
+
+interface Topic {
+  silo: string;
+  slug: string;
+  title: string;
+  intro: string;
+  seoTitle: string;
+  seoDescription: string;
+}
+
+export async function getStaticPaths() {
+  const [topics, insights] = await Promise.all([
+    query<Topic[]>(`*[_id == "siteSettings"][0].topics`),
+    listedInsights(),
+  ]);
+  // Slugs come from the same list the article links use.
+  return (topics ?? [])
+    .flatMap((topic) => {
+      const slug = topicOf(topic.silo)?.slug;
+      return slug ? [{ ...topic, slug }] : [];
+    })
+    .map((topic) => ({
+      topic,
+      items: insights.filter((i) => i.silo === topic.silo),
+    }))
+    .filter((t) => t.items.length > 0)
+    .map(({ topic, items }) => ({
+      params: { topic: topic.slug },
+      props: { topic, items },
+    }));
+}
+
+const { topic, items } = Astro.props as { topic: Topic; items: Card[] };
+const url = `${SITE}/insights/topic/${topic.slug}`;
+const jsonLd = graph([
+  {
+    "@type": "CollectionPage",
+    "@id": `${url}#webpage`,
+    url,
+    name: topic.seoTitle,
+    description: topic.seoDescription,
+    isPartOf: { "@id": WEBSITE_ID },
+    breadcrumb: { "@id": `${url}#breadcrumb` },
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: items.map((i, n) => ({
+        "@type": "ListItem",
+        position: n + 1,
+        url: `${SITE}/insights/${i.slug}`,
+        name: i.title,
+      })),
+    },
+  },
+  breadcrumbs(url, [
+    { name: "Home", url: `${SITE}/` },
+    { name: "Insights", url: `${SITE}/insights` },
+    { name: topic.silo, url },
+  ]),
+]);
+---
+
+<Base title={topic.seoTitle} description={topic.seoDescription} jsonLd={jsonLd}>
+  <header class="head">
+    <div class="wrap">
+      <Breadcrumbs
+        items={[
+          { name: "Home", href: "/" },
+          { name: "Insights", href: "/insights" },
+          { name: topic.silo },
+        ]}
+      />
+      <h1>{topic.title}</h1>
+      <p class="lede">{topic.intro}</p>
+    </div>
+  </header>
+  <section class="section section--flush-top">
+    <div class="wrap">
+      <div class="grid">
+        {items.map((i, n) => (
+          <InsightCard
+            href={`/insights/${i.slug}`}
+            image={cardImage("insights", i)}
+            title={i.title}
+            excerpt={i.excerpt}
+            format={i.contentType}
+            meta={[formatDate(i.publishedAt), i.readingTime]
+              .filter(Boolean)
+              .join(" · ")}
+            eager={n === 0}
+          />
+        ))}
+      </div>
+      <div class="after">
+        <ArrowLink href="/insights">All insights</ArrowLink>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .head {
+    padding: var(--space-10) 0 var(--space-12);
+  }
+  h1 {
+    max-width: var(--measure-h1);
+    margin-top: var(--space-6);
+    font-size: var(--text-h1);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+  }
+  .lede {
+    max-width: var(--measure-lede);
+    margin-top: var(--space-4);
+    color: var(--muted);
+    font-size: var(--text-lg);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+  .after {
+    margin-top: var(--space-10);
+  }
+  @media (max-width: 1080px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 720px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

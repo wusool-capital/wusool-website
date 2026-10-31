@@ -127,9 +127,23 @@ export const richText = defineType({
       type: "object",
       fields: [
         { name: "title", type: "string" },
-        { name: "bundle", title: "Interactive HTML bundle", type: "file" },
+        {
+          name: "image",
+          title: "Chart image",
+          type: "image",
+          fields: [
+            {
+              name: "alt",
+              title: "Alt text (the chart's data)",
+              type: "text",
+              rows: 3,
+            },
+          ],
+        },
         { name: "caption", type: "string" },
+        { name: "bundle", title: "Interactive HTML bundle", type: "file" },
       ],
+      preview: { select: { title: "title", media: "image" } },
     }),
     defineArrayMember({
       name: "stat",
@@ -165,6 +179,7 @@ export const richText = defineType({
       name: "table",
       type: "object",
       fields: [
+        { name: "title", type: "string" },
         { name: "headerRow", title: "First row is a header", type: "boolean" },
         {
           name: "rows",

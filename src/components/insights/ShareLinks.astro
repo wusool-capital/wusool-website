@@ -1,0 +1,73 @@
+---
+// Share links built from the page's canonical URL (PRD 13, fix 6).
+import Icon from "../Icon.astro";
+
+interface Props {
+  url: string;
+  title: string;
+}
+const { url, title } = Astro.props;
+const u = encodeURIComponent(url);
+const t = encodeURIComponent(title);
+const links = [
+  {
+    label: "LinkedIn",
+    icon: "linkedin-logo",
+    href: `https://www.linkedin.com/sharing/share-offsite/?url=${u}`,
+  },
+  {
+    label: "X",
+    icon: "x-logo",
+    href: `https://x.com/intent/post?url=${u}&text=${t}`,
+  },
+  {
+    label: "WhatsApp",
+    icon: "whatsapp-logo",
+    href: `https://wa.me/?text=${t}%20${u}`,
+  },
+  {
+    label: "Email",
+    icon: "envelope-simple",
+    href: `mailto:?subject=${t}&body=${u}`,
+  },
+];
+---
+
+<div class="share">
+  <span>Share</span>
+  {links.map((l) => (
+    <a
+      href={l.href}
+      aria-label={`Share on ${l.label}`}
+      rel="noopener"
+      target="_blank"
+    >
+      <Icon name={l.icon} />
+    </a>
+  ))}
+</div>
+
+<style>
+  .share {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  a {
+    display: grid;
+    place-items: center;
+    width: var(--social);
+    height: var(--social);
+    border: 1px solid var(--line);
+    border-radius: var(--r-pill);
+    color: var(--navy);
+    font-size: var(--text-lg);
+  }
+  a:hover {
+    border-color: var(--sky);
+    background: var(--sky-soft);
+  }
+</style>

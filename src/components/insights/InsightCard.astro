@@ -1,0 +1,114 @@
+---
+// Card for an insight or report: cover image, topic, title, excerpt, meta.
+// Data attributes drive the hub's topic and format filters.
+interface Props {
+  href: string;
+  image: string;
+  title: string;
+  excerpt?: string;
+  topic?: string;
+  format?: string;
+  meta?: string;
+  size?: "lead" | "wide" | "regular";
+  eager?: boolean;
+}
+const {
+  href,
+  image,
+  title,
+  excerpt,
+  topic,
+  format,
+  meta,
+  size = "regular",
+  eager = false,
+} = Astro.props;
+---
+
+<a
+  class:list={["card", `card--${size}`]}
+  href={href}
+  data-topic={topic}
+  data-format={format}
+>
+  <img
+    src={image}
+    alt=""
+    width="800"
+    height="420"
+    loading={eager ? "eager" : "lazy"}
+    decoding="async"
+    fetchpriority={eager ? "high" : undefined}
+  />
+  <div class="body">
+    {topic && <span class="topic">{topic}</span>}
+    <h3>{title}</h3>
+    {excerpt && <p>{excerpt}</p>}
+    {meta && <span class="meta">{meta}</span>}
+  </div>
+</a>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+    transition:
+      border-color var(--dur-base),
+      transform var(--dur-mid) var(--ease);
+  }
+  .card:hover {
+    border-color: var(--sky);
+    transform: translateY(var(--lift));
+  }
+  img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1200 / 630;
+    object-fit: cover;
+    background: var(--navy);
+  }
+  .body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-5) var(--space-6) var(--space-6);
+  }
+  .topic {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+  }
+  h3 {
+    line-height: var(--leading-snug);
+  }
+  p {
+    color: var(--muted);
+    font-size: var(--text-15);
+  }
+  .meta {
+    margin-top: auto;
+    padding-top: var(--space-2);
+    color: var(--muted);
+    font-size: var(--text-sm);
+  }
+  .card--lead h3 {
+    font-size: var(--text-post-lead);
+  }
+  @media (min-width: 1081px) {
+    .card--wide {
+      flex-direction: row;
+    }
+    .card--wide img {
+      width: 50%;
+    }
+    .card--wide .body {
+      justify-content: center;
+      padding: var(--space-8);
+    }
+  }
+</style>

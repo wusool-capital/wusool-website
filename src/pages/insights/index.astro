@@ -1,0 +1,410 @@
+---
+// Insights hub (PRD 6.2): featured insight in a bento layout, reports as wide
+// cards, the full list in the HTML, search (Pagefind, loaded on focus) and
+// topic and format filters that run in the browser and add no URLs.
+import Base from "../../layouts/Base.astro";
+import SectionHead from "../../components/SectionHead.astro";
+import InsightCard from "../../components/insights/InsightCard.astro";
+import Breadcrumbs from "../../components/insights/Breadcrumbs.astro";
+import { query } from "../../lib/sanity";
+import {
+  listedInsights,
+  reportCards,
+  cardImage,
+  ogImage,
+  topicOf,
+  topics,
+  formatDate,
+} from "../../lib/insights";
+import { SITE, WEBSITE_ID, ORG_ID, graph, breadcrumbs } from "../../lib/schema";
+
+const [insights, reports, page] = await Promise.all([
+  listedInsights(),
+  reportCards(),
+  query<{
+    seo: {
+      title: string;
+      description: string;
+      ogTitle?: string;
+      ogDescription?: string;
+    };
+  }>(`*[_id == "page-insights"][0]{seo}`),
+]);
+if (!page?.seo?.title)
+  throw new Error("Sanity: page-insights needs an SEO title");
+
+const [lead, ...rest] = insights;
+const side = rest.slice(0, 2);
+const more = rest.slice(2);
+const formats = [
+  ...new Set(insights.map((i) => i.contentType).filter(Boolean)),
+] as string[];
+const usedTopics = topics.filter((t) =>
+  insights.some((i) => i.silo === t.silo),
+);
+const card = (
+  i: (typeof insights)[number],
+  size?: "lead" | "regular",
+  eager = false,
+) => ({
+  href: `/insights/${i.slug}`,
+  image: cardImage("insights", i),
+  title: i.title,
+  excerpt: size === "lead" ? i.excerpt : undefined,
+  topic: topicOf(i.silo)?.silo,
+  format: i.contentType,
+  meta: [formatDate(i.publishedAt), i.readingTime].filter(Boolean).join(" · "),
+  size,
+  eager,
+});
+
+const url = `${SITE}/insights`;
+const jsonLd = graph([
+  {
+    "@type": "Blog",
+    "@id": `${url}#blog`,
+    url,
+    name: "Wusool Capital Insights",
+    description: page.seo.description,
+    publisher: { "@id": ORG_ID },
+    isPartOf: { "@id": WEBSITE_ID },
+    breadcrumb: { "@id": `${url}#breadcrumb` },
+    blogPost: insights.map((i) => ({
+      "@type": "BlogPosting",
+      headline: i.title,
+      url: `${SITE}/insights/${i.slug}`,
+      datePublished: i.publishedAt,
+      image: ogImage("insights", i),
+    })),
+  },
+  breadcrumbs(url, [
+    { name: "Home", url: `${SITE}/` },
+    { name: "Insights", url },
+  ]),
+]);
+---
+
+<Base
+  title={page.seo.title}
+  description={page.seo.description}
+  og={{ title: page.seo.ogTitle, description: page.seo.ogDescription }}
+  jsonLd={jsonLd}
+>
+  <header class="head">
+    <div class="wrap">
+      <Breadcrumbs
+        items={[{ name: "Home", href: "/" }, { name: "Insights" }]}
+      />
+      <h1>GCC M&A Insights &amp; Reports</h1>
+      <p class="lede">
+        Guides, valuation data and market reports for founders and acquirers in
+        the UAE and GCC.
+      </p>
+      <form class="search" role="search" data-search>
+        <label class="visually-hidden" for="q">
+          Search insights
+        </label>
+        <input
+          id="q"
+          type="search"
+          placeholder="Search insights"
+          autocomplete="off"
+        />
+      </form>
+      <div class="filters" aria-label="Filter insights" data-filters>
+        <div class="group" role="group" aria-label="Topic">
+          <button
+            type="button"
+            aria-pressed="true"
+            data-filter="topic"
+            data-value=""
+          >
+            All topics
+          </button>
+          {usedTopics.map((t) => (
+            <button
+              type="button"
+              aria-pressed="false"
+              data-filter="topic"
+              data-value={t.silo}
+            >
+              {t.silo}
+            </button>
+          ))}
+        </div>
+        <div class="group" role="group" aria-label="Format">
+          <button
+            type="button"
+            aria-pressed="true"
+            data-filter="format"
+            data-value=""
+          >
+            All formats
+          </button>
+          {formats.map((f) => (
+            <button
+              type="button"
+              aria-pressed="false"
+              data-filter="format"
+              data-value={f}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p class="status" aria-live="polite" data-status></p>
+    </div>
+  </header>
+
+  <section
+    class="section section--flush-top"
+    data-results
+    hidden
+    aria-label="Search results"
+  >
+    <div class="wrap">
+      <ol class="results" data-results-list></ol>
+    </div>
+  </section>
+
+  <div data-browse>
+    {lead && (
+      <section
+        class="section section--flush-top"
+        aria-labelledby="featured-title"
+      >
+        <h2 id="featured-title" class="visually-hidden">
+          Featured
+        </h2>
+        <div class="wrap bento">
+          <InsightCard {...card(lead, "lead", true)} />
+          <div class="side">
+            {side.map((i) => (
+              <InsightCard {...card(i)} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+
+    {reports.length > 0 && (
+      <section
+        class="section section--flush-top defer"
+        aria-labelledby="reports-title"
+      >
+        <div class="wrap">
+          <h2 id="reports-title" class="h2-small">
+            Reports
+          </h2>
+          <div class="reports">
+            {reports.map((r) => (
+              <InsightCard
+                href={`/reports/${r.slug}`}
+                image={cardImage("reports", r)}
+                title={r.title}
+                excerpt={r.excerpt}
+                topic="Report"
+                format="Report"
+                size="wide"
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+
+    <section
+      class="section section--flush-top defer"
+      aria-labelledby="all-title"
+    >
+      <div class="wrap">
+        <h2 id="all-title" class="h2-small">
+          All insights
+        </h2>
+        <div class="grid">
+          {more.map((i) => (
+            <InsightCard {...card(i)} />
+          ))}
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="section section--surface">
+    <div class="wrap">
+      <SectionHead title="Browse by topic" />
+      <ul class="topics">
+        {usedTopics.map((t) => (
+          <li>
+            <a href={`/insights/topic/${t.slug}`}>{t.silo}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import "../../scripts/insights-hub";
+</script>
+
+<style>
+  .head {
+    padding: var(--space-10) 0 var(--space-12);
+  }
+  h1 {
+    max-width: var(--measure-h1);
+    margin-top: var(--space-6);
+    font-size: var(--text-h1);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+  }
+  .lede {
+    max-width: var(--measure-lede);
+    margin-top: var(--space-4);
+    color: var(--muted);
+    font-size: var(--text-lg);
+  }
+  .search {
+    max-width: var(--pane-max);
+    margin-top: var(--space-8);
+  }
+  input {
+    width: 100%;
+    height: var(--btn-h);
+    padding: 0 var(--space-5);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    color: var(--ink);
+  }
+  input:focus-visible {
+    border-color: var(--navy);
+    outline: 2px solid var(--sky);
+    outline-offset: 0;
+  }
+  .filters {
+    display: grid;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+  }
+  .group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .group button {
+    padding: var(--space-1-5) var(--space-3-5);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: var(--text-14);
+    cursor: pointer;
+  }
+  .group button[aria-pressed="true"] {
+    border-color: var(--navy);
+    background: var(--navy);
+    color: var(--on-navy);
+  }
+  .status {
+    margin-top: var(--space-4);
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  .bento {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: var(--space-4);
+  }
+  .side {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .h2-small {
+    max-width: none;
+    margin-bottom: var(--space-6);
+    font-size: var(--text-range);
+  }
+  .defer {
+    content-visibility: auto;
+    contain-intrinsic-size: auto var(--defer-size);
+  }
+  .reports {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+  .results {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .results :global(a) {
+    display: block;
+    padding: var(--space-5) var(--space-6);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+  }
+  .results :global(strong) {
+    display: block;
+    color: var(--navy);
+    font-size: var(--text-lg);
+  }
+  .results :global(span) {
+    display: block;
+    margin-top: var(--space-1);
+    color: var(--muted);
+    font-size: var(--text-15);
+  }
+  .results :global(mark) {
+    background: var(--sky-soft);
+    color: inherit;
+  }
+  .topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin: var(--space-8) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .topics a {
+    display: inline-block;
+    padding: var(--space-2-5) var(--space-5);
+    border: 1px solid var(--line);
+    border-radius: var(--r-pill);
+    background: var(--page);
+    color: var(--navy);
+    font-weight: var(--weight-medium);
+  }
+  .topics a:hover {
+    border-color: var(--sky);
+    background: var(--sky-soft);
+  }
+  [hidden],
+  [data-browse] :global(.card[hidden]) {
+    display: none;
+  }
+  @media (max-width: 1080px) {
+    .bento,
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 720px) {
+    .bento,
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
