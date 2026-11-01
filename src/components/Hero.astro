@@ -133,6 +133,10 @@ const visual = Astro.slots.has("default")
       padding: var(--space-10) var(--space-5-5);
       border-radius: var(--r-panel-sm);
     }
+    /* The example cards take a full screen on phones; the text says enough. */
+    .visual {
+      display: none;
+    }
     .ctas > :global(.btn) {
       justify-content: center;
       width: 100%;
