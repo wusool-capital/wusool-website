@@ -10,7 +10,7 @@ interface Props {
 }
 const {
   sector = "Technology",
-  range = "4x to 7x",
+  range = "10x to 20x",
   note = "Recurring revenue",
 } = Astro.props;
 ---
@@ -27,7 +27,7 @@ const {
     </div>
   </div>
   <div class="range">
-    <small>EBITDA multiple range</small>
+    <small>Price as a multiple of yearly profit</small>
     <div class="row">
       <b>{range}</b>
       <Chip>{note}</Chip>
