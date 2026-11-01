@@ -65,6 +65,8 @@
   --measure-body: 68ch;
   /* Article column: 68 characters of the 18px body text. */
   --article-w: 767px;
+  /* Tool pages: title and tool share one centered column. */
+  --tool-w: 880px;
   --measure-hero: 46ch;
   --measure-card: 32ch;
   --measure-post: 18ch;
@@ -194,7 +196,6 @@
 
 /* Tool: benchmark */
 :root {
-  --bm-max: 860px;
   /* Peer band: your-value marker width, and how far the median label moves
      aside when the marker sits near the middle. */
   --bm-mark-w: 3px;

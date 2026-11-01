@@ -52,10 +52,6 @@ const { items } = Astro.props;
     box-shadow: var(--shadow);
     transform: translateY(var(--lift));
   }
-  .tile:first-child {
-    border-color: var(--sky);
-    background: var(--sky-soft);
-  }
   .icon-box {
     display: grid;
     place-items: center;
@@ -64,9 +60,6 @@ const { items } = Astro.props;
     margin-bottom: var(--space-5);
     border-radius: var(--r-icon);
     background: var(--sky-soft);
-  }
-  .tile:first-child .icon-box {
-    background: var(--surface);
   }
   .icon-box img {
     width: var(--tile-icon-img);

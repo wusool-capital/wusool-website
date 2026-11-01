@@ -1,0 +1,38 @@
+---
+// Page title for a tool page: a plain heading and one line of intro on the
+// page background, centered over the tool so the tool starts above the fold.
+interface Props {
+  title: string;
+  sub?: string;
+}
+const { title, sub } = Astro.props;
+---
+
+<header class="head">
+  <div class="wrap">
+    <h1>{title}</h1>
+    {sub && <p>{sub}</p>}
+  </div>
+</header>
+
+<style>
+  .head {
+    padding: var(--space-12) 0 var(--space-8);
+    text-align: center;
+  }
+  h1 {
+    max-width: var(--tool-w);
+    margin: 0 auto;
+    font-size: var(--text-h2);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-display);
+    text-wrap: balance;
+  }
+  p {
+    max-width: var(--measure-lede);
+    margin: var(--space-4) auto 0;
+    color: var(--muted);
+    font-size: var(--text-lg);
+  }
+</style>

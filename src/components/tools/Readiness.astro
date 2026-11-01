@@ -29,11 +29,9 @@ const expect = [
   </ol>
   <form novalidate>
     <section class="step welcome" data-step>
-      <h2 tabindex="-1">How ready are you to sell your business?</h2>
-      <p>
-        Answer 15 plain-English questions and get your deal readiness score,
-        with a breakdown across the 5 areas buyers care about.
-      </p>
+      <h2 tabindex="-1" class="visually-hidden">
+        How ready are you to sell your business?
+      </h2>
       <ul class="expect">
         {expect.map(([icon, title, text]) => (
           <li>
@@ -61,7 +59,7 @@ const expect = [
 
 <style>
   .rd {
-    max-width: var(--measure-body);
+    max-width: var(--tool-w);
     margin: 0 auto;
     padding: var(--space-8);
     border-radius: var(--r-card);
