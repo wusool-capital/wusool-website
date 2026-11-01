@@ -333,7 +333,8 @@ const jsonLd = graph([
   }
   .layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) var(--menu-w);
+    /* The contents list takes the space beside the fixed article column. */
+    grid-template-columns: minmax(0, var(--article-w)) minmax(0, 1fr);
     gap: var(--space-16);
     align-items: start;
     padding-bottom: var(--section-y);
