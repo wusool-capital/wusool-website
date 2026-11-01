@@ -1,0 +1,92 @@
+---
+// A legal page from Sanity: H1, last updated date, intro and rich-text body.
+import Base from "./Base.astro";
+import Breadcrumbs from "../components/insights/Breadcrumbs.astro";
+import Prose from "../components/insights/Prose.astro";
+import { query } from "../lib/sanity";
+import { renderBody } from "../lib/portable";
+import { SITE, WEBSITE_ID, ORG_ID, graph, breadcrumbs } from "../lib/schema";
+
+interface Props {
+  id: string;
+}
+const doc = await query<{
+  title: string;
+  slug: string;
+  seo: { title: string; description: string };
+  lastUpdated?: string;
+  intro?: string;
+  body?: Parameters<typeof renderBody>[0];
+}>(
+  `*[_id == $id][0]{title, "slug": slug.current, seo, lastUpdated, intro, body}`,
+  {
+    id: Astro.props.id,
+  },
+);
+if (!doc?.seo?.title || !doc.seo.description) {
+  throw new Error(
+    `Sanity: ${Astro.props.id} needs an SEO title and description`,
+  );
+}
+const url = `${SITE}/${doc.slug}`;
+const { html } = renderBody(doc.body);
+const jsonLd = graph([
+  {
+    "@type": "WebPage",
+    "@id": `${url}#webpage`,
+    url,
+    name: doc.seo.title,
+    description: doc.seo.description,
+    isPartOf: { "@id": WEBSITE_ID },
+    publisher: { "@id": ORG_ID },
+    breadcrumb: { "@id": `${url}#breadcrumb` },
+    inLanguage: "en",
+  },
+  breadcrumbs(url, [
+    { name: "Home", url: `${SITE}/` },
+    { name: doc.title, url },
+  ]),
+]);
+---
+
+<Base title={doc.seo.title} description={doc.seo.description} jsonLd={jsonLd}>
+  <header class="head">
+    <div class="wrap">
+      <Breadcrumbs items={[{ name: "Home", href: "/" }, { name: doc.title }]} />
+      <h1>{doc.title}</h1>
+      {doc.lastUpdated && (
+        <p class="updated">Last updated: {doc.lastUpdated}</p>
+      )}
+      {doc.intro && <p class="lede">{doc.intro}</p>}
+    </div>
+  </header>
+  <section class="section section--flush-top">
+    <div class="wrap">
+      <Prose html={html} />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .head {
+    padding: var(--space-10) 0 var(--space-10);
+  }
+  h1 {
+    margin-top: var(--space-8);
+    font-size: var(--text-h2);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-display);
+  }
+  .updated {
+    margin-top: var(--space-3);
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  .lede {
+    max-width: var(--measure-body);
+    margin-top: var(--space-5);
+    font-size: var(--text-lg);
+    line-height: var(--leading-prose);
+  }
+</style>

@@ -6,5 +6,7 @@
   "assets": {
     "directory": "./dist",
     "html_handling": "drop-trailing-slash",
+    // Unknown paths serve 404.html with a 404 status (PRD feature 11).
+    "not_found_handling": "404-page",
   },
 }

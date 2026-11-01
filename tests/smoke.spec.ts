@@ -18,6 +18,8 @@ const pages = [
   "/valuation-tool",
   "/deal-readiness-tool",
   "/benchmark",
+  "/privacy-policy",
+  "/terms",
   "/styleguide",
 ];
 // Links to pages later features build (see scripts/check-dist.mjs).
@@ -538,3 +540,34 @@ for (const [path, tool, type] of [
     expect(app?.url).toBe(`https://www.wusoolcapital.com${path}`);
   });
 }
+
+test("an unknown path returns the 404 page with a 404 status", async ({
+  page,
+}) => {
+  const res = await page.goto("/this-page-does-not-exist");
+  expect(res?.status()).toBe(404);
+  await expect(page.locator("h1")).toHaveText("Page not found");
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    "content",
+    /noindex/,
+  );
+});
+
+test("legal pages carry the live text, the entity name and no em dashes", async ({
+  request,
+  isMobile,
+}) => {
+  test.skip(isMobile, "content check, desktop only");
+  for (const [path, h1, phrase] of [
+    ["/privacy-policy", "Privacy Policy", "What Data We Collect"],
+    ["/terms", "Terms of Service", "Who We Are"],
+  ]) {
+    const html = await (await request.get(path)).text();
+    expect(html).toMatch(new RegExp(`<h1[^>]*>${h1}</h1>`));
+    expect(html).toContain(phrase);
+    expect(html).toContain("DOPAMINE INNOVATION CONSULTANCY - FZCO");
+    expect(html).not.toContain("—");
+    expect(html).not.toContain("TBD");
+    expect(html).not.toContain("dopaminecap");
+  }
+});

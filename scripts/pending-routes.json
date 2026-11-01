@@ -1,4 +1,4 @@
 {
   "_note": "Live-site paths that later features build. Links to them pass check-dist and the smoke test until then. A trailing /* covers every page under that path. Remove entries in the feature that builds them; the list must be empty by feature 12.",
-  "routes": ["/privacy-policy", "/terms"]
+  "routes": []
 }

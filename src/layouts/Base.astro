@@ -43,7 +43,8 @@ const canonical = new URL(path, Astro.site).href;
     <title>{title}</title>
     <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex" />}
-    <link rel="canonical" href={canonical} />
+    {/* A noindex page (404, styleguide) names no canonical. */}
+    {!noindex && <link rel="canonical" href={canonical} />}
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Wusool Capital" />
     <meta property="og:url" content={canonical} />
