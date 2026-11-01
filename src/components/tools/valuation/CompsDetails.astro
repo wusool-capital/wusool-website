@@ -1,0 +1,75 @@
+---
+// Market methods: listed peers, past deals and funding rounds.
+import Details from "./Details.astro";
+
+const groups = [
+  {
+    title: "Listed peers",
+    value: "tr-head",
+    intro: "tr-intro",
+    facts: [
+      ["tr-disc", "Discount applied"],
+      ["tr-rev-x", "Discounted median, value to revenue"],
+      ["tr-eb-x", "Discounted median, value to EBITDA"],
+    ],
+    notes: [
+      [
+        "tr-size",
+        "Listed peers are much larger than your business, so a size discount is included.",
+      ],
+      [
+        "tr-neg",
+        "Your yearly profit is negative, so 20 points are added to the discount.",
+      ],
+    ],
+  },
+  {
+    title: "Past deals",
+    value: "tx-head",
+    intro: "tx-intro",
+    facts: [
+      ["tx-disc", "Discount applied"],
+      ["tx-low", "Lower (25th percentile)"],
+      ["tx-mid", "Average"],
+      ["tx-high", "Upper (75th percentile)"],
+    ],
+    notes: [
+      [
+        "tx-neg",
+        "Your yearly profit is negative, so 20 points are added to the discount.",
+      ],
+    ],
+  },
+  {
+    title: "Funding rounds",
+    value: "ind-head",
+    intro: "ind-intro",
+    facts: [
+      ["ind-fy", "Average multiple of current revenue"],
+      ["ind-fw", "Average multiple of next year's revenue"],
+      ["ind-blend", "Blended multiple"],
+      ["ind-disc", "Discount applied"],
+    ],
+    notes: [],
+  },
+];
+---
+
+{groups.map((g) => (
+  <Details title={g.title} value={g.value}>
+    <p data-v={g.intro} />
+    <dl>
+      {g.facts.map(([key, label]) => (
+        <div>
+          <dt>{label}</dt>
+          <dd data-v={key} />
+        </div>
+      ))}
+    </dl>
+    {g.notes.map(([key, text]) => (
+      <p data-show={key} hidden>
+        {text}
+      </p>
+    ))}
+  </Details>
+))}

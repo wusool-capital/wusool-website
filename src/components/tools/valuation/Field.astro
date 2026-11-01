@@ -1,0 +1,138 @@
+---
+// One labelled form control with its hint and error line.
+// `money` adds the chosen currency to the label (set by the script).
+interface Props {
+  name: string;
+  label: string;
+  type?: "text" | "email" | "textarea" | "select" | "number";
+  required?: boolean;
+  hint?: string;
+  placeholder?: string;
+  options?: string[];
+  prompt?: string;
+  value?: string;
+  autocomplete?: string;
+  money?: boolean;
+}
+const {
+  name,
+  label,
+  type = "text",
+  required = false,
+  hint,
+  placeholder,
+  options = [],
+  prompt,
+  value = "",
+  autocomplete,
+  money = false,
+} = Astro.props;
+const id = `val-${name}`;
+const describedBy = [hint && `${id}-hint`, `${id}-error`]
+  .filter(Boolean)
+  .join(" ");
+const common = {
+  id,
+  name,
+  required,
+  autocomplete,
+  "aria-describedby": describedBy,
+};
+---
+
+<div class="field">
+  <label for={id}>
+    {label}
+    {money && (
+      <span class="cur" data-cur-label>
+        (USD)
+      </span>
+    )}
+    {!required && <span class="opt">optional</span>}
+  </label>
+  {type === "select" ? (
+    <select {...common}>
+      {prompt && <option value="">{prompt}</option>}
+      {options.map((o) => (
+        <option value={o} selected={o === value}>
+          {o}
+        </option>
+      ))}
+    </select>
+  ) : type === "textarea" ? (
+    <textarea {...common} rows="3" placeholder={placeholder} />
+  ) : type === "number" ? (
+    <input
+      {...common}
+      type="text"
+      inputmode="decimal"
+      placeholder={placeholder}
+      data-number
+    />
+  ) : (
+    <input {...common} type={type} placeholder={placeholder} />
+  )}
+  {hint && (
+    <p class="hint" id={`${id}-hint`}>
+      {hint}
+    </p>
+  )}
+  <p class="error" id={`${id}-error`} data-error={name} hidden></p>
+</div>
+
+<style>
+  .field {
+    display: grid;
+    gap: var(--space-1-5);
+  }
+  label {
+    color: var(--ink);
+    font-size: var(--text-14);
+    font-weight: var(--weight-medium);
+  }
+  .cur {
+    margin-left: var(--space-1);
+  }
+  .opt {
+    margin-left: var(--space-1-5);
+    color: var(--muted);
+    font-weight: normal;
+  }
+  input,
+  select,
+  textarea {
+    width: 100%;
+    min-height: var(--btn-h);
+    padding: var(--space-2-5) var(--space-3);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-inner);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: var(--text-base);
+  }
+  textarea {
+    resize: vertical;
+  }
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    border-color: var(--navy);
+    outline: 2px solid var(--sky);
+    outline-offset: 0;
+  }
+  [aria-invalid="true"] {
+    border-color: var(--navy);
+    border-width: 2px;
+  }
+  .hint,
+  .error {
+    font-size: var(--text-sm);
+  }
+  .hint {
+    color: var(--muted);
+  }
+  .error {
+    color: var(--navy);
+    font-weight: var(--weight-semibold);
+  }
+</style>

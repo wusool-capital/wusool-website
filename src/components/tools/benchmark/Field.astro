@@ -1,0 +1,120 @@
+---
+// One labelled form field: label, optional tag, control (slot), affix, hint.
+// prefix="cur" prints the entry currency, which the script keeps in sync.
+interface Props {
+  id: string;
+  label?: string;
+  hint?: string;
+  optional?: boolean;
+  prefix?: string;
+  suffix?: string;
+  wrap?: string;
+  hidden?: boolean;
+  class?: string;
+}
+const {
+  id,
+  label,
+  hint,
+  optional,
+  prefix,
+  suffix,
+  wrap,
+  hidden,
+  class: cls,
+} = Astro.props;
+---
+
+<div class:list={["field", cls]} id={wrap} hidden={hidden}>
+  <label for={id}>
+    <slot name="label">{label}</slot>
+    {optional && <span class="opt">optional</span>}
+  </label>
+  <div class:list={["ctl", prefix && "has-pre", suffix && "has-suf"]}>
+    {prefix && (
+      <span class:list={["affix", "pre", prefix === "cur" && "cur"]}>
+        {prefix === "cur" ? "AED" : prefix}
+      </span>
+    )}
+    <slot />
+    {suffix && <span class="affix suf">{suffix}</span>}
+  </div>
+  {hint && (
+    <p class="hint" id={`${id}-hint`}>
+      {hint}
+    </p>
+  )}
+</div>
+
+<style>
+  .field[hidden] {
+    display: none;
+  }
+  label {
+    display: block;
+    margin-bottom: var(--space-1-5);
+    color: var(--navy);
+    font-size: var(--text-14);
+    font-weight: var(--weight-medium);
+  }
+  .opt {
+    margin-left: var(--space-2);
+    color: var(--muted);
+    font-size: var(--text-xs);
+    font-weight: normal;
+  }
+  .ctl {
+    position: relative;
+  }
+  .ctl :global(input),
+  .ctl :global(select) {
+    width: 100%;
+    height: var(--btn-h);
+    padding: 0 var(--space-3);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-inner);
+    background: var(--surface);
+    color: var(--navy);
+    font-size: var(--text-base);
+    transition: border-color var(--dur-fast);
+  }
+  .ctl :global(input:focus-visible),
+  .ctl :global(select:focus-visible) {
+    border-color: var(--navy);
+    outline: 2px solid var(--sky);
+    outline-offset: 0;
+  }
+  .ctl :global(input:user-invalid),
+  .ctl :global(select:user-invalid) {
+    border-color: var(--navy);
+    border-width: 2px;
+  }
+  .ctl :global(input::placeholder) {
+    color: var(--muted);
+  }
+  .affix {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: var(--text-14);
+    pointer-events: none;
+  }
+  .pre {
+    left: var(--space-3);
+  }
+  .suf {
+    right: var(--space-3);
+  }
+  .has-pre :global(input) {
+    padding-left: var(--space-14);
+  }
+  .has-suf :global(input) {
+    padding-right: var(--space-8);
+  }
+  .hint {
+    margin-top: var(--space-1);
+    color: var(--muted);
+    font-size: var(--text-sm);
+  }
+</style>

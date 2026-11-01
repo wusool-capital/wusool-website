@@ -1,0 +1,56 @@
+---
+// Progress bars, "Step n of 3" and the step heading (focused on step change).
+interface Props {
+  n: number;
+}
+const { n } = Astro.props;
+---
+
+<div class="pips" aria-hidden="true">
+  {[1, 2, 3].map((i) => (
+    <span class:list={["pip", i <= n && "on"]} />
+  ))}
+</div>
+<div class="head">
+  <div>
+    <p class="label">Step {n} of 3</p>
+    <h2 tabindex="-1">
+      <slot />
+    </h2>
+  </div>
+  <slot name="aside" />
+</div>
+
+<style>
+  .pips {
+    display: flex;
+    gap: var(--space-1-5);
+    margin-bottom: var(--space-6);
+  }
+  .pip {
+    flex: 1;
+    height: var(--prog-h);
+    border-radius: var(--r-pill);
+    background: var(--line);
+  }
+  .pip.on {
+    background: var(--navy);
+  }
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-1-5);
+  }
+  .label {
+    margin-bottom: var(--space-1-5);
+    color: var(--muted);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+  }
+  h2 {
+    font-size: var(--text-range);
+  }
+</style>

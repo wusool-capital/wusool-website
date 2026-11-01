@@ -1,0 +1,55 @@
+---
+// What a buyer would ask about: flags filled by the script from the template.
+// Each tone has its own icon, so tone is never shown by color alone.
+import Icon from "../../Icon.astro";
+---
+
+<h3>What a buyer would ask about</h3>
+<p class="sub">Generated from your position on each metric.</p>
+<div id="bm-flags"></div>
+
+<template id="bm-flag">
+  <div class="flag">
+    <span class="ico">
+      <Icon name="warning-circle" class="i-bad" />
+      <Icon name="minus-circle" class="i-mid" />
+      <Icon name="check-circle" class="i-good" />
+    </span>
+    <div>
+      <h4></h4>
+      <p></p>
+    </div>
+  </div>
+</template>
+
+<style>
+  h3 {
+    margin-top: var(--space-8);
+  }
+  .flag {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-4) 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .ico {
+    flex: none;
+    color: var(--navy);
+    font-size: var(--text-xl);
+  }
+  .flag:not([data-tone="bad"]) :global(.i-bad),
+  .flag:not([data-tone="mid"]) :global(.i-mid),
+  .flag:not([data-tone="good"]) :global(.i-good) {
+    display: none;
+  }
+  h4 {
+    margin: 0 0 var(--space-1);
+    color: var(--navy);
+    font-size: var(--text-15);
+    font-weight: var(--weight-semibold);
+  }
+  .flag p {
+    color: var(--ink);
+    font-size: var(--text-14);
+  }
+</style>

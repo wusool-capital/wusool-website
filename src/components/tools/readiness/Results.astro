@@ -1,0 +1,173 @@
+---
+// Results: thank-you, overall score and band, section breakdown, flags,
+// call to action. Filled in by the script.
+import Icon from "../../Icon.astro";
+import Chip from "../../Chip.astro";
+import Gate from "./Gate.astro";
+import ArrowLink from "../../ArrowLink.astro";
+import { SECTIONS } from "../../../lib/tools/readiness";
+---
+
+<div class="res" data-results hidden>
+  <p class="thanks">
+    <Icon name="check-circle" />
+    <span data-thanks></span>
+  </p>
+  <div class="hero on-navy">
+    <div>
+      <p class="label">Deal readiness report</p>
+      <h2 tabindex="-1" data-biz></h2>
+      <p class="for" data-for></p>
+    </div>
+    <div class="score">
+      <p>
+        <b data-score></b> / 100
+      </p>
+      <Chip>
+        <span data-band></span>
+      </Chip>
+    </div>
+  </div>
+
+  <h3>Your score breakdown</h3>
+  <ul class="dims">
+    {SECTIONS.map((s) => (
+      <li>
+        <span class="dim">
+          <Icon name={s.icon} />
+          {s.title}
+        </span>
+        <b data-sec />
+        <progress max="100" data-bar aria-label={`${s.title} score`} />
+      </li>
+    ))}
+  </ul>
+
+  <h3>What buyers will ask about</h3>
+  <ul class="flags" data-flags></ul>
+
+  <Gate />
+
+  <div class="more">
+    <ArrowLink href="/valuation-tool">Estimate your valuation</ArrowLink>
+    <ArrowLink href="/benchmark">Benchmark your business</ArrowLink>
+  </div>
+  <p class="small">
+    Prepared by Wusool Capital. Confidential. <span data-date></span>
+  </p>
+</div>
+
+<style>
+  .thanks {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    margin-bottom: var(--space-5);
+    color: var(--navy);
+    font-weight: var(--weight-medium);
+  }
+  .hero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-6);
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-8);
+    border-radius: var(--r-card);
+    background: var(--navy);
+    color: var(--on-navy);
+  }
+  .label,
+  .for {
+    color: var(--on-navy-muted);
+    font-size: var(--text-14);
+  }
+  h2 {
+    margin: var(--space-1) 0;
+    color: var(--on-navy);
+    font-size: var(--text-range);
+  }
+  .score {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-2);
+    color: var(--on-navy-muted);
+  }
+  .score b {
+    color: var(--on-navy);
+    font-size: var(--text-stat);
+    letter-spacing: var(--tracking-num);
+    line-height: var(--leading-stat);
+  }
+  h3 {
+    margin: var(--space-8) 0 var(--space-3);
+  }
+  .dims,
+  .flags {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .dims {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .dims li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-2);
+  }
+  .dim {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    font-size: var(--text-15);
+  }
+  .dims b {
+    color: var(--navy);
+    font-variant-numeric: tabular-nums;
+  }
+  progress {
+    grid-column: 1 / -1;
+    width: 100%;
+    height: var(--bar-h);
+    border: 0;
+    border-radius: var(--r-pill);
+    background: var(--line);
+    appearance: none;
+  }
+  progress::-webkit-progress-bar {
+    border-radius: var(--r-pill);
+    background: var(--line);
+  }
+  progress::-webkit-progress-value {
+    border-radius: var(--r-pill);
+    background: var(--navy);
+  }
+  progress::-moz-progress-bar {
+    border-radius: var(--r-pill);
+    background: var(--navy);
+  }
+  .flags {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .flags :global(li) {
+    padding: var(--space-3) var(--space-4);
+    border-left: 2px solid var(--navy);
+    border-radius: var(--r-item);
+    background: var(--sky-soft);
+    font-size: var(--text-15);
+  }
+  .small {
+    margin-top: var(--space-2);
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+  .more {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-6);
+    margin: var(--space-8) 0 var(--space-4);
+  }
+</style>
