@@ -391,6 +391,17 @@ test("insights hub filters by topic and searches with Pagefind", async ({
   expect(href).toMatch(/^\/insights\/[a-z0-9-]+$/);
 });
 
+test("a CTA to /get-started opens the form, since that page never existed", async ({
+  page,
+}) => {
+  await page.goto(
+    "/insights/what-one-year-of-transaction-taught-us-about-the-market",
+  );
+  await expect(page.locator('a[href*="/get-started"]')).toHaveCount(0);
+  await page.locator('.end [data-form="get-started"]').click();
+  await expect(page.locator("dialog[open]")).toBeVisible();
+});
+
 test("padel report insight renders exhibits natively, text once", async ({
   page,
 }) => {

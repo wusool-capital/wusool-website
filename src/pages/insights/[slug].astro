@@ -64,9 +64,14 @@ const related = all
   .sort((a, b) => Number(b.silo === i.silo) - Number(a.silo === i.silo))
   .slice(0, 3);
 
+// The live site had no /get-started page: a CTA pointing there opens the
+// "Get started" form instead.
+const ctaUrl = i.ctaUrl || "/valuation-tool";
+const toForm = /\/get-started\/?$/.test(ctaUrl);
 const cta = {
   label: i.ctaText || "Get a Free Valuation",
-  href: i.ctaUrl || "/valuation-tool",
+  href: toForm ? undefined : ctaUrl,
+  form: toForm ? ("get-started" as const) : undefined,
 };
 const published = i.publishedAt;
 const updated =
@@ -212,7 +217,11 @@ const jsonLd = graph([
                 Download the report
               </Button>
             ) : (
-              <Button href={cta.href} source={`insight-${i.slug}-mid`}>
+              <Button
+                href={cta.href}
+                form={cta.form}
+                source={`insight-${i.slug}-mid`}
+              >
                 {cta.label}
               </Button>
             )}
@@ -228,6 +237,7 @@ const jsonLd = graph([
           </p>
           <Button
             href={i.report ? `/reports/${i.report.slug}` : cta.href}
+            form={i.report ? undefined : cta.form}
             source={`insight-${i.slug}-end`}
           >
             {i.report ? "Download the report" : cta.label}
