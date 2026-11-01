@@ -1,0 +1,19 @@
+---
+import Landing from "../layouts/Landing.astro";
+import { toolApp } from "../lib/tools";
+
+const app = toolApp(
+  "/deal-readiness-tool",
+  "WebApplication",
+  "Wusool Capital Deal Readiness Assessment",
+  "Free 5-minute assessment for UAE and GCC business owners considering a sale. Get a personalised readiness score and find out what to fix before going to market.",
+  "BusinessApplication",
+);
+---
+
+<Landing
+  id="page-deal-readiness-tool"
+  name="Deal readiness"
+  source="deal-readiness-tool"
+  nodes={[app]}
+/>
