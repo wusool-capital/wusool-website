@@ -1,0 +1,87 @@
+---
+// Step 1: business type, stage or sector, location, age.
+import { DATA } from "../../../lib/tools/benchmark";
+import StepHead from "./StepHead.astro";
+import Choice from "./Choice.astro";
+import Field from "./Field.astro";
+
+const sectors = Object.entries(DATA.sectors).sort((a, b) =>
+  a[1].label.localeCompare(b[1].label),
+);
+const places = [
+  "United Arab Emirates",
+  "Saudi Arabia",
+  "Qatar",
+  "Kuwait",
+  "Bahrain",
+  "Oman",
+  "Other",
+];
+---
+
+<form class="step" data-step="1" novalidate>
+  <StepHead n={1}>Your business</StepHead>
+  <Choice
+    name="bm-mode"
+    legend="Type of business"
+    hideLegend
+    checked="sme"
+    class="mode"
+    options={[
+      {
+        value: "sme",
+        label: "Established business",
+        sub: "Trading, profitable or near it",
+      },
+      {
+        value: "tech",
+        label: "Tech-enabled or startup",
+        sub: "Software, platform, venture-backed",
+      },
+    ]}
+  />
+  <div class="grid">
+    <Field id="bm-stage" label="Funding stage" class="full only-tech">
+      <select id="bm-stage" required>
+        <option value="">Select your stage</option>
+        {Object.entries(DATA.stages).map(([k, s]) => (
+          <option value={k}>{s.label}</option>
+        ))}
+      </select>
+    </Field>
+    <Field id="bm-sector" label="Sector" class="full only-sme">
+      <select id="bm-sector" required>
+        <option value="">Select your sector</option>
+        {sectors.map(([k, s]) => (
+          <option value={k}>{s.label}</option>
+        ))}
+      </select>
+    </Field>
+    <Field id="bm-tsector" label="Sector" class="full only-tech">
+      <select id="bm-tsector" required>
+        <option value="">Select your sector</option>
+        {DATA.techSectorList.map((s) => (
+          <option>{s}</option>
+        ))}
+      </select>
+    </Field>
+    <Field id="bm-geo" label="Where you operate">
+      <select id="bm-geo" required>
+        <option value="">Select</option>
+        {places.map((p, i) => (
+          <option selected={i === 0} value={p}>
+            {p}
+          </option>
+        ))}
+      </select>
+    </Field>
+    <Field id="bm-years" label="Years active" optional>
+      <input type="number" id="bm-years" min="0" max="99" placeholder="8" />
+    </Field>
+  </div>
+  <div class="row">
+    <button type="submit" class="act act--primary">
+      Continue
+    </button>
+  </div>
+</form>

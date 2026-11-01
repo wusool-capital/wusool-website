@@ -190,3 +190,12 @@
   --z-header: 40;
   --z-banner: 50;
 }
+
+/* Tool: benchmark */
+:root {
+  --bm-max: 860px;
+  /* Peer band: your-value marker width, and how far the median label moves
+     aside when the marker sits near the middle. */
+  --bm-mark-w: 3px;
+  --bm-med-shift: 58px;
+}
