@@ -1,10 +1,13 @@
 // Lighthouse CI: PRD 14.4 mobile thresholds. Add a URL per template as templates ship.
+// GitHub runners are slower than a laptop, so CI allows 0.2s more LCP
+// (Jules's decision). The 2.0s target holds for local runs.
+const LCP_SLACK = process.env.CI ? 200 : 0;
 const thresholds = {
   "categories:performance": ["error", { minScore: 0.95 }],
   "categories:accessibility": ["error", { minScore: 1 }],
   "categories:best-practices": ["error", { minScore: 1 }],
   "categories:seo": ["error", { minScore: 1 }],
-  "largest-contentful-paint": ["error", { maxNumericValue: 2000 }],
+  "largest-contentful-paint": ["error", { maxNumericValue: 2000 + LCP_SLACK }],
   "total-blocking-time": ["error", { maxNumericValue: 150 }],
   "cumulative-layout-shift": ["error", { maxNumericValue: 0.05 }],
 };
@@ -47,7 +50,10 @@ module.exports = {
           aggregationMethod: "median-run",
           assertions: {
             ...thresholds,
-            "largest-contentful-paint": ["error", { maxNumericValue: 2100 }],
+            "largest-contentful-paint": [
+              "error",
+              { maxNumericValue: 2100 + LCP_SLACK },
+            ],
           },
         },
         // The styleguide is noindex by design, so SEO cannot reach 100 there.
