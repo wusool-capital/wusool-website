@@ -24,6 +24,7 @@ import TeamGrid from "./team/TeamGrid.astro";
 import Roles from "./team/Roles.astro";
 import Readiness from "./tools/Readiness.astro";
 import Benchmark from "./tools/Benchmark.astro";
+import Valuation from "./tools/Valuation.astro";
 import { COMPANY_SLUG } from "../lib/team";
 import {
   faqItems,
@@ -369,25 +370,16 @@ const person = (m: { slug: string }) => m.slug !== COMPANY_SLUG;
         </section>
       );
     case "toolSection":
-      // Readiness and benchmark run natively; valuation still embeds the
-      // tools app until its port lands.
-      if (s.tool === "readiness" || s.tool === "benchmark")
-        return (
-          <section class="section section--flush-top">
-            <div class="wrap">
-              {s.tool === "readiness" ? <Readiness /> : <Benchmark />}
-            </div>
-          </section>
-        );
       return (
-        <section class="section section--flush-top tool">
+        <section class="section section--flush-top">
           <div class="wrap">
-            <script
-              is:inline
-              src="https://tools.wusoolcapital.com/embed.js"
-              data-tool={s.tool}
-              defer
-            ></script>
+            {s.tool === "readiness" ? (
+              <Readiness />
+            ) : s.tool === "benchmark" ? (
+              <Benchmark />
+            ) : (
+              <Valuation />
+            )}
           </div>
         </section>
       );
@@ -462,14 +454,6 @@ const person = (m: { slug: string }) => m.slug !== COMPANY_SLUG;
     align-items: end;
     justify-content: space-between;
     gap: var(--space-6);
-  }
-  /* Holds one screen for the tool frame (it starts that tall), so nothing
-     shifts when it appears; the frame then sizes to its content. */
-  .tool {
-    min-height: var(--tool-min-h);
-  }
-  .tool:has(iframe) {
-    min-height: 0;
   }
   .points {
     padding: var(--space-7) 0 0;

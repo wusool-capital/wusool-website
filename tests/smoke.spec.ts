@@ -526,7 +526,7 @@ test("an open role has one JobPosting and is listed on Careers", async ({
 
 // Native tools render their questions in the HTML; the rest embed the tools app.
 for (const [path, tool, type, native] of [
-  ["/valuation-tool", "valuation", "WebApplication", ""],
+  ["/valuation-tool", "valuation", "WebApplication", "data-valuation"],
   ["/deal-readiness-tool", "readiness", "WebApplication", "data-readiness"],
   ["/benchmark", "benchmark", "SoftwareApplication", 'id="bm"'],
 ]) {
@@ -725,5 +725,25 @@ test("benchmark tool shows results and a thank-you without any request", async (
   });
   await page.goto("/benchmark");
   await completeTool(page, "#bm", ".act--primary:visible", "#bm-thanks");
+  expect(external).toEqual([]);
+});
+
+test("valuation tool shows a range without any request", async ({ page }) => {
+  const external: string[] = [];
+  page.on("request", (r) => {
+    if (
+      !r.url().startsWith("http://localhost") &&
+      !/embed\.js|clarity/.test(r.url())
+    )
+      external.push(r.url());
+  });
+  await page.goto("/valuation-tool");
+  await completeTool(
+    page,
+    "[data-valuation]",
+    'button[type="submit"]:visible',
+    "[data-valuation-results]",
+  );
+  await expect(page.locator('[data-v="range"]')).not.toBeEmpty();
   expect(external).toEqual([]);
 });
