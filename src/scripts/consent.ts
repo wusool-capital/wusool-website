@@ -119,6 +119,8 @@ document.addEventListener("click", (e) => {
 banner.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && get()) banner.hidden = true;
 });
-if (!initial) banner.hidden = false;
+// The banner is visible in the HTML; from here this script controls it.
+banner.hidden = !!initial;
+document.documentElement.classList.remove("consented");
 
 export {};

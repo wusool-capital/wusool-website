@@ -6,6 +6,7 @@ import favicon from "../assets/logo/favicon.svg?url";
 import Nav from "../components/Nav.astro";
 import ClosingFooter from "../components/ClosingFooter.astro";
 import ConsentBanner from "../components/ConsentBanner.astro";
+import { CONSENT_GATE } from "../lib/consent-gate";
 import type { Props as CtaProps } from "../components/CtaBand.astro";
 
 interface Props {
@@ -40,6 +41,7 @@ const canonical = new URL(path, Astro.site).href;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline set:html={CONSENT_GATE} />
     <title>{title}</title>
     <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex" />}
