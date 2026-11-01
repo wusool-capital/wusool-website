@@ -571,3 +571,50 @@ test("legal pages carry the live text, the entity name and no em dashes", async 
     expect(html).not.toContain("dopaminecap");
   }
 });
+
+test("every live URL still resolves, and the sitemap lists every indexable page", async ({
+  request,
+  isMobile,
+}) => {
+  test.skip(isMobile, "crawl check, desktop only");
+  test.setTimeout(120_000);
+  const live = readFileSync("scripts/live-urls.txt", "utf8")
+    .split("\n")
+    .filter(Boolean);
+  const missing: string[] = [];
+  for (const path of live) {
+    const res = await request.get(path, { maxRedirects: 0 });
+    if (![200, 301].includes(res.status()))
+      missing.push(`${path} ${res.status()}`);
+  }
+  expect(missing).toEqual([]);
+
+  const sitemap = await request.get("/sitemap.xml");
+  expect(sitemap.headers()["content-type"]).toContain("application/xml");
+  const xml = await sitemap.text();
+  const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  for (const path of live.filter((p) => p !== "/transactions"))
+    expect(locs, path).toContain(`https://www.wusoolcapital.com${path}`);
+  expect(locs.some((u) => /\/styleguide$|\/404$|-test$/.test(u))).toBe(false);
+
+  // The Webflow test collections are gone (fix 3).
+  for (const path of ["/insights-test", "/reports-test"])
+    expect((await request.get(path, { maxRedirects: 0 })).status(), path).toBe(
+      404,
+    );
+});
+
+test("robots.txt lists the sitemap once and llms.txt uses the approved values", async ({
+  request,
+}) => {
+  const robots = await (await request.get("/robots.txt")).text();
+  expect(robots.match(/^Sitemap:/gm)?.length).toBe(1);
+  const llms = await (await request.get("/llms.txt")).text();
+  expect(llms).toContain("6 weeks to first offer");
+  expect(llms).toContain("$1M to $25M");
+  expect(llms).toContain("mainly success fee");
+  expect(llms).not.toMatch(/60 days|success-fee only/i);
+  const full = await (await request.get("/llms-full.txt")).text();
+  expect(full).toContain("https://www.wusoolcapital.com/insights/");
+  expect(full.length).toBeGreaterThan(llms.length * 5);
+});

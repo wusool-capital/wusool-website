@@ -87,8 +87,8 @@ Cloudflare Workers static assets (CDN, _headers, _redirects, preview URLs per br
 | `insight` | Every Webflow field (Appendix A) plus body as Portable Text with custom blocks (exhibit, stat, quote, CTA, report download, FAQ). Key takeaways and FAQ become structured lists |
 | `report` | Every Webflow field (Appendix A) plus a reference to its companion insight and the tools app gate id |
 | `industry` | Every Webflow field (Appendix A); FAQ as structured Q&A, not HTML |
-| `teamMember` | Every Webflow field (Appendix A); feeds Person schema and author pages |
-| `career`, `transaction` | Every Webflow field (Appendix A) |
+| `teamMember` | Every Webflow field (Appendix A) plus a display order; feeds the team page list and Person schema. Members are added, removed and reordered in Sanity |
+| `career`, `transaction` | Every Webflow field (Appendix A). Transactions stay in Sanity but are hidden on the site until Jules decides otherwise |
 | `page` | Landing pages built from section blocks (hero, stats, comparison, sector grid, process, deals table, FAQ, CTA band). Layout of each block is code; content and order are editable |
 | `siteSettings` | Nav, footer, announcement bar, default SEO, organization data |
 | `seo` (object) | Title, description, canonical override, OG title, OG image, noindex |
@@ -113,7 +113,7 @@ Rules:
 Most readers land directly on an article from Google or an AI answer, so the article page carries the conversion work. The hub serves returning readers and crawlers.
 
 Article page (`/insights/{slug}`):
-- Breadcrumbs, H1, key takeaways at the top, table of contents for long pieces, visible published and updated dates, author box linking to the author page.
+- Breadcrumbs, H1, key takeaways at the top, table of contents for long pieces, visible published and updated dates, author box linking to the author's card on the team page (`/team#{slug}`).
 - One CTA block at the end from `cta-text` and `cta-url`, plus a contextual CTA mid-article; no sticky bar covering content.
 - "Related insights": three cards from the same silo, so search visitors keep reading.
 - Share links from the canonical URL.
@@ -150,9 +150,9 @@ Parity (launch blockers):
 Improvements:
 - JSON-LD from templates per Appendix B: one `@graph` per page, stable `@id`s on `https://www.wusoolcapital.com` (today the schema uses the non-www host), no duplicate blocks (Careers and JobPosting are emitted twice today).
 - Self-referencing canonical on every page (today only CMS templates have one).
-- Sitemap served as `application/xml`, one `Sitemap:` line in robots.txt, `/transactions` included, unlisted items (`hide-from-listings`) kept in the sitemap but out of listings.
-- Author pages at `/team/{slug}` with Person schema (fix 10 in section 13).
-- Author pages with credentials and sameAs links for E-E-A-T.
+- Sitemap served as `application/xml`, one `Sitemap:` line in robots.txt, unlisted items (`hide-from-listings`) kept in the sitemap but out of listings.
+- One team page with a Person node per member (credentials and sameAs links for E-E-A-T). No individual author pages (Jules's decision, feature 9).
+- `/transactions` redirects to `/sell` while transactions are hidden.
 - `llms.txt` and `llms-full.txt` generated from Sanity at build.
 - robots.txt policy that explicitly allows AI search crawlers (GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended) unless we decide otherwise.
 - Visible "last updated" dates, key takeaways near the top, question-style H2s on guides (content team, after launch).
@@ -213,8 +213,8 @@ These were found in the audit. Each one is fixed in the new site and checked in 
 | 7 | The padel insight uses a different nav with `#` links | One global nav and footer component on every page; CI fails on any `href="#"` that is not a modal trigger | 2, 7 |
 | 8 | Deal size differs ($1M to $20M on Home, $1M to $27M on industry pages) | "$1M to $25M" everywhere: Home FAQ, industry pages, `llms.txt` | 3, 4, 6 |
 | 9 | `llms.txt` says "success-fee only" and "within 60 days" | Generated from Sanity `siteSettings` with "mainly success fee, with a retainer depending on documentation" and "6 weeks to first offer" | 12 |
-| 10 | `/team/{slug}` author pages return 404 | Publish an author page per team member with Person schema; insights link bylines to it | 9 |
-| 11 | `/transactions` missing from the sitemap; sitemap served as `application/rss+xml`; robots.txt lists the sitemap twice | Sitemap generated at build as `application/xml` with every indexable page; one `Sitemap:` line | 12 |
+| 10 | `/team/{slug}` author pages return 404 | One team page with Person schema per member; insight bylines link to the member's card on it (`/team#{slug}`) | 9 |
+| 11 | Sitemap served as `application/rss+xml`; robots.txt lists the sitemap twice | Sitemap generated at build as `application/xml` with every indexable page; one `Sitemap:` line | 12 |
 
 The approved values (6 weeks, $1M to $25M, fee wording, entity line) live once in Sanity `siteSettings` and templates read them from there, so they cannot drift again.
 
@@ -243,7 +243,7 @@ These apply to every feature and go into the repo's `CLAUDE.md`.
 | 6 | Industries (template plus 10 pages) | All 10 URLs return 200 with parity meta; FAQPage JSON-LD valid |
 | 7 | Insights hub and article pages, including exhibit blocks (sections 6.1 and 6.2) | Every published insight URL returns 200; hub search and filters work with JavaScript and the full list is still in the HTML without it; every card has an image; Sanity insights render their exhibits natively with no duplicate text; Article JSON-LD with author valid; padel report renders its exhibits |
 | 8 | Reports (section 6.1) | Every published report URL returns 200 with H1, summary, canonical and Report JSON-LD in the raw HTML; the download form opens from `embed.js` and a test lead arrives |
-| 9 | Team, author pages, Careers, Transactions | URLs return 200; each team member has a `/team/{slug}` page with valid Person JSON-LD; insight bylines link to it |
+| 9 | Team and Careers | URLs return 200; the team page lists every member from Sanity with valid Person JSON-LD; insight bylines link to the member's card; transactions are hidden and `/transactions` redirects to `/sell` |
 | 10 | Valuation, Deal Readiness and Benchmark pages | Each tool loads and a test lead arrives with its page source |
 | 11 | Legal pages and 404 | Content matches live; 404 returns status 404 |
 | 12 | Global SEO layer: sitemap, robots, `llms.txt`, redirects | Crawl diff old vs new shows zero missing URLs; Ahrefs staging crawl meets section 14.4 |
@@ -349,7 +349,7 @@ Today = what the live HTML emits (checked 30 Oct 2026). Target = what the new te
 | Team | Person (3), AboutPage | AboutPage, Person per member with sameAs, knowsAbout, knowsLanguage, worksFor |
 | Careers | Organization (twice) | CollectionPage, BreadcrumbList |
 | Career role | JobPosting (twice) | JobPosting once, hidden after `valid-through` |
-| Transactions | none | CollectionPage with ItemList of anonymized deals, BreadcrumbList |
+| Transactions | none | Hidden for now (`/transactions` redirects to `/sell`) |
 | Valuation tool | WebApplication | WebApplication, FAQPage if present, BreadcrumbList |
 | Benchmark | Organization, WebSite, WebPage, BreadcrumbList, SoftwareApplication, FAQPage (5) | Same, on the www host |
 | Deal readiness | not checked | WebApplication, BreadcrumbList |

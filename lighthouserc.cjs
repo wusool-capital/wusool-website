@@ -37,9 +37,18 @@ module.exports = {
       assertMatrix: [
         {
           matchingUrlPattern:
-            "^(?!.*/styleguide$)(?!.*/reports/)(?!.*/valuation-tool$)(?!.*/benchmark$)",
+            "^(?!.*/styleguide$)(?!.*/reports/)(?!.*/valuation-tool$)(?!.*/benchmark$)(?!.*/gcc-padel-report-2026$)",
           aggregationMethod: "median-run",
           assertions: thresholds,
+        },
+        // Jules accepted about 2.05s LCP on the padel article (feature 12).
+        {
+          matchingUrlPattern: "/gcc-padel-report-2026$",
+          aggregationMethod: "median-run",
+          assertions: {
+            ...thresholds,
+            "largest-contentful-paint": ["error", { maxNumericValue: 2100 }],
+          },
         },
         // The styleguide is noindex by design, so SEO cannot reach 100 there.
         {
