@@ -39,10 +39,11 @@ if (root) {
 
   // Shows the step's error and focuses the first missing answer.
   const valid = () => {
-    const bad = $$<HTMLInputElement>(
-      "input, select, textarea",
-      steps[cur],
-    ).find((f) => !f.checkValidity());
+    const fields = $$<HTMLInputElement>("input, select, textarea", steps[cur]);
+    // An answer made only of spaces counts as empty, as in the original.
+    for (const f of fields)
+      if (f.type !== "radio" && f.type !== "checkbox") f.value = f.value.trim();
+    const bad = fields.find((f) => !f.checkValidity());
     err(!!bad);
     bad?.focus();
     return !bad;

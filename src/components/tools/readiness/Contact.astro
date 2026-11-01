@@ -35,6 +35,9 @@ const selects = [
           name={f.id}
           type={f.type}
           autocomplete={f.auto}
+          pattern={
+            f.type === "email" ? "[^@\\s]+@[^@\\s]+\\.[^@\\s]+" : undefined
+          }
           required
         />
       </div>
@@ -54,7 +57,7 @@ const selects = [
   <div class="consent">
     <input id="rd-consent" name="consent" type="checkbox" required />
     <label for="rd-consent">
-      I agree to the Wusool Capital <a href="/privacy-policy">privacy policy</a>
+      I agree to the Wusool Capital <a href="/privacy-policy">privacy policy</a>{" "}
       and consent to being contacted.
     </label>
   </div>

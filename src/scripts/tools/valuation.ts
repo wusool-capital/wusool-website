@@ -28,12 +28,18 @@ function init(root: HTMLElement) {
   // Sector data loads from the site once the page has drawn.
   let profiles: Record<string, Profile> = {};
   let vc: VcRow[] = [];
-  const data = fetch("/tools/valuation-data.json")
-    .then((r) => r.json())
-    .then((d: { profiles: Record<string, Profile>; vc: VcRow[] }) => {
-      profiles = d.profiles;
-      vc = d.vc;
-    });
+  const load = () =>
+    fetch("/tools/valuation-data.json")
+      .then((r) => {
+        if (!r.ok) throw new Error(String(r.status));
+        return r.json();
+      })
+      .then((d: { profiles: Record<string, Profile>; vc: VcRow[] }) => {
+        profiles = d.profiles;
+        vc = d.vc;
+      });
+  let data = load();
+  data.catch(() => {});
 
   const field = (n: string) =>
     form.elements.namedItem(n) as HTMLInputElement | RadioNodeList | null;
@@ -129,7 +135,16 @@ function init(root: HTMLElement) {
       );
       return;
     }
-    await data;
+    try {
+      await data;
+    } catch {
+      data = load();
+      data.catch(() => {});
+      announce(
+        "The sector data did not load. Check your connection and try again.",
+      );
+      return;
+    }
     render();
     form.hidden = true;
     results.hidden = false;

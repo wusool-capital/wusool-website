@@ -637,6 +637,10 @@ test("robots.txt lists the sitemap once and llms.txt uses the approved values", 
   expect(full.length).toBeGreaterThan(llms.length * 5);
 });
 
+// The site-wide "Get started" modal still loads from the tools app on every
+// page; the tools themselves must request nothing else off the site.
+const EMBED = "https://tools.wusoolcapital.com/embed.js";
+
 // Answers every visible question with the first option or a sample value,
 // then presses the step's forward button, until `done` is visible.
 async function completeTool(
@@ -695,10 +699,7 @@ test("deal readiness tool scores the answers without any request", async ({
 }) => {
   const external: string[] = [];
   page.on("request", (r) => {
-    if (
-      !r.url().startsWith("http://localhost") &&
-      !/embed\.js|clarity/.test(r.url())
-    )
+    if (!r.url().startsWith("http://localhost") && r.url() !== EMBED)
       external.push(r.url());
   });
   await page.goto("/deal-readiness-tool");
@@ -717,10 +718,7 @@ test("benchmark tool shows results and a thank-you without any request", async (
 }) => {
   const external: string[] = [];
   page.on("request", (r) => {
-    if (
-      !r.url().startsWith("http://localhost") &&
-      !/embed\.js|clarity/.test(r.url())
-    )
+    if (!r.url().startsWith("http://localhost") && r.url() !== EMBED)
       external.push(r.url());
   });
   await page.goto("/benchmark");
@@ -731,10 +729,7 @@ test("benchmark tool shows results and a thank-you without any request", async (
 test("valuation tool shows a range without any request", async ({ page }) => {
   const external: string[] = [];
   page.on("request", (r) => {
-    if (
-      !r.url().startsWith("http://localhost") &&
-      !/embed\.js|clarity/.test(r.url())
-    )
+    if (!r.url().startsWith("http://localhost") && r.url() !== EMBED)
       external.push(r.url());
   });
   await page.goto("/valuation-tool");
