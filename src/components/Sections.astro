@@ -22,6 +22,8 @@ import ProgressMock from "./mocks/ProgressMock.astro";
 import Note from "./team/Note.astro";
 import TeamGrid from "./team/TeamGrid.astro";
 import Roles from "./team/Roles.astro";
+import Readiness from "./tools/Readiness.astro";
+import Benchmark from "./tools/Benchmark.astro";
 import { COMPANY_SLUG } from "../lib/team";
 import {
   faqItems,
@@ -367,6 +369,16 @@ const person = (m: { slug: string }) => m.slug !== COMPANY_SLUG;
         </section>
       );
     case "toolSection":
+      // Readiness and benchmark run natively; valuation still embeds the
+      // tools app until its port lands.
+      if (s.tool === "readiness" || s.tool === "benchmark")
+        return (
+          <section class="section section--flush-top">
+            <div class="wrap">
+              {s.tool === "readiness" ? <Readiness /> : <Benchmark />}
+            </div>
+          </section>
+        );
       return (
         <section class="section section--flush-top tool">
           <div class="wrap">
