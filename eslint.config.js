@@ -15,6 +15,7 @@ export default [
       "studio/node_modules/",
       "studio/dist/",
       "studio/.sanity/",
+      "lead magnets/",
     ],
   },
   js.configs.recommended,
