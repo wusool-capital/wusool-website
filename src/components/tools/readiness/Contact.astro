@@ -1,0 +1,147 @@
+---
+// Last step: contact details. Submitting shows the score; nothing is sent.
+import Icon from "../../Icon.astro";
+import StepNav from "./StepNav.astro";
+import { SECTORS, REVENUES, COUNTRIES } from "../../../lib/tools/readiness";
+
+const inputs = [
+  { id: "name", label: "Your name", type: "text", auto: "name" },
+  { id: "email", label: "Email address", type: "email", auto: "email" },
+  { id: "biz", label: "Business name", type: "text", auto: "organization" },
+  { id: "domain", label: "Company website", type: "text", auto: "url" },
+] as const;
+const selects = [
+  { id: "sector", label: "Sector", opts: SECTORS, required: true },
+  { id: "revenue", label: "Annual revenue (optional)", opts: REVENUES },
+  { id: "country", label: "Country (optional)", opts: COUNTRIES },
+];
+---
+
+<section class="step" data-step hidden>
+  <p class="kicker">Last step</p>
+  <h2 tabindex="-1">
+    <Icon name="envelope-simple" />
+    Where should we send your score?
+  </h2>
+  <p class="intro">
+    Tell us a bit about yourself so we can personalise your results.
+  </p>
+  <div class="grid">
+    {inputs.map((f) => (
+      <div class="field">
+        <label for={`rd-${f.id}`}>{f.label}</label>
+        <input
+          id={`rd-${f.id}`}
+          name={f.id}
+          type={f.type}
+          autocomplete={f.auto}
+          pattern={
+            f.type === "email" ? "[^@\\s]+@[^@\\s]+\\.[^@\\s]+" : undefined
+          }
+          required
+        />
+      </div>
+    ))}
+    {selects.map((f) => (
+      <div class="field">
+        <label for={`rd-${f.id}`}>{f.label}</label>
+        <select id={`rd-${f.id}`} name={f.id} required={f.required}>
+          <option value="">Select</option>
+          {f.opts.map((o) => (
+            <option>{o}</option>
+          ))}
+        </select>
+      </div>
+    ))}
+  </div>
+  <div class="consent">
+    <input id="rd-consent" name="consent" type="checkbox" required />
+    <label for="rd-consent">
+      I agree to the Wusool Capital <a href="/privacy-policy">privacy policy</a>{" "}
+      and consent to being contacted.
+    </label>
+  </div>
+  <StepNav
+    next="Get my score"
+    submit
+    error="Please fill in your name, email, business name, company website and sector, and accept the privacy policy."
+  />
+  <p class="note">
+    Your answers are confidential and used only to generate your report. Wusool
+    Capital will never share your data.
+  </p>
+</section>
+
+<style>
+  .kicker {
+    color: var(--muted);
+    font-size: var(--text-14);
+    font-weight: var(--weight-medium);
+  }
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2-5);
+    margin: var(--space-2) 0;
+    font-size: var(--text-range);
+  }
+  .intro {
+    margin-bottom: var(--space-8);
+    color: var(--muted);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+  .field label {
+    display: block;
+    margin-bottom: var(--space-1-5);
+    color: var(--navy);
+    font-size: var(--text-14);
+    font-weight: var(--weight-medium);
+  }
+  input:not([type="checkbox"]),
+  select {
+    width: 100%;
+    height: var(--btn-h);
+    padding: 0 var(--space-3-5);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-inner);
+    background: var(--surface);
+    color: var(--ink);
+  }
+  input:focus-visible,
+  select:focus-visible {
+    border-color: var(--navy);
+  }
+  .consent {
+    display: flex;
+    gap: var(--space-2-5);
+    align-items: flex-start;
+    margin-top: var(--space-5);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  .consent input {
+    margin: var(--space-1) 0 0;
+    accent-color: var(--navy);
+  }
+  .consent a {
+    color: var(--navy);
+    text-decoration: underline;
+  }
+  .note {
+    margin-top: var(--space-4);
+    color: var(--muted);
+    font-size: var(--text-xs);
+    text-align: center;
+  }
+  @media (max-width: 560px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

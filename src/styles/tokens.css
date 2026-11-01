@@ -115,8 +115,6 @@
   /* Team card headshot. */
   --headshot: 120px;
   --headshot-lg: 240px;
-  /* Space held for an embedded tool until its frame appears. */
-  --tool-min-h: 100vh;
   --hero-min-h: min(640px, calc(100dvh - 140px));
   --hero-pad: 64px;
   --avatar: 34px;
@@ -192,4 +190,13 @@
   --z-menu: 1;
   --z-header: 40;
   --z-banner: 50;
+}
+
+/* Tool: benchmark */
+:root {
+  --bm-max: 860px;
+  /* Peer band: your-value marker width, and how far the median label moves
+     aside when the marker sits near the middle. */
+  --bm-mark-w: 3px;
+  --bm-med-shift: 58px;
 }

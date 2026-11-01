@@ -1,0 +1,63 @@
+---
+// The answers the estimate used.
+const items = [
+  ["in-company", "Company"],
+  ["in-sector", "Sector"],
+  ["in-geo", "Country"],
+  ["in-revenue", "Yearly revenue"],
+  ["in-pbt", "Profit before tax"],
+  ["in-salary", "Owners' salary"],
+  ["in-ebitda", "Yearly profit (EBITDA)"],
+  ["in-stage", "Funding stage"],
+  ["in-last-rev", "Revenue at last round"],
+];
+---
+
+<div class="inputs">
+  <h3>Your inputs</h3>
+  <dl>
+    {items.map(([key, label]) => (
+      <div data-show={key}>
+        <dt>{label}</dt>
+        <dd data-v={key} />
+      </div>
+    ))}
+  </dl>
+</div>
+
+<style>
+  .inputs {
+    padding: var(--space-6);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+  }
+  h3 {
+    margin-bottom: var(--space-4);
+  }
+  dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--fact-min), 1fr));
+    gap: var(--space-3);
+    margin: 0;
+  }
+  dl > div {
+    padding: var(--space-2-5) var(--space-3);
+    border: 1px solid var(--line);
+    border-radius: var(--r-inner);
+  }
+  dl > div[hidden] {
+    display: none;
+  }
+  dt {
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+  dd {
+    margin: 0;
+    color: var(--navy);
+    font-size: var(--text-14);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+  }
+</style>

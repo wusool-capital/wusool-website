@@ -12,3 +12,6 @@ playwright-report/
 studio/node_modules/
 studio/dist/
 studio/.sanity/
+
+# Raw tool files from the old tools app, reference only.
+lead magnets/

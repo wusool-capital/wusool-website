@@ -1,0 +1,97 @@
+---
+// Radio group drawn as a segmented control, inside a fieldset with a legend.
+interface Props {
+  name: string;
+  legend: string;
+  options: { value: string; label: string; sub?: string }[];
+  checked: string;
+  hideLegend?: boolean;
+  class?: string;
+}
+const { name, legend, options, checked, hideLegend, class: cls } = Astro.props;
+---
+
+<fieldset class:list={["choice", cls]}>
+  <legend class:list={[hideLegend && "visually-hidden"]}>{legend}</legend>
+  <div class="opts">
+    {options.map((o) => (
+      <label>
+        <input
+          type="radio"
+          name={name}
+          value={o.value}
+          checked={o.value === checked}
+        />
+        <span class="box">
+          {o.label}
+          {o.sub && <span class="note">{o.sub}</span>}
+        </span>
+      </label>
+    ))}
+  </div>
+</fieldset>
+
+<style>
+  .choice {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  legend {
+    margin-bottom: var(--space-1-5);
+    padding: 0;
+    color: var(--navy);
+    font-size: var(--text-14);
+    font-weight: var(--weight-medium);
+  }
+  .opts {
+    display: flex;
+    gap: var(--space-2);
+  }
+  label {
+    position: relative;
+    flex: 1;
+  }
+  input {
+    position: absolute;
+    opacity: 0;
+  }
+  .box {
+    display: block;
+    height: 100%;
+    padding: var(--space-3);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-inner);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: var(--text-14);
+    font-weight: var(--weight-medium);
+    text-align: center;
+    cursor: pointer;
+    transition:
+      background var(--dur-fast),
+      color var(--dur-fast);
+  }
+  .box:hover {
+    border-color: var(--navy);
+  }
+  input:checked + .box {
+    border-color: var(--navy);
+    background: var(--navy);
+    color: var(--on-navy);
+  }
+  input:focus-visible + .box {
+    outline: 2px solid var(--navy);
+    outline-offset: 2px;
+  }
+  input:checked + .box .note {
+    color: var(--on-navy-muted);
+  }
+  .note {
+    display: block;
+    margin-top: var(--space-1);
+    font-size: var(--text-xs);
+    font-weight: normal;
+  }
+</style>

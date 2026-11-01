@@ -1,0 +1,126 @@
+---
+// After the results: book a call, the other two tools, methodology.
+import Button from "../../Button.astro";
+import Icon from "../../Icon.astro";
+
+const tools = [
+  {
+    href: "/valuation-tool",
+    title: "Valuation calculator",
+    text: "An indicative enterprise value range, built on GCC transaction multiples.",
+  },
+  {
+    href: "/deal-readiness-tool",
+    title: "Exit readiness score",
+    text: "Twenty questions on the things that stall a sale.",
+  },
+];
+---
+
+<div class="book on-navy">
+  <div>
+    <h3>Talk it through</h3>
+    <p>
+      Thirty minutes with a Wusool Capital team member on what your numbers mean
+      for a sale, an acquisition, or a five year plan.
+    </p>
+  </div>
+  <Button form="get-started" variant="light" source="benchmark-call">
+    Book a call
+  </Button>
+</div>
+<p class="lead">
+  Explore our other tools to see what your business could be worth, and whether
+  you are ready to start an exit process.
+</p>
+<div class="tools">
+  {tools.map((t) => (
+    <a class="tool" href={t.href}>
+      <span class="name">
+        {t.title} <Icon name="arrow-right" />
+      </span>
+      <span class="text">{t.text}</span>
+    </a>
+  ))}
+</div>
+<p class="meta">
+  <strong>Methodology.</strong> Established business ranges blend listed Gulf
+  companies, franchise unit economics, Gulf business-for-sale listings and
+  Wusool Capital's own deals. Startup ranges use published SaaS and venture
+  benchmarks, GCC listed technology disclosures, regional venture funding data
+  and our own technology deals, adjusted for GCC scale. Percentiles are
+  interpolated across five anchor points and adjusted for your size band. Ranges
+  are indicative. They are not a valuation and do not constitute financial
+  advice.
+</p>
+
+<style>
+  .book {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4-5);
+    margin-top: var(--space-10);
+    padding: var(--space-6);
+    border-radius: var(--r-card);
+    background: var(--navy);
+    color: var(--on-navy);
+  }
+  .book h3 {
+    margin-bottom: var(--space-1-5);
+    color: var(--on-navy);
+  }
+  .book p {
+    max-width: var(--measure-lede);
+    color: var(--on-navy-muted);
+    font-size: var(--text-14);
+  }
+  .lead {
+    margin: var(--space-6) 0 var(--space-3);
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  .tools {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+  }
+  .tool {
+    display: block;
+    padding: var(--space-3-5) var(--space-4);
+    border: 1px solid var(--line);
+    border-radius: var(--r-icon);
+    background: var(--surface);
+    transition: border-color var(--dur-fast);
+  }
+  .tool:hover {
+    border-color: var(--navy);
+  }
+  .name {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    color: var(--navy);
+    font-size: var(--text-14);
+    font-weight: var(--weight-semibold);
+  }
+  .text {
+    display: block;
+    margin-top: var(--space-1);
+    color: var(--muted);
+    font-size: var(--text-sm);
+  }
+  .meta {
+    margin-top: var(--space-6);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+  @media (max-width: 640px) {
+    .tools {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

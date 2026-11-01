@@ -1,0 +1,91 @@
+---
+// Back and next buttons of a step, and the message shown when a required
+// answer is missing.
+import Icon from "../../Icon.astro";
+
+interface Props {
+  next: string;
+  submit?: boolean;
+  error?: string;
+}
+const {
+  next,
+  submit = false,
+  error = "Please answer all questions before continuing.",
+} = Astro.props;
+---
+
+<div class="row">
+  <button type="button" class="btn btn--back" data-go="-1">
+    <Icon name="arrow-left" /> Back
+  </button>
+  <button
+    type={submit ? "submit" : "button"}
+    class="btn btn--next"
+    data-go={submit ? undefined : "1"}
+  >
+    {next}
+    <Icon name="arrow-right" />
+  </button>
+</div>
+<p class="err" role="alert" data-error hidden>
+  <Icon name="warning-circle" />
+  {error}
+</p>
+
+<style>
+  .row {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: space-between;
+    margin-top: var(--space-8);
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: var(--btn-h);
+    padding: 0 var(--btn-pad-x);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    color: var(--navy);
+    font-size: var(--text-15);
+    font-weight: var(--weight-medium);
+    cursor: pointer;
+    transition:
+      transform var(--dur-base) var(--ease),
+      background var(--dur-base),
+      border-color var(--dur-base);
+  }
+  .btn:active {
+    transform: scale(var(--press));
+  }
+  .btn--back:hover {
+    border-color: var(--navy);
+  }
+  .btn--next {
+    border-color: var(--navy);
+    background: var(--navy);
+    color: var(--on-navy);
+  }
+  .btn--next:hover {
+    background: var(--navy-2);
+  }
+  .err {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+    padding: var(--space-2-5) var(--space-3-5);
+    border: 1px solid var(--navy);
+    border-radius: var(--r-inner);
+    background: var(--sky-soft);
+    color: var(--navy);
+    font-size: var(--text-14);
+    font-weight: var(--weight-medium);
+  }
+  .err[hidden] {
+    display: none;
+  }
+</style>

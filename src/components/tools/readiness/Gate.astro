@@ -1,0 +1,66 @@
+---
+// Call to action under the results: book a call for the full report.
+import Icon from "../../Icon.astro";
+import Button from "../../Button.astro";
+
+const bullets = [
+  "Full breakdown, area by area",
+  "3 priority actions to increase your score",
+  "No retainer, no obligation",
+];
+---
+
+<div class="gate">
+  <Icon name="lock-simple" class="lock" />
+  <h3>Unlock your full report</h3>
+  <p>
+    Book a free 20-minute call with a Wusool Capital advisor to receive your
+    complete breakdown and your personalised action plan.
+  </p>
+  <ul>
+    {bullets.map((b) => (
+      <li>
+        <Icon name="check" />
+        {b}
+      </li>
+    ))}
+  </ul>
+  <Button form="get-started" source="deal-readiness-tool">
+    Book my free call
+  </Button>
+  <p class="small">Takes 20 minutes. No commitment.</p>
+</div>
+
+<style>
+  .gate {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-3);
+    margin-top: var(--space-8);
+    padding: var(--space-8);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+  }
+  .gate :global(.lock) {
+    color: var(--navy);
+    font-size: var(--text-range);
+  }
+  p {
+    color: var(--muted);
+  }
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    font-size: var(--text-15);
+  }
+  .small {
+    font-size: var(--text-xs);
+  }
+</style>

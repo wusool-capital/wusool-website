@@ -1,0 +1,108 @@
+---
+// "Get the full benchmark" form. Submitting validates in the browser and
+// shows a thank-you in place. Nothing is sent.
+import Field from "./Field.astro";
+---
+
+<form class="report" id="bm-report">
+  <h3>Get the full benchmark</h3>
+  <p class="sub">
+    Your full peer ranges, quartile position, and the things a buyer would
+    question. Sent as a PDF.
+  </p>
+  <div class="grid">
+    <Field id="bm-name" label="Name">
+      <input
+        type="text"
+        id="bm-name"
+        autocomplete="name"
+        placeholder="Full name"
+        required
+      />
+    </Field>
+    <Field id="bm-company" label="Company">
+      <input
+        type="text"
+        id="bm-company"
+        autocomplete="organization"
+        placeholder="Company name"
+        required
+      />
+    </Field>
+    <Field id="bm-email" label="Email">
+      <input
+        type="email"
+        id="bm-email"
+        autocomplete="email"
+        placeholder="you@company.com"
+        pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
+        required
+      />
+    </Field>
+    <Field id="bm-phone" label="Mobile" optional>
+      <input
+        type="tel"
+        id="bm-phone"
+        autocomplete="tel"
+        placeholder="+971 50 000 0000"
+      />
+    </Field>
+  </div>
+  <div class="check">
+    <input type="checkbox" id="bm-consent" required />
+    <label for="bm-consent">
+      I agree to Wusool Capital's <a href="/privacy-policy">Privacy Policy</a>{" "}
+      and consent to being contacted.
+    </label>
+  </div>
+  <div class="row">
+    <button type="submit" class="act act--primary">
+      Send me the full benchmark
+    </button>
+  </div>
+</form>
+<div class="thanks" id="bm-thanks" hidden>
+  <h3 tabindex="-1">Thank you</h3>
+  <p>
+    A Wusool Capital team member will send your full benchmark to the email you
+    gave us.
+  </p>
+</div>
+
+<style>
+  .report,
+  .thanks {
+    margin-top: var(--space-10);
+    padding: var(--space-6);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--page);
+  }
+  .thanks[hidden] {
+    display: none;
+  }
+  h3 {
+    margin-bottom: var(--space-1-5);
+  }
+  .check {
+    display: flex;
+    gap: var(--space-2-5);
+    align-items: flex-start;
+    margin-top: var(--space-4);
+  }
+  .check input {
+    flex: none;
+    width: var(--space-4);
+    height: var(--space-4);
+    margin-top: var(--space-1);
+    accent-color: var(--navy);
+  }
+  .check label {
+    color: var(--muted);
+    font-size: var(--text-sm);
+  }
+  .check a {
+    color: var(--navy);
+    text-decoration: underline;
+  }
+</style>

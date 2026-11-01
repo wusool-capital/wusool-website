@@ -1,0 +1,89 @@
+---
+// Discounted cash flow: assumptions, five-year projection and the value bridge.
+import Details from "./Details.astro";
+
+const facts = [
+  ["dcf-ind", "Benchmark industry"],
+  ["dcf-ke", "Cost of equity"],
+  ["dcf-kd", "Cost of debt"],
+  ["dcf-sp", "Size premium"],
+  ["dcf-tax", "Tax rate"],
+  ["dcf-tg", "Long-term growth"],
+  ["dcf-wacc", "Discount rate (WACC)"],
+];
+const cols = [
+  ["ebit", "Operating profit (EBIT)"],
+  ["dep", "Depreciation and amortisation"],
+  ["capex", "Capital spending"],
+  ["nwc", "Working capital"],
+  ["nopat", "Profit after tax"],
+  ["fcf", "Free cash flow"],
+  ["df", "Discount factor"],
+  ["dfcf", "Value today"],
+];
+const totals = [
+  ["dcf-tv", "Terminal value"],
+  ["dcf-ev", "Enterprise value"],
+  ["dcf-eq", "Equity value"],
+];
+---
+
+<Details title="Discounted cash flow (DCF)" value="dcf-head">
+  <p>
+    We project five years of cash flow from your sector's growth and margin
+    benchmarks, then discount it to today. Cost of equity and debt come from
+    Damodaran (NYU Stern, January 2025).
+  </p>
+  <p data-show="dcf-loss" hidden>
+    Your company is loss-making, so the model assumes a path to profit over five
+    years, moving toward typical margins for your sector.
+  </p>
+  <dl>
+    {facts.map(([key, label]) => (
+      <div>
+        <dt>{label}</dt>
+        <dd data-v={key} />
+      </div>
+    ))}
+  </dl>
+  <h4>Five-year projection</h4>
+  <div
+    class="scroll"
+    role="region"
+    aria-label="Five-year projection"
+    tabindex="0"
+  >
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Year</th>
+          {cols.map(([, label]) => (
+            <th scope="col">{label}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {[0, 1, 2, 3, 4].map((i) => (
+          <tr>
+            <th scope="row" data-v={`dcf-${i}-year`} />
+            {cols.map(([key]) => (
+              <td data-v={`dcf-${i}-${key}`} />
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <dl>
+    {totals.map(([key, label]) => (
+      <div>
+        <dt>{label}</dt>
+        <dd data-v={key} />
+      </div>
+    ))}
+  </dl>
+  <p data-show="dcf-floored" hidden>
+    Terminal value is set to zero because year five free cash flow is still
+    negative. Buyers would then lean on revenue multiples.
+  </p>
+</Details>

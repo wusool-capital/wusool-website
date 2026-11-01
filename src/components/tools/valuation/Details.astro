@@ -1,0 +1,119 @@
+---
+// A collapsible method panel. `value` names the data-v slot for the headline
+// figure shown next to the title. Styles the facts, tables and notes inside.
+import Icon from "../../Icon.astro";
+
+interface Props {
+  title: string;
+  value?: string;
+}
+const { title, value } = Astro.props;
+---
+
+<details class="details">
+  <summary>
+    <span class="title">{title}</span>
+    {value && <span class="value" data-v={value} />}
+    <Icon name="caret-down" class="caret" />
+  </summary>
+  <div class="body">
+    <slot />
+  </div>
+</details>
+
+<style>
+  .details {
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+  }
+  summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    list-style: none;
+    cursor: pointer;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  .title {
+    flex: 1;
+    color: var(--navy);
+    font-weight: var(--weight-semibold);
+  }
+  .value {
+    color: var(--muted);
+    font-size: var(--text-14);
+    font-variant-numeric: tabular-nums;
+  }
+  summary :global(.caret) {
+    transition: transform var(--dur-base) var(--ease);
+  }
+  .details[open] summary :global(.caret) {
+    transform: scaleY(-1);
+  }
+  .body {
+    display: grid;
+    gap: var(--space-4);
+    padding: 0 var(--space-5) var(--space-5);
+    font-size: var(--text-14);
+  }
+  .body :global(h4) {
+    margin: var(--space-2) 0 0;
+    color: var(--navy);
+    font-size: var(--text-15);
+  }
+  .body :global(p) {
+    color: var(--muted);
+  }
+  .body :global(dl) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--fact-min), 1fr));
+    gap: var(--space-2) var(--space-4);
+    margin: 0;
+  }
+  .body :global(dl > div) {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--line);
+  }
+  .body :global(dt) {
+    color: var(--muted);
+  }
+  .body :global(dd) {
+    margin: 0;
+    color: var(--ink);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+  }
+  .body :global([hidden]) {
+    display: none;
+  }
+  .body :global(.scroll) {
+    overflow-x: auto;
+  }
+  .body :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+  .body :global(th),
+  .body :global(td) {
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--line);
+    text-align: right;
+    white-space: nowrap;
+  }
+  .body :global(th:first-child),
+  .body :global(td:first-child) {
+    text-align: left;
+  }
+  .body :global(thead th) {
+    color: var(--muted);
+    font-weight: var(--weight-medium);
+  }
+</style>

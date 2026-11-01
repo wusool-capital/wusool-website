@@ -1,0 +1,85 @@
+---
+// Questions about the company. The sector can be suggested from the description.
+import Group from "./Group.astro";
+import Field from "./Field.astro";
+import Icon from "../../Icon.astro";
+import { SECTORS, GEOS } from "../../../lib/tools/valuation";
+---
+
+<Group legend="Your company">
+  <div class="row">
+    <Field
+      name="companyName"
+      label="Company name"
+      required
+      placeholder="e.g. Acme Trading"
+      autocomplete="organization"
+    />
+    <Field name="name" label="Your name" required autocomplete="name" />
+  </div>
+  <div class="row">
+    <Field
+      name="email"
+      label="Email"
+      type="email"
+      required
+      placeholder="you@company.com"
+      autocomplete="email"
+    />
+    <Field
+      name="domain"
+      label="Company website"
+      required
+      placeholder="e.g. yourcompany.com"
+      autocomplete="url"
+    />
+  </div>
+  <Field
+    name="description"
+    label="What does your company do?"
+    type="textarea"
+    hint="One or two sentences. We use it to suggest your sector."
+    placeholder="e.g. We sell spare parts to garages across the UAE"
+  />
+  <div class="row">
+    <div>
+      <Field
+        name="sector"
+        label="Sector"
+        type="select"
+        required
+        prompt="Select sector"
+        options={SECTORS}
+        hint="Picks the listed peers, deals and growth rates we compare you with."
+      />
+      <p class="suggested" data-suggested hidden>
+        <Icon name="check" /> Suggested from your description. Change it if it
+        does not fit.
+      </p>
+    </div>
+    <Field
+      name="geo"
+      label="Country of head office"
+      type="select"
+      required
+      prompt="Select country"
+      options={GEOS}
+      value="United Arab Emirates"
+      hint="Sets the tax rate."
+    />
+  </div>
+</Group>
+
+<style>
+  .suggested {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    margin-top: var(--space-1-5);
+    color: var(--navy);
+    font-size: var(--text-sm);
+  }
+  .suggested[hidden] {
+    display: none;
+  }
+</style>
