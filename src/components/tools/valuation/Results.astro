@@ -1,0 +1,230 @@
+---
+// The estimate: blended range, one row per method, then the details.
+// Every label is in the HTML; the script fills the numbers and shows the rows
+// that apply.
+import Chip from "../../Chip.astro";
+import Button from "../../Button.astro";
+import Icon from "../../Icon.astro";
+import InputsSummary from "./InputsSummary.astro";
+import DcfDetails from "./DcfDetails.astro";
+import CompsDetails from "./CompsDetails.astro";
+
+const methods = [
+  ["dcf", "Discounted cash flow (DCF)"],
+  ["tr-rev", "Listed peers, value to revenue"],
+  ["tr-eb", "Listed peers, value to EBITDA"],
+  ["tx-rev", "Past deals, value to revenue"],
+  ["ind", "Funding rounds, value to revenue"],
+];
+---
+
+<section
+  class="results"
+  data-valuation-results
+  hidden
+  aria-labelledby="val-title"
+>
+  <div class="hero">
+    <Chip tone="solid" icon="check">
+      Estimate ready
+    </Chip>
+    <p class="thanks" data-v="thanks"></p>
+    <h2 id="val-title" tabindex="-1">
+      Estimated value of your business
+    </h2>
+    <p class="range" data-v="range"></p>
+    <p class="mid">
+      Midpoint: <b data-v="mid"></b>
+    </p>
+    <p class="sub" data-v="sub"></p>
+    <p class="note" data-show="pre-profit" hidden>
+      <Icon name="info" /> Your yearly profit is not positive, so the estimate
+      leans on revenue methods. Profit multiples are left out.
+    </p>
+  </div>
+
+  <div class="table" role="region" aria-label="Value by method" tabindex="0">
+    <table>
+      <caption class="visually-hidden">Value by method</caption>
+      <thead>
+        <tr>
+          <th scope="col">Method</th>
+          <th scope="col">Lower</th>
+          <th scope="col">Mid</th>
+          <th scope="col">Upper</th>
+          <th scope="col">Basis</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="blend">
+          <th scope="row">Blended (equal weight)</th>
+          <td data-v="blend-low"></td>
+          <td data-v="blend-mid"></td>
+          <td data-v="blend-high"></td>
+          <td>Average of all methods</td>
+        </tr>
+        {methods.map(([key, name]) => (
+          <tr data-method={key} hidden>
+            <th scope="row">{name}</th>
+            <td data-v={`${key}-low`} />
+            <td data-v={`${key}-mid`} />
+            <td data-v={`${key}-high`} />
+            <td data-v={`${key}-basis`} />
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="fine">
+    For information only. Not financial advice. Lower and upper use the 25th and
+    75th percentile multiples, and the DCF plus or minus 25%.
+  </p>
+
+  <div class="actions">
+    <Button form="get-started" source="valuation-tool-result">
+      Talk to an advisor
+    </Button>
+    <button type="button" class="ghost" data-action="print">
+      <Icon name="printer" /> Print or save as PDF
+    </button>
+    <button type="button" class="ghost" data-action="edit">
+      <Icon name="pencil-simple" /> Change my answers
+    </button>
+  </div>
+
+  <InputsSummary />
+  <DcfDetails />
+  <CompsDetails />
+
+  <p class="more">
+    More free tools: <a href="/deal-readiness-tool">deal readiness check</a>
+    {" and "}
+    <a href="/benchmark">benchmark your business</a>.
+  </p>
+</section>
+
+<style>
+  .results {
+    display: grid;
+    gap: var(--space-6);
+  }
+  .results[hidden] {
+    display: none;
+  }
+  .hero {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-2);
+    padding: var(--space-8);
+    border-radius: var(--r-card);
+    background: var(--sky-soft);
+  }
+  .thanks,
+  .sub,
+  .fine,
+  .note {
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  h2 {
+    max-width: none;
+    font-size: var(--text-xl);
+  }
+  h2:focus {
+    outline: none;
+  }
+  .range {
+    color: var(--navy);
+    font-size: var(--text-stat);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-num);
+    font-variant-numeric: tabular-nums;
+  }
+  .mid b {
+    color: var(--navy);
+  }
+  .note {
+    display: flex;
+    gap: var(--space-1-5);
+    align-items: center;
+  }
+  .note[hidden],
+  tr[hidden] {
+    display: none;
+  }
+  .table {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-14);
+    font-variant-numeric: tabular-nums;
+  }
+  thead th {
+    background: var(--navy);
+    color: var(--on-navy);
+    font-weight: var(--weight-semibold);
+  }
+  th,
+  td {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    white-space: nowrap;
+  }
+  tbody th {
+    font-weight: var(--weight-medium);
+  }
+  tbody tr + tr {
+    border-top: 1px solid var(--line);
+  }
+  .blend {
+    background: var(--page);
+    font-weight: var(--weight-semibold);
+  }
+  td:last-child {
+    color: var(--muted);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: var(--btn-h);
+    padding: 0 var(--space-5);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    color: var(--navy);
+    font-size: var(--text-15);
+    cursor: pointer;
+  }
+  .ghost:hover {
+    border-color: var(--navy);
+  }
+  .more a {
+    text-decoration: underline;
+  }
+  @media (max-width: 640px) {
+    .hero {
+      padding: var(--space-5);
+    }
+    .range {
+      font-size: var(--text-range);
+    }
+  }
+  @media print {
+    .actions,
+    .more {
+      display: none;
+    }
+  }
+</style>

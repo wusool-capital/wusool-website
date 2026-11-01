@@ -1,0 +1,277 @@
+---
+// The tool's questions. Submitting shows the estimate on this page.
+import Field from "./Field.astro";
+import Choice from "./Choice.astro";
+import Icon from "../../Icon.astro";
+import { SECTORS, GEOS, STAGES } from "../../../lib/tools/valuation";
+---
+
+<form class="form" data-valuation-form novalidate>
+  <fieldset>
+    <legend>Your company</legend>
+    <div class="row">
+      <Field
+        name="companyName"
+        label="Company name"
+        required
+        placeholder="e.g. Acme Trading"
+        autocomplete="organization"
+      />
+      <Field name="name" label="Your name" required autocomplete="name" />
+    </div>
+    <div class="row">
+      <Field
+        name="email"
+        label="Email"
+        type="email"
+        required
+        placeholder="you@company.com"
+        autocomplete="email"
+      />
+      <Field
+        name="domain"
+        label="Company website"
+        required
+        placeholder="e.g. yourcompany.com"
+        autocomplete="url"
+      />
+    </div>
+    <Field
+      name="description"
+      label="What does your company do?"
+      type="textarea"
+      hint="One or two sentences. We use it to suggest your sector."
+      placeholder="e.g. We sell spare parts to garages across the UAE"
+    />
+    <div class="row">
+      <div>
+        <Field
+          name="sector"
+          label="Sector"
+          type="select"
+          required
+          prompt="Select sector"
+          options={SECTORS}
+          hint="Picks the listed peers, deals and growth rates we compare you with."
+        />
+        <p class="suggested" data-suggested hidden>
+          <Icon name="check" /> Suggested from your description. Change it if it
+          does not fit.
+        </p>
+      </div>
+      <Field
+        name="geo"
+        label="Country of head office"
+        type="select"
+        required
+        prompt="Select country"
+        options={GEOS}
+        value="United Arab Emirates"
+        hint="Sets the tax rate."
+      />
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Your numbers</legend>
+    <Choice
+      name="currency"
+      legend="Currency"
+      options={["USD", "AED"]}
+      value="USD"
+    />
+    <Field
+      name="revenue"
+      label="Yearly revenue"
+      type="number"
+      money
+      required
+      hint="Total sales over the last 12 months."
+      placeholder="e.g. 2,000,000"
+    />
+    <Field
+      name="profitBeforeTax"
+      label="Yearly profit before tax"
+      type="number"
+      money
+      hint="Last 12 months. Enter a negative number for a loss."
+      placeholder="e.g. 400,000"
+    />
+    <Field
+      name="ownerSalary"
+      label="Owners' yearly salary"
+      type="number"
+      money
+      hint="We add it back to profit to estimate your yearly profit before interest, tax, depreciation and amortisation (EBITDA)."
+      placeholder="e.g. 150,000"
+    />
+  </fieldset>
+
+  <fieldset>
+    <legend>Funding</legend>
+    <Choice
+      name="raised"
+      legend="Has your company raised funding?"
+      options={["No", "Yes"]}
+      required
+    />
+    <div class="funding" data-funding hidden>
+      <Field
+        name="stage"
+        label="Latest funding stage"
+        type="select"
+        prompt="Select stage"
+        options={STAGES}
+      />
+      <div class="row">
+        <Field
+          name="lastRaiseRevenue"
+          label="Yearly revenue at last round"
+          type="number"
+          money
+        />
+        <Field
+          name="lastRaisePBT"
+          label="Profit before tax at last round"
+          type="number"
+          money
+        />
+      </div>
+    </div>
+  </fieldset>
+
+  <div class="consent">
+    <input
+      type="checkbox"
+      id="val-consent"
+      name="consent"
+      required
+      aria-describedby="val-consent-error"
+    />
+    <label for="val-consent">
+      I agree to the Wusool Capital <a href="/privacy-policy">privacy policy</a>{" "}
+      and to being contacted.
+    </label>
+    <p class="error" id="val-consent-error" data-error="consent" hidden></p>
+  </div>
+
+  <div class="actions">
+    <button type="submit" class="submit">
+      Get my valuation <Icon name="arrow-right" />
+    </button>
+    <p class="note">
+      <Icon name="lock-simple" /> Your figures stay in this browser. Nothing is
+      sent.
+    </p>
+  </div>
+</form>
+
+<style>
+  .form {
+    display: grid;
+    gap: var(--space-8);
+  }
+  .form[hidden] {
+    display: none;
+  }
+  fieldset {
+    display: grid;
+    gap: var(--space-5);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+  fieldset > legend {
+    margin-bottom: var(--space-5);
+    padding: 0;
+    color: var(--navy);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-h3);
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: var(--space-5);
+  }
+  .funding {
+    display: grid;
+    gap: var(--space-5);
+  }
+  .funding[hidden] {
+    display: none;
+  }
+  .suggested {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    margin-top: var(--space-1-5);
+    color: var(--navy);
+    font-size: var(--text-sm);
+  }
+  .suggested[hidden] {
+    display: none;
+  }
+  .consent {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-1) var(--space-2-5);
+    align-items: start;
+    font-size: var(--text-14);
+  }
+  .consent input {
+    width: var(--space-5);
+    height: var(--space-5);
+    margin: 0;
+    accent-color: var(--navy);
+  }
+  .consent a {
+    text-decoration: underline;
+  }
+  .consent .error {
+    grid-column: 2;
+    color: var(--navy);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+  }
+  .actions {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-3);
+  }
+  .submit {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: var(--btn-h);
+    padding: 0 var(--btn-pad-x);
+    border: 0;
+    border-radius: var(--r-pill);
+    background: var(--navy);
+    color: var(--on-navy);
+    font-size: var(--text-15);
+    font-weight: var(--weight-medium);
+    cursor: pointer;
+    transition: background var(--dur-base);
+  }
+  .submit:hover {
+    background: var(--navy-2);
+  }
+  .submit:active {
+    transform: scale(var(--press));
+  }
+  .note {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    color: var(--muted);
+    font-size: var(--text-sm);
+  }
+  @media (max-width: 640px) {
+    .row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
