@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 // Pages to smoke test. Add each new page as it ships.
 const pages = [
@@ -524,23 +524,29 @@ test("an open role has one JobPosting and is listed on Careers", async ({
   });
 });
 
-for (const [path, tool, type] of [
-  ["/valuation-tool", "valuation", "WebApplication"],
-  ["/deal-readiness-tool", "readiness", "WebApplication"],
-  ["/benchmark", "benchmark", "SoftwareApplication"],
+// Native tools render their questions in the HTML; the rest embed the tools app.
+for (const [path, tool, type, native] of [
+  ["/valuation-tool", "valuation", "WebApplication", ""],
+  ["/deal-readiness-tool", "readiness", "WebApplication", "data-readiness"],
+  ["/benchmark", "benchmark", "SoftwareApplication", 'id="bm"'],
 ]) {
-  test(`${path} has its H1, its tool embed and ${type} schema in the raw HTML`, async ({
+  test(`${path} has its H1, its tool and ${type} schema in the raw HTML`, async ({
     request,
     isMobile,
   }) => {
     test.skip(isMobile, "content check, desktop only");
     const html = await (await request.get(path)).text();
     expect(html).toMatch(/<h1[^>]*>[^<]+/);
-    expect(html).toMatch(
-      new RegExp(
-        `<script[^>]*(src="https://tools\\.wusoolcapital\\.com/embed\\.js"[^>]*data-tool="${tool}"|data-tool="${tool}"[^>]*src="https://tools\\.wusoolcapital\\.com/embed\\.js")`,
-      ),
-    );
+    if (native) {
+      expect(html).toContain(native);
+      expect(html).toMatch(/<fieldset/);
+      expect(html).not.toMatch(new RegExp(`data-tool="${tool}"`));
+    } else
+      expect(html).toMatch(
+        new RegExp(
+          `<script[^>]*(src="https://tools\\.wusoolcapital\\.com/embed\\.js"[^>]*data-tool="${tool}"|data-tool="${tool}"[^>]*src="https://tools\\.wusoolcapital\\.com/embed\\.js")`,
+        ),
+      );
     const ld = JSON.parse(
       html.match(
         /<script type="application\/ld\+json">([\s\S]*?)<\/script>/,
@@ -629,4 +635,95 @@ test("robots.txt lists the sitemap once and llms.txt uses the approved values", 
   const full = await (await request.get("/llms-full.txt")).text();
   expect(full).toContain("https://www.wusoolcapital.com/insights/");
   expect(full.length).toBeGreaterThan(llms.length * 5);
+});
+
+// Answers every visible question with the first option or a sample value,
+// then presses the step's forward button, until `done` is visible.
+async function completeTool(
+  page: Page,
+  root: string,
+  forward: string,
+  done: string,
+) {
+  const tool = page.locator(root);
+  for (
+    let step = 0;
+    step < 20 && !(await page.locator(done).isVisible());
+    step++
+  ) {
+    for (const radio of await tool
+      .locator('input[type="radio"]:visible')
+      .all()) {
+      const name = await radio.getAttribute("name");
+      if (!(await tool.locator(`input[name="${name}"]:checked`).count()))
+        await radio.check();
+    }
+    for (const select of await tool.locator("select:visible").all())
+      if (!(await select.inputValue())) await select.selectOption({ index: 1 });
+    for (const input of await tool
+      .locator(
+        'input:visible:not([type="radio"]):not([type="checkbox"]), textarea:visible',
+      )
+      .all()) {
+      if (await input.inputValue()) continue;
+      const type = await input.getAttribute("type");
+      const max = await input.getAttribute("max");
+      const numeric = /numeric|decimal/.test(
+        (await input.getAttribute("inputmode")) ?? "",
+      );
+      const sample: Record<string, string> = {
+        email: "owner@example.com",
+        tel: "+971500000000",
+        url: "https://example.com",
+        number: max ?? "1000000",
+      };
+      await input.fill(
+        numeric ? "1000000" : (sample[type ?? ""] ?? "Test company"),
+      );
+    }
+    for (const box of await tool
+      .locator('input[type="checkbox"][required]:visible')
+      .all())
+      await box.check();
+    await tool.locator(forward).first().click();
+  }
+  await expect(page.locator(done)).toBeVisible();
+}
+
+test("deal readiness tool scores the answers without any request", async ({
+  page,
+}) => {
+  const external: string[] = [];
+  page.on("request", (r) => {
+    if (
+      !r.url().startsWith("http://localhost") &&
+      !/embed\.js|clarity/.test(r.url())
+    )
+      external.push(r.url());
+  });
+  await page.goto("/deal-readiness-tool");
+  await completeTool(
+    page,
+    "[data-readiness]",
+    '[data-go="1"]:visible, .btn--next:visible',
+    "[data-results]",
+  );
+  await expect(page.locator("[data-score]")).toHaveText(/^\d+$/);
+  expect(external).toEqual([]);
+});
+
+test("benchmark tool shows results and a thank-you without any request", async ({
+  page,
+}) => {
+  const external: string[] = [];
+  page.on("request", (r) => {
+    if (
+      !r.url().startsWith("http://localhost") &&
+      !/embed\.js|clarity/.test(r.url())
+    )
+      external.push(r.url());
+  });
+  await page.goto("/benchmark");
+  await completeTool(page, "#bm", ".act--primary:visible", "#bm-thanks");
+  expect(external).toEqual([]);
 });
