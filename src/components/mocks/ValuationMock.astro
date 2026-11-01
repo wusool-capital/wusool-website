@@ -13,6 +13,10 @@ const {
   range = "10x to 20x",
   note = "Recurring revenue",
 } = Astro.props;
+// Places the range on a scale from 0x to 1.4 times its top end, so the
+// segment always has room on both sides of the track.
+const [lo, hi] = (range.match(/\d+(\.\d+)?/g) ?? ["0", "0"]).map(Number);
+const pct = (v: number) => `${((v / (hi * 1.4)) * 100).toFixed(1)}%`;
 ---
 
 <MockCard title="Valuation estimate" chip="Example" chipTone="quiet">
@@ -32,9 +36,16 @@ const {
       <b>{range}</b>
       <Chip>{note}</Chip>
     </div>
-    <div class="bar">
-      <span></span>
-    </div>
+    <svg class="scale" aria-hidden="true">
+      <rect class="track" width="100%"></rect>
+      <rect class="fill" x={pct(lo)} width={pct(hi - lo)}></rect>
+      <text x={pct(lo)} y="100%">
+        {lo}x
+      </text>
+      <text x={pct(hi)} y="100%" text-anchor="end">
+        {hi}x
+      </text>
+    </svg>
   </div>
 </MockCard>
 
@@ -76,21 +87,30 @@ const {
     letter-spacing: var(--tracking-num-sm);
     font-variant-numeric: tabular-nums;
   }
-  .bar {
-    position: relative;
-    height: var(--bar-h);
+  .scale {
+    display: block;
+    width: 100%;
+    height: var(--scale-h);
     margin-top: var(--space-3);
+    overflow: visible;
   }
-  .bar span {
-    position: absolute;
-    top: 0;
-    right: 30%;
-    bottom: 0;
-    left: 22%;
-    border-radius: var(--r-pill);
-    background: var(--navy);
+  .scale rect {
+    height: var(--bar-h);
+    rx: calc(var(--bar-h) / 2);
+  }
+  .track {
+    fill: var(--line-strong);
+  }
+  .fill {
+    fill: var(--navy);
+    transform-box: fill-box;
     transform-origin: left;
     animation: grow var(--dur-bar) var(--delay-bar) var(--ease) both;
+  }
+  .scale text {
+    fill: var(--muted);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
   }
   @keyframes grow {
     from {
