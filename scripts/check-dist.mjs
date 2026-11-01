@@ -2,10 +2,15 @@
 // Exits 1 and lists every failure.
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
+import { createHash } from "node:crypto";
 import { parse } from "node-html-parser";
 
 const DIST = "dist";
 const SITE = "https://www.wusoolcapital.com";
+// Links to the bare domain are checked like www links.
+const APEX = "https://wusoolcapital.com";
+// Inline scripts run only if their hash is in the CSP.
+const CSP = readFileSync("public/_headers", "utf8");
 const JS_BUDGET = 50 * 1024;
 const CSS_BUDGET = 100 * 1024;
 // Pages later features build; links to them are allowed until then.
@@ -106,7 +111,7 @@ for (const file of htmlFiles) {
       err(`javascript link ${href}`);
     } else {
       const url = new URL(href, SITE + path);
-      if (url.origin !== SITE) continue;
+      if (url.origin !== SITE && url.origin !== APEX) continue;
       if (url.pathname !== "/" && url.pathname.endsWith("/"))
         err(`link ${href} has a trailing slash and redirects`);
       else if (!exists(url.pathname) && !pending(url.pathname))
@@ -127,6 +132,9 @@ for (const file of htmlFiles) {
     if (src?.startsWith("/")) addJs(src.split("?")[0], jsFiles);
     else if (!src && s.getAttribute("type") !== "application/ld+json") {
       js += Buffer.byteLength(s.text);
+      const hash = createHash("sha256").update(s.text).digest("base64");
+      if (!CSP.includes(`'sha256-${hash}'`))
+        err(`inline script missing from the CSP: 'sha256-${hash}'`);
       for (const spec of imports(s.text))
         addJs(new URL(spec, SITE + path).pathname, jsFiles);
     }

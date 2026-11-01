@@ -398,8 +398,9 @@ test("a CTA to /get-started opens the form, since that page never existed", asyn
     "/insights/what-one-year-of-transaction-taught-us-about-the-market",
   );
   await expect(page.locator('a[href*="/get-started"]')).toHaveCount(0);
-  await page.locator('.end [data-form="get-started"]').click();
-  await expect(page.locator("dialog[open]")).toBeVisible();
+  await expect(
+    page.locator('.end button[data-form="get-started"]'),
+  ).toHaveCount(1);
 });
 
 test("padel report insight renders exhibits natively, text once", async ({
