@@ -25,10 +25,15 @@ function init(root: HTMLElement) {
   const title = q("#val-title");
   const live = q("[data-announce]");
   const sector = form.elements.namedItem("sector") as HTMLSelectElement;
-  const profiles: Record<string, Profile> = JSON.parse(
-    root.dataset.profiles ?? "{}",
-  );
-  const vc: VcRow[] = JSON.parse(root.dataset.vc ?? "[]");
+  // Sector data loads from the site once the page has drawn.
+  let profiles: Record<string, Profile> = {};
+  let vc: VcRow[] = [];
+  const data = fetch("/tools/valuation-data.json")
+    .then((r) => r.json())
+    .then((d: { profiles: Record<string, Profile>; vc: VcRow[] }) => {
+      profiles = d.profiles;
+      vc = d.vc;
+    });
 
   const field = (n: string) =>
     form.elements.namedItem(n) as HTMLInputElement | RadioNodeList | null;
@@ -111,7 +116,7 @@ function init(root: HTMLElement) {
     ],
   ];
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const failed = rules.filter(([n, ok, msg]) => {
       setError(n, ok() ? "" : msg);
@@ -124,6 +129,7 @@ function init(root: HTMLElement) {
       );
       return;
     }
+    await data;
     render();
     form.hidden = true;
     results.hidden = false;
