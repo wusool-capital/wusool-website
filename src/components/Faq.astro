@@ -48,6 +48,17 @@ const parts = (item: Item) => {
   </div>
 </div>
 
+<script>
+  // A click anywhere on an open answer closes it, like its question line.
+  // Links and text selection keep working.
+  document.addEventListener("click", (e) => {
+    const t = e.target as Element;
+    const d = t.closest?.(".faq details[open]");
+    if (!d || t.closest("summary, a") || getSelection()?.toString()) return;
+    d.removeAttribute("open");
+  });
+</script>
+
 <style>
   .faq {
     display: grid;
@@ -100,6 +111,9 @@ const parts = (item: Item) => {
     color: var(--navy);
     text-decoration: underline;
     text-underline-offset: var(--nudge);
+  }
+  details[open] {
+    cursor: pointer;
   }
   details p {
     max-width: var(--measure-body);

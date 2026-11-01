@@ -25,6 +25,7 @@ import Roles from "./team/Roles.astro";
 import Readiness from "./tools/Readiness.astro";
 import Benchmark from "./tools/Benchmark.astro";
 import Valuation from "./tools/Valuation.astro";
+import ToolHead from "./tools/ToolHead.astro";
 import { COMPANY_SLUG } from "../lib/team";
 import {
   faqItems,
@@ -90,6 +91,8 @@ const anchor = (s: Section) =>
     : undefined;
 
 const rendered = visibleSections(sections, deals, posts);
+// Tool pages open with a plain title so the tool itself sits above the fold.
+const toolPage = sections.some((x) => x._type === "toolSection");
 // Spacing as in index.html: a plain section right after another plain one
 // drops its top padding.
 const plain = new Set([
@@ -113,6 +116,13 @@ const person = (m: { slug: string }) => m.slug !== COMPANY_SLUG;
 {rendered.map((s, i) => {
   switch (s._type) {
     case "heroSection": {
+      if (toolPage)
+        return (
+          <ToolHead
+            title={[s.title, s.soft].filter(Boolean).join(" ")}
+            sub={s.sub}
+          />
+        );
       const [first, second] = (s.ctas ?? []).filter(has);
       return (
         <Hero label={s.label} title={s.title} soft={s.soft} sub={s.sub}>
@@ -456,7 +466,7 @@ const person = (m: { slug: string }) => m.slug !== COMPANY_SLUG;
     gap: var(--space-6);
   }
   .points {
-    padding: var(--space-7) 0 0;
+    padding: var(--space-7) 0 var(--section-y-sm);
   }
   .points :global(.cards) {
     margin-top: 0;

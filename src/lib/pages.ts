@@ -26,6 +26,7 @@ export type Member = {
   slug: string;
   roleTitle?: string;
   shortBio?: string;
+  bio?: string;
   headshot?: string;
   linkedinUrl?: string;
 };
@@ -63,7 +64,7 @@ export interface PageData {
   team: Member[];
 }
 
-const MEMBER = `{name, "slug": slug.current, roleTitle, shortBio,
+const MEMBER = `{name, "slug": slug.current, roleTitle, shortBio, "bio": pt::text(bio),
   "headshot": headshot.asset._ref, linkedinUrl}`;
 
 export async function loadPage(id: string): Promise<PageData> {

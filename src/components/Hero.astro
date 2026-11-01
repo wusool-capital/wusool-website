@@ -11,6 +11,10 @@ const { label, title, soft, sub } = Astro.props;
 const visual = Astro.slots.has("default")
   ? (await Astro.slots.render("default")).trim()
   : "";
+// Title-only heroes pass an empty CTA slot; skip its row and spacing.
+const ctas = Astro.slots.has("ctas")
+  ? (await Astro.slots.render("ctas")).trim()
+  : "";
 ---
 
 <section class="hero">
@@ -24,9 +28,7 @@ const visual = Astro.slots.has("default")
           {soft && <span class="soft">{soft}</span>}
         </h1>
         {sub && <p class="sub appear d3">{sub}</p>}
-        <div class="ctas appear d4">
-          <slot name="ctas" />
-        </div>
+        {ctas && <div class="ctas appear d4" set:html={ctas} />}
       </div>
       {visual && <div class="visual" aria-hidden="true" set:html={visual} />}
     </div>
@@ -62,9 +64,11 @@ const visual = Astro.slots.has("default")
   .copy {
     position: relative;
   }
+  /* A title-only hero (team, careers) is a short band, not a full panel. */
   .panel--text {
     grid-template-columns: 1fr;
     min-height: 0;
+    padding-block: var(--space-12);
   }
   .panel--text .sub {
     max-width: var(--measure-lede);

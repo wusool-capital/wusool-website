@@ -87,12 +87,16 @@ export const allReports = () =>
   }`);
 
 // Card and OG images: the uploaded image, else the generated branded cover.
+// Insight cards reuse the article's 800px hero (same size and crop), served
+// from our own domain; reports still read from the Sanity CDN.
 export const cardImage = (
   kind: "insights" | "reports",
   c: { slug: string; image?: string },
 ) =>
   c.image
-    ? imageUrl(c.image, 800, 420, "webp")
+    ? kind === "insights"
+      ? `/heroes/${c.slug}-800.webp`
+      : imageUrl(c.image, 800, 420, "webp")
     : `/covers/${kind}/${c.slug}.webp`;
 export const ogImage = (
   kind: "insights" | "reports",
