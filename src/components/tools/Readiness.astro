@@ -1,0 +1,162 @@
+---
+// Deal readiness score tool. Every question is in the HTML; the script only
+// moves between steps, scores the answers and shows the results.
+import Icon from "../Icon.astro";
+import Step from "./readiness/Step.astro";
+import Contact from "./readiness/Contact.astro";
+import Results from "./readiness/Results.astro";
+import { SECTIONS } from "../../lib/tools/readiness";
+
+const firsts = SECTIONS.map((_, i) =>
+  SECTIONS.slice(0, i).reduce(
+    (n, s) => n + s.questions.length + (s.texts?.length ?? 0),
+    1,
+  ),
+);
+const expect = [
+  ["timer", "5 minutes", "No jargon, plain English throughout"],
+  ["target", "Your score", "Across 5 areas buyers care about"],
+  ["clipboard-text", "What to fix", "The issues buyers will ask about"],
+];
+---
+
+<div class="rd" data-readiness>
+  <p class="visually-hidden" aria-live="polite" data-status></p>
+  <ol class="prog" data-progress hidden>
+    {SECTIONS.map((s) => (
+      <li>{s.title}</li>
+    ))}
+  </ol>
+  <form novalidate>
+    <section class="step welcome" data-step>
+      <h2 tabindex="-1">How ready are you to sell your business?</h2>
+      <p>
+        Answer 15 plain-English questions and get your deal readiness score,
+        with a breakdown across the 5 areas buyers care about.
+      </p>
+      <ul class="expect">
+        {expect.map(([icon, title, text]) => (
+          <li>
+            <Icon name={icon} />
+            <strong>{title}</strong>
+            <span>{text}</span>
+          </li>
+        ))}
+      </ul>
+      <button type="button" class="start" data-go="1">
+        Get my score <Icon name="arrow-right" />
+      </button>
+    </section>
+    {SECTIONS.map((s, i) => (
+      <Step s={s} i={i} total={SECTIONS.length} first={firsts[i]} />
+    ))}
+    <Contact />
+  </form>
+  <Results />
+</div>
+
+<script>
+  import "../../scripts/tools/readiness";
+</script>
+
+<style>
+  .rd {
+    max-width: var(--measure-body);
+    margin: 0 auto;
+    padding: var(--space-8);
+    border-radius: var(--r-card);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    scroll-margin-top: var(--sticky-top);
+  }
+  .prog {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--space-1);
+    margin: 0 0 var(--space-8);
+    padding: 0;
+    list-style: none;
+    color: var(--muted);
+    font-size: var(--text-xs);
+  }
+  .prog[hidden] {
+    display: none;
+  }
+  .prog li {
+    padding-top: var(--space-2);
+    border-top: var(--prog-h) solid var(--line);
+  }
+  .prog :global(li[data-done]),
+  .prog :global(li[aria-current]) {
+    border-color: var(--navy);
+    color: var(--navy);
+  }
+  .prog :global(li[aria-current]) {
+    font-weight: var(--weight-semibold);
+  }
+  .welcome {
+    text-align: center;
+  }
+  .welcome h2 {
+    margin: 0 auto var(--space-4);
+  }
+  .welcome p {
+    max-width: var(--measure-lede);
+    margin: 0 auto var(--space-8);
+    color: var(--muted);
+  }
+  .expect {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+    margin: 0 0 var(--space-8);
+    padding: 0;
+    list-style: none;
+  }
+  .expect li {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-1);
+    padding: var(--space-4);
+    border-radius: var(--r-inner);
+    background: var(--page);
+    color: var(--muted);
+    font-size: var(--text-sm);
+  }
+  .expect :global(.icon) {
+    color: var(--navy);
+    font-size: var(--text-xl);
+  }
+  .expect strong {
+    color: var(--navy);
+    font-size: var(--text-14);
+  }
+  .start {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: var(--btn-h);
+    padding: 0 var(--btn-pad-x);
+    border: 0;
+    border-radius: var(--r-pill);
+    background: var(--navy);
+    color: var(--on-navy);
+    font-size: var(--text-15);
+    font-weight: var(--weight-medium);
+    cursor: pointer;
+  }
+  .start:hover {
+    background: var(--navy-2);
+  }
+  @media (max-width: 560px) {
+    .rd {
+      padding: var(--space-5) var(--space-4);
+    }
+    .expect {
+      grid-template-columns: 1fr;
+    }
+    .prog {
+      font-size: 0;
+    }
+  }
+</style>
