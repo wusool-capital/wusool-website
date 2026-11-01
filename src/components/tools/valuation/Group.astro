@@ -1,0 +1,42 @@
+---
+// A titled group of questions. Lays out the rows inside it.
+interface Props {
+  legend: string;
+}
+const { legend } = Astro.props;
+---
+
+<fieldset class="group">
+  <legend>{legend}</legend>
+  <slot />
+</fieldset>
+
+<style>
+  .group {
+    display: grid;
+    gap: var(--space-5);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+  legend {
+    margin-bottom: var(--space-5);
+    padding: 0;
+    color: var(--navy);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-h3);
+  }
+  .group :global(.row) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: var(--space-5);
+  }
+  @media (max-width: 640px) {
+    .group :global(.row) {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

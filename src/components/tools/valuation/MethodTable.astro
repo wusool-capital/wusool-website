@@ -1,0 +1,93 @@
+---
+// Value by method: the blend first, then each method that applies.
+const methods = [
+  ["dcf", "Discounted cash flow (DCF)"],
+  ["tr-rev", "Listed peers, value to revenue"],
+  ["tr-eb", "Listed peers, value to EBITDA"],
+  ["tx-rev", "Past deals, value to revenue"],
+  ["ind", "Funding rounds, value to revenue"],
+];
+---
+
+<div class="table" role="region" aria-label="Value by method" tabindex="0">
+  <table>
+    <caption class="visually-hidden">Value by method</caption>
+    <thead>
+      <tr>
+        <th scope="col">Method</th>
+        <th scope="col">Lower</th>
+        <th scope="col">Mid</th>
+        <th scope="col">Upper</th>
+        <th scope="col">Basis</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="blend">
+        <th scope="row">Blended (equal weight)</th>
+        <td data-v="blend-low"></td>
+        <td data-v="blend-mid"></td>
+        <td data-v="blend-high"></td>
+        <td>Average of all methods</td>
+      </tr>
+      {methods.map(([key, name]) => (
+        <tr data-method={key} hidden>
+          <th scope="row">{name}</th>
+          <td data-v={`${key}-low`} />
+          <td data-v={`${key}-mid`} />
+          <td data-v={`${key}-high`} />
+          <td data-v={`${key}-basis`} />
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+<p class="fine">
+  For information only. Not financial advice. Lower and upper use the 25th and
+  75th percentile multiples, and the DCF plus or minus 25%.
+</p>
+
+<style>
+  tr[hidden] {
+    display: none;
+  }
+  .fine {
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  .table {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-14);
+    font-variant-numeric: tabular-nums;
+  }
+  thead th {
+    background: var(--navy);
+    color: var(--on-navy);
+    font-weight: var(--weight-semibold);
+  }
+  th,
+  td {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    white-space: nowrap;
+  }
+  tbody th {
+    font-weight: var(--weight-medium);
+  }
+  tbody tr + tr {
+    border-top: 1px solid var(--line);
+  }
+  .blend {
+    background: var(--page);
+    font-weight: var(--weight-semibold);
+  }
+  td:last-child {
+    color: var(--muted);
+  }
+</style>
