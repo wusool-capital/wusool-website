@@ -24,7 +24,6 @@ module.exports = {
         "http://localhost:8787/reports",
         "http://localhost:8787/reports/padel-in-the-gulf",
         "http://localhost:8787/team",
-        "http://localhost:8787/team/hugo-cugnet",
         "http://localhost:8787/careers/senior-analyst-ma-advisory-dubai",
         "http://localhost:8787/styleguide",
       ],

@@ -1,4 +1,4 @@
-// Creates the Team, Careers and Transactions pages from the live copy, with
+// Creates the Team and Careers pages from the live copy, with
 // the approved fixes (6 weeks to first offer, fee wording, no em dashes).
 // Never overwrites a page that exists.
 //
@@ -70,12 +70,6 @@ const team: Doc = {
       _key: key(),
       _type: "teamSection",
       title: "The team",
-      members: [
-        ref("hugo-cugnet"),
-        ref("jules-chasles-1"),
-        ref("maria-najjar"),
-        ref("ramzy-osman"),
-      ],
       cta: talk,
     },
     {
@@ -181,41 +175,7 @@ const careers: Doc = {
   ],
 };
 
-// Transactions: indicative examples until real deals are published, copied
-// from the Sell page so both show the same rows.
-const sellDeals = await client.fetch<Record<string, unknown> | null>(
-  `*[_id == "page-sell"][0].sections[_type == "dealsSection"][0]{exampleNote, examples}`,
-);
-const transactions: Doc = {
-  _id: "page-transactions",
-  _type: "page",
-  title: "Transactions",
-  slug: { _type: "slug", current: "transactions" },
-  seo: {
-    title: "M&A Transactions UAE | Wusool Capital Deal History",
-    description:
-      "Anonymized M&A advisory transactions across the UAE and GCC. Technology, healthcare, F&B businesses sold through Wusool Capital. See our deal history.",
-  },
-  sections: [
-    hero(
-      "Transactions",
-      "Anonymized mandates across the UAE and GCC. Confidentiality is standard on every deal.",
-    ),
-    {
-      _key: key(),
-      _type: "dealsSection",
-      title: "Recent UAE M&A transactions",
-      exampleNote: sellDeals?.exampleNote,
-      examples: sellDeals?.examples,
-      footLink: {
-        label: "Selling your business? See what's possible",
-        href: "/sell",
-      },
-    },
-  ],
-};
-
-for (const doc of [team, careers, transactions]) {
+for (const doc of [team, careers]) {
   const res = await client.createIfNotExists(doc);
   console.log(`${doc._id}: ${res._rev ? "ok" : "exists"}`);
 }

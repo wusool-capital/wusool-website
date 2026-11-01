@@ -1,6 +1,6 @@
 ---
 // Founders' note: a short letter with the signers' names linked to their
-// author pages.
+// cards on the same page.
 import SectionHead from "../SectionHead.astro";
 import type { Member } from "../../lib/pages";
 
@@ -21,7 +21,7 @@ const { title, paragraphs, signers } = Astro.props;
     <ul class="signers">
       {signers.map((m) => (
         <li>
-          <a href={`/team/${m.slug}`}>{m.name}</a>
+          <a href={`#${m.slug}`}>{m.name}</a>
           {m.roleTitle && <span>{m.roleTitle}</span>}
         </li>
       ))}
