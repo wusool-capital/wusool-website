@@ -1,0 +1,158 @@
+---
+// Step 2: last year's figures. Money fields take the entry currency.
+import StepHead from "./StepHead.astro";
+import Choice from "./Choice.astro";
+import Field from "./Field.astro";
+
+const money = {
+  type: "text",
+  inputmode: "numeric",
+  pattern: "-?[0-9,]+",
+} as const;
+---
+
+<form class="step" data-step="2" novalidate hidden>
+  <StepHead n={2}>
+    <span class="only-sme">Last financial year</span>
+    <span class="only-tech">Last twelve months</span>
+    <Choice
+      slot="aside"
+      name="bm-cur"
+      legend="Currency"
+      hideLegend
+      checked="AED"
+      class="cur-choice only-sme"
+      options={[
+        { value: "AED", label: "AED" },
+        { value: "USD", label: "USD" },
+      ]}
+    />
+  </StepHead>
+  <p class="sub">
+    Round numbers are fine. Nothing is stored against your name until you ask
+    for the full report.
+  </p>
+  <div class="grid">
+    <Field id="bm-rev" label="Revenue, last full year" prefix="cur">
+      <input id="bm-rev" {...money} placeholder="5,000,000" required />
+    </Field>
+    <Field
+      id="bm-prev"
+      optional
+      prefix="cur"
+      hint="Used for your growth percentile."
+    >
+      <span slot="label" class="only-sme">
+        Revenue, year before
+      </span>
+      <span slot="label" class="only-tech">
+        Revenue, prior year
+      </span>
+      <input
+        id="bm-prev"
+        {...money}
+        placeholder="4,400,000"
+        aria-describedby="bm-prev-hint"
+      />
+    </Field>
+    <Field
+      id="bm-gm"
+      label="Gross margin"
+      optional
+      suffix="%"
+      hint="Revenue minus cost of goods sold."
+    >
+      <input
+        type="number"
+        id="bm-gm"
+        min="0"
+        max="100"
+        step="any"
+        placeholder="62"
+        aria-describedby="bm-gm-hint"
+      />
+    </Field>
+    <Field
+      id="bm-ebitda"
+      label="Operating profit"
+      prefix="cur"
+      hint="Profit before interest, tax and depreciation."
+    >
+      <input
+        id="bm-ebitda"
+        {...money}
+        placeholder="700,000"
+        required
+        aria-describedby="bm-ebitda-hint"
+      />
+    </Field>
+    <Choice
+      name="bm-sal"
+      legend="Does that figure already deduct your own salary?"
+      checked="no"
+      class="full"
+      options={[
+        { value: "yes", label: "Yes, my salary is deducted" },
+        { value: "no", label: "No, or I do not take one" },
+      ]}
+    />
+    <Field
+      id="bm-salary"
+      wrap="bm-salwrap"
+      label="Your annual salary and drawings"
+      prefix="cur"
+      hint="Added back so you are compared on the same basis as everyone else."
+      class="full"
+      hidden
+    >
+      <input
+        id="bm-salary"
+        {...money}
+        placeholder="360,000"
+        required
+        aria-describedby="bm-salary-hint"
+      />
+    </Field>
+    <Field
+      id="bm-rent"
+      label="Annual rent and premises cost"
+      optional
+      prefix="cur"
+      hint="Rent, service charge, utilities."
+      class="only-sme"
+    >
+      <input
+        id="bm-rent"
+        {...money}
+        placeholder="750,000"
+        aria-describedby="bm-rent-hint"
+      />
+    </Field>
+    <Field id="bm-staff" label="Total headcount">
+      <input type="number" id="bm-staff" min="1" placeholder="24" required />
+    </Field>
+    <Field
+      id="bm-raised"
+      label="Total capital raised to date"
+      optional
+      prefix="USD"
+      hint="Equity only. Drives your capital efficiency percentile."
+      class="only-tech"
+    >
+      <input
+        id="bm-raised"
+        {...money}
+        placeholder="3,000,000"
+        aria-describedby="bm-raised-hint"
+      />
+    </Field>
+  </div>
+  <div class="row">
+    <button type="submit" class="act act--primary">
+      Continue
+    </button>
+    <button type="button" class="act" data-back="1">
+      Back
+    </button>
+  </div>
+</form>

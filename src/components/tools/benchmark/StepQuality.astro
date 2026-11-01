@@ -1,0 +1,72 @@
+---
+// Step 3: revenue quality. Locations and payment days show for some sectors.
+import StepHead from "./StepHead.astro";
+import Field from "./Field.astro";
+---
+
+<form class="step" data-step="3" novalidate hidden>
+  <StepHead n={3}>Revenue quality</StepHead>
+  <p class="sub">
+    These decide whether a buyer pays a premium or applies a discount. Leave
+    anything blank and we will drop that line from your benchmark.
+  </p>
+  <div class="grid">
+    <Field
+      id="bm-conc"
+      label="Largest customer, as share of revenue"
+      optional
+      suffix="%"
+    >
+      <input
+        type="number"
+        id="bm-conc"
+        min="0"
+        max="100"
+        step="any"
+        placeholder="18"
+      />
+    </Field>
+    <Field
+      id="bm-recur"
+      optional
+      suffix="%"
+      hint="Subscriptions, retainers, renewals."
+    >
+      <span slot="label" class="only-sme">
+        Contracted or repeat revenue
+      </span>
+      <span slot="label" class="only-tech">
+        Recurring revenue share
+      </span>
+      <input
+        type="number"
+        id="bm-recur"
+        min="0"
+        max="100"
+        step="any"
+        placeholder="45"
+        aria-describedby="bm-recur-hint"
+      />
+    </Field>
+    <Field id="bm-outlets" wrap="bm-outwrap" label="Number of locations" hidden>
+      <input type="number" id="bm-outlets" min="1" value="1" />
+    </Field>
+    <Field
+      id="bm-dso"
+      wrap="bm-dsowrap"
+      label="Average days to get paid"
+      optional
+      hidden
+    >
+      <input type="number" id="bm-dso" min="0" max="365" placeholder="65" />
+    </Field>
+  </div>
+  <div class="row">
+    <button type="submit" class="act act--primary">
+      See where you rank
+    </button>
+    <button type="button" class="act" data-back="2">
+      Back
+    </button>
+  </div>
+</form>

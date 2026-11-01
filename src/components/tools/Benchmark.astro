@@ -1,0 +1,103 @@
+---
+// GCC SME benchmark tool. Every question is in the HTML. The script runs the
+// steps, scores in the browser and shows the results. Nothing is sent.
+import StepBusiness from "./benchmark/StepBusiness.astro";
+import StepFinancials from "./benchmark/StepFinancials.astro";
+import StepQuality from "./benchmark/StepQuality.astro";
+import Results from "./benchmark/Results.astro";
+import Flags from "./benchmark/Flags.astro";
+import ReportForm from "./benchmark/ReportForm.astro";
+import NextSteps from "./benchmark/NextSteps.astro";
+---
+
+<section class="bm" id="bm" data-mode="sme">
+  <StepBusiness />
+  <StepFinancials />
+  <StepQuality />
+  <div class="step" data-step="4" hidden>
+    <Results />
+    <Flags />
+    <ReportForm />
+    <NextSteps />
+  </div>
+</section>
+
+<script>
+  import "../../scripts/tools/benchmark.ts";
+</script>
+
+<style>
+  .bm {
+    max-width: var(--bm-max);
+    margin: 0 auto;
+    padding: var(--space-8);
+    border: 1px solid var(--line);
+    border-radius: var(--r-panel-sm);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    scroll-margin-top: var(--sticky-top);
+  }
+  .bm :global([hidden]),
+  .bm[data-mode="sme"] :global(.only-tech),
+  .bm[data-mode="tech"] :global(.only-sme) {
+    display: none;
+  }
+  .bm :global(.mode) {
+    margin-bottom: var(--space-6);
+  }
+  .bm :global(.sub) {
+    margin-bottom: var(--space-6);
+    color: var(--muted);
+    font-size: var(--text-15);
+  }
+  .bm :global(.grid) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+  .bm :global(.full) {
+    grid-column: 1 / -1;
+  }
+  .bm :global(.row) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-7);
+  }
+  .bm :global(.act) {
+    height: var(--btn-h);
+    padding: 0 var(--btn-pad-x);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    color: var(--navy);
+    font-size: var(--text-15);
+    font-weight: var(--weight-medium);
+    cursor: pointer;
+    transition:
+      transform var(--dur-base) var(--ease),
+      background var(--dur-base);
+  }
+  .bm :global(.act:hover) {
+    background: var(--hover-tint);
+  }
+  .bm :global(.act:active) {
+    transform: scale(var(--press));
+  }
+  .bm :global(.act--primary) {
+    border-color: var(--navy);
+    background: var(--navy);
+    color: var(--on-navy);
+  }
+  .bm :global(.act--primary:hover) {
+    background: var(--navy-2);
+  }
+  @media (max-width: 640px) {
+    .bm {
+      padding: var(--space-5) var(--wrap-gutter-sm);
+    }
+    .bm :global(.grid) {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
