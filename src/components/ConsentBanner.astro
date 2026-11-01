@@ -9,7 +9,6 @@
   id="cookie-banner"
   role="dialog"
   aria-label="Cookie choices"
-  hidden
 >
   <div class="inner">
     <p>
@@ -51,7 +50,10 @@
     box-shadow: var(--shadow-banner);
     font-size: var(--text-14);
   }
-  .banner[hidden] {
+  /* Visible in the HTML so it paints with the page. A visitor who already
+     chose gets the "consented" class from the head script in Base.astro. */
+  .banner[hidden],
+  :global(html.consented) .banner {
     display: none;
   }
   .inner {
