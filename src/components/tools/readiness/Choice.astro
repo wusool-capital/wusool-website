@@ -1,0 +1,108 @@
+---
+// One multiple-choice question: a fieldset of radio cards.
+import type { Question } from "../../../lib/tools/readiness";
+
+interface Props {
+  q: Question;
+  n: number;
+}
+const { q, n } = Astro.props;
+---
+
+<fieldset class="q">
+  <legend>
+    <span class="n">{n}</span>
+    {q.text}
+  </legend>
+  <div class:list={["opts", q.grid && "opts--grid"]}>
+    {q.options.map((o) => (
+      <label class="opt">
+        <input type="radio" name={q.id} value={o.value} required />
+        <span>
+          {o.label}
+          {o.sub && <small>{o.sub}</small>}
+        </span>
+      </label>
+    ))}
+  </div>
+</fieldset>
+
+<style>
+  .q {
+    margin: 0 0 var(--space-6);
+    padding: 0;
+    border: 0;
+  }
+  legend {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+    padding: 0;
+    color: var(--navy);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-snug);
+  }
+  .n {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: var(--dot-sm);
+    height: var(--dot-sm);
+    border-radius: var(--r-pill);
+    background: var(--navy);
+    color: var(--on-navy);
+    font-size: var(--text-xs);
+  }
+  .opts {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .opts--grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-inner);
+    background: var(--surface);
+    font-size: var(--text-15);
+    cursor: pointer;
+    transition:
+      border-color var(--dur-fast),
+      background var(--dur-fast);
+  }
+  .opt:hover {
+    border-color: var(--navy);
+  }
+  .opt:has(:checked) {
+    border-color: var(--navy);
+    background: var(--sky-soft);
+    font-weight: var(--weight-medium);
+  }
+  .opt:has(:focus-visible) {
+    outline: 2px solid var(--navy);
+    outline-offset: 2px;
+  }
+  input {
+    flex: none;
+    margin: 0;
+    accent-color: var(--navy);
+  }
+  input:focus-visible {
+    outline: none;
+  }
+  small {
+    display: block;
+    color: var(--muted);
+    font-size: var(--text-sm);
+    font-weight: normal;
+  }
+  @media (max-width: 480px) {
+    .opts--grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

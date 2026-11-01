@@ -1,0 +1,100 @@
+---
+// One section of questions: heading, choices, free-text answers, navigation.
+import Icon from "../../Icon.astro";
+import Choice from "./Choice.astro";
+import StepNav from "./StepNav.astro";
+import type { Section } from "../../../lib/tools/readiness";
+
+interface Props {
+  s: Section;
+  i: number;
+  total: number;
+  first: number;
+}
+const { s, i, total, first } = Astro.props;
+const texts = s.texts ?? [];
+---
+
+<section class="step" data-step hidden>
+  <p class="kicker">
+    Section {i + 1} of {total}
+  </p>
+  <h2 tabindex="-1">
+    <Icon name={s.icon} />
+    {s.title}
+  </h2>
+  <p class="intro">{s.intro}</p>
+  {s.questions.map((q, k) => (
+    <Choice q={q} n={first + k} />
+  ))}
+  {texts.map((t, k) => (
+    <div class="text">
+      <label for={t.id}>
+        <span class="n">{first + s.questions.length + k}</span>
+        {t.text}
+      </label>
+      <textarea
+        id={t.id}
+        name={t.id}
+        rows="4"
+        placeholder={t.placeholder}
+        required
+      />
+    </div>
+  ))}
+  <StepNav next={s.next} />
+</section>
+
+<style>
+  .kicker {
+    color: var(--muted);
+    font-size: var(--text-14);
+    font-weight: var(--weight-medium);
+  }
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2-5);
+    margin: var(--space-2) 0;
+    font-size: var(--text-range);
+  }
+  .intro {
+    margin-bottom: var(--space-8);
+    color: var(--muted);
+  }
+  .text {
+    margin-bottom: var(--space-6);
+  }
+  label {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+    color: var(--navy);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-snug);
+  }
+  .n {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: var(--dot-sm);
+    height: var(--dot-sm);
+    border-radius: var(--r-pill);
+    background: var(--navy);
+    color: var(--on-navy);
+    font-size: var(--text-xs);
+  }
+  textarea {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-inner);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: var(--text-15);
+    resize: vertical;
+  }
+  textarea:focus-visible {
+    border-color: var(--navy);
+  }
+</style>
