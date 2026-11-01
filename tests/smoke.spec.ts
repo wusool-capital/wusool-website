@@ -110,21 +110,21 @@ const landing = [
   {
     path: "/",
     title: "Sell Your Business UAE | Wusool Capital M&A Advisory",
-    h1: /^Sell your business in the UAE\. Faster\. For more\.$/i,
+    h1: /^Sell your business in the UAE, with the right buyer, at a fair price\.$/i,
     meta: /6 weeks to first offer/,
     form: "get-started",
   },
   {
     path: "/sell",
     title: "Sell Your Business in Dubai & UAE | Wusool Capital",
-    h1: /The smarter way to sell your business in the UAE/i,
+    h1: /^Sell your UAE business with an adviser who runs every step$/i,
     meta: /6 weeks to first offer/,
     form: "get-started",
   },
   {
     path: "/buyers",
     title: "Buy a Business UAE | Access GCC Deal Flow | Wusool Capital",
-    h1: /^GCC's most active deal flow under \$25M\. Curated\. Confidential\. Qualified\.$/i,
+    h1: /^Buy a company in the UAE or GCC worth \$1M to \$25M\.$/i,
     meta: /\$1M to \$25M/,
     form: "buyers",
   },
@@ -389,6 +389,17 @@ test("insights hub filters by topic and searches with Pagefind", async ({
     .first()
     .getAttribute("href");
   expect(href).toMatch(/^\/insights\/[a-z0-9-]+$/);
+});
+
+test("a CTA to /get-started opens the form, since that page never existed", async ({
+  page,
+}) => {
+  await page.goto(
+    "/insights/what-one-year-of-transaction-taught-us-about-the-market",
+  );
+  await expect(page.locator('a[href*="/get-started"]')).toHaveCount(0);
+  await page.locator('.end [data-form="get-started"]').click();
+  await expect(page.locator("dialog[open]")).toBeVisible();
 });
 
 test("padel report insight renders exhibits natively, text once", async ({
