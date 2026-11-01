@@ -305,7 +305,7 @@ const jsonLd = graph([
     font-size: var(--text-sm);
   }
   h1 {
-    max-width: var(--measure-h1);
+    max-width: var(--article-w);
     margin-top: var(--space-4);
     font-size: var(--text-h2);
     font-weight: var(--weight-semibold);
@@ -314,7 +314,7 @@ const jsonLd = graph([
     text-wrap: balance;
   }
   .lede {
-    max-width: var(--measure-body);
+    max-width: var(--article-w);
     margin-top: var(--space-4);
     color: var(--muted);
     font-size: var(--text-lg);
@@ -338,6 +338,13 @@ const jsonLd = graph([
     align-items: start;
     padding-bottom: var(--section-y);
   }
+  /* One column for everything in the article, as wide as the body text. */
+  .main {
+    max-width: var(--article-w);
+  }
+  .main :global(.prose) {
+    max-width: none;
+  }
   .hero {
     width: 100%;
     height: auto;
@@ -358,7 +365,6 @@ const jsonLd = graph([
     align-items: center;
     justify-content: space-between;
     gap: var(--space-4);
-    max-width: var(--measure-body);
     margin: var(--space-10) 0;
     padding: var(--space-6) var(--space-7);
     border-radius: var(--r-card);
@@ -397,7 +403,6 @@ const jsonLd = graph([
     }
     .toc-mobile {
       display: block;
-      max-width: var(--measure-body);
       margin-bottom: var(--space-8);
       padding: var(--space-4) var(--space-5);
       border: 1px solid var(--line);

@@ -63,6 +63,8 @@
   --measure-h2: 22ch;
   --measure-lede: 58ch;
   --measure-body: 68ch;
+  /* Article column: 68 characters of the 18px body text. */
+  --article-w: 767px;
   --measure-hero: 46ch;
   --measure-card: 32ch;
   --measure-post: 18ch;
