@@ -64,7 +64,7 @@ const team: Doc = {
         "We come from the other side of the table. Jules has spent eight years evaluating businesses as an investor across GCC and Africa. Hugo has spent eight years structuring the legal architecture of deals. Between us, we've seen what separates a clean exit from a failed process, and it almost always comes down to preparation, access, and speed.",
         "Wusool Capital runs on an AI infrastructure. That means the financial modelling, buyer matching, and CIM preparation that used to take weeks now takes hours. The judgment on valuation, on deal structure and on which buyer is the right fit stays human.",
       ],
-      signers: [ref("hugo-cugnet"), ref("jules-chasles-1")],
+      signers: [ref("hugo-cugnet"), ref("jules-chasles")],
     },
     {
       _key: key(),
