@@ -19,6 +19,9 @@ const {
   source,
 } = Astro.props;
 const cls = ["btn", `btn--${variant}`, size === "sm" && "btn--sm"];
+// Links to other sites open in a new tab.
+const external =
+  /^https?:\/\//.test(href ?? "") && !/wusoolcapital\.com/.test(href ?? "");
 ---
 
 {form ? (
@@ -27,7 +30,13 @@ const cls = ["btn", `btn--${variant}`, size === "sm" && "btn--sm"];
     {arrow && <Icon name="arrow-right" />}
   </button>
 ) : (
-  <a class:list={cls} href={href} data-source={source}>
+  <a
+    class:list={cls}
+    href={href}
+    data-source={source}
+    target={external ? "_blank" : undefined}
+    rel={external ? "noopener" : undefined}
+  >
     <slot />
     {arrow && <Icon name="arrow-right" />}
   </a>

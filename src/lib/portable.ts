@@ -85,7 +85,7 @@ export function renderBody(blocks: Node[] = []) {
           if (!uriLooksSafe(href)) return children;
           const external =
             /^https?:\/\//.test(href) && !href.includes("wusoolcapital.com");
-          return `<a href="${esc(href)}"${external ? ' rel="noopener"' : ""}>${children}</a>`;
+          return `<a href="${esc(href)}"${external ? ' target="_blank" rel="noopener"' : ""}>${children}</a>`;
         },
       },
       types: {

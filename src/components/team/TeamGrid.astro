@@ -29,7 +29,7 @@ const { members } = Astro.props;
         {m.roleTitle && <p class="role">{m.roleTitle}</p>}
         {m.shortBio && <p class="bio">{m.shortBio}</p>}
         {m.linkedinUrl && (
-          <a class="social" href={m.linkedinUrl} rel="noopener">
+          <a class="social" href={m.linkedinUrl} target="_blank" rel="noopener">
             <Icon name="linkedin-logo" />
             <span>{m.name} on LinkedIn</span>
           </a>
