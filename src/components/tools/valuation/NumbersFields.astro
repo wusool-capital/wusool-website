@@ -1,0 +1,83 @@
+---
+// Financial questions, in USD or AED, and the optional funding details.
+import Group from "./Group.astro";
+import Field from "./Field.astro";
+import Choice from "./Choice.astro";
+import { STAGES } from "../../../lib/tools/valuation";
+---
+
+<Group legend="Your numbers">
+  <Choice
+    name="currency"
+    legend="Currency"
+    options={["USD", "AED"]}
+    value="USD"
+  />
+  <Field
+    name="revenue"
+    label="Yearly revenue"
+    type="number"
+    money
+    required
+    hint="Total sales over the last 12 months."
+    placeholder="e.g. 2,000,000"
+  />
+  <Field
+    name="profitBeforeTax"
+    label="Yearly profit before tax"
+    type="number"
+    money
+    hint="Last 12 months. Enter a negative number for a loss."
+    placeholder="e.g. 400,000"
+  />
+  <Field
+    name="ownerSalary"
+    label="Owners' yearly salary"
+    type="number"
+    money
+    hint="We add it back to profit to estimate your yearly profit before interest, tax, depreciation and amortisation (EBITDA)."
+    placeholder="e.g. 150,000"
+  />
+</Group>
+
+<Group legend="Funding">
+  <Choice
+    name="raised"
+    legend="Has your company raised funding?"
+    options={["No", "Yes"]}
+    required
+  />
+  <div class="funding" data-funding hidden>
+    <Field
+      name="stage"
+      label="Latest funding stage"
+      type="select"
+      prompt="Select stage"
+      options={STAGES}
+    />
+    <div class="row">
+      <Field
+        name="lastRaiseRevenue"
+        label="Yearly revenue at last round"
+        type="number"
+        money
+      />
+      <Field
+        name="lastRaisePBT"
+        label="Profit before tax at last round"
+        type="number"
+        money
+      />
+    </div>
+  </div>
+</Group>
+
+<style>
+  .funding {
+    display: grid;
+    gap: var(--space-5);
+  }
+  .funding[hidden] {
+    display: none;
+  }
+</style>

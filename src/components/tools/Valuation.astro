@@ -1,0 +1,39 @@
+---
+// Business valuation tool. Runs in the browser with no network requests:
+// the sector data is reduced to one profile per sector at build.
+import ValuationForm from "./valuation/ValuationForm.astro";
+import Results from "./valuation/Results.astro";
+import { sectorProfiles, vcRows } from "../../lib/tools/valuation";
+---
+
+<div
+  class="valuation"
+  data-valuation
+  data-profiles={JSON.stringify(sectorProfiles())}
+  data-vc={JSON.stringify(vcRows())}
+>
+  <ValuationForm />
+  <Results />
+  <p class="visually-hidden" aria-live="polite" data-announce></p>
+</div>
+
+<script>
+  import "../../scripts/tools/valuation";
+</script>
+
+<style>
+  .valuation {
+    max-width: var(--wrap-max);
+    padding: var(--space-10);
+    border: 1px solid var(--line);
+    border-radius: var(--r-panel);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  @media (max-width: 640px) {
+    .valuation {
+      padding: var(--space-5) var(--space-4);
+      border-radius: var(--r-card);
+    }
+  }
+</style>

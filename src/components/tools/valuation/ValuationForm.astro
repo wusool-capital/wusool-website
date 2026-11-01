@@ -1,0 +1,101 @@
+---
+// The tool's questions. Submitting shows the estimate on this page.
+import CompanyFields from "./CompanyFields.astro";
+import NumbersFields from "./NumbersFields.astro";
+import Icon from "../../Icon.astro";
+---
+
+<form class="form" data-valuation-form novalidate>
+  <CompanyFields />
+  <NumbersFields />
+
+  <div class="consent">
+    <input
+      type="checkbox"
+      id="val-consent"
+      name="consent"
+      required
+      aria-describedby="val-consent-error"
+    />
+    <label for="val-consent">
+      I agree to the Wusool Capital <a href="/privacy-policy">privacy policy</a>{" "}
+      and to being contacted.
+    </label>
+    <p class="error" id="val-consent-error" data-error="consent" hidden></p>
+  </div>
+
+  <div class="actions">
+    <button type="submit" class="submit">
+      Get my valuation <Icon name="arrow-right" />
+    </button>
+    <p class="note">
+      <Icon name="lock-simple" /> Your figures stay in this browser. Nothing is
+      sent.
+    </p>
+  </div>
+</form>
+
+<style>
+  .form {
+    display: grid;
+    gap: var(--space-8);
+  }
+  .form[hidden] {
+    display: none;
+  }
+  .consent {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-1) var(--space-2-5);
+    align-items: start;
+    font-size: var(--text-14);
+  }
+  .consent input {
+    width: var(--space-5);
+    height: var(--space-5);
+    margin: 0;
+    accent-color: var(--navy);
+  }
+  .consent a {
+    text-decoration: underline;
+  }
+  .consent .error {
+    grid-column: 2;
+    color: var(--navy);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+  }
+  .actions {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-3);
+  }
+  .submit {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: var(--btn-h);
+    padding: 0 var(--btn-pad-x);
+    border: 0;
+    border-radius: var(--r-pill);
+    background: var(--navy);
+    color: var(--on-navy);
+    font-size: var(--text-15);
+    font-weight: var(--weight-medium);
+    cursor: pointer;
+    transition: background var(--dur-base);
+  }
+  .submit:hover {
+    background: var(--navy-2);
+  }
+  .submit:active {
+    transform: scale(var(--press));
+  }
+  .note {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    color: var(--muted);
+    font-size: var(--text-sm);
+  }
+</style>
