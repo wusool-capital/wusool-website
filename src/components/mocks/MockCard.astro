@@ -5,7 +5,7 @@ import Icon from "../Icon.astro";
 
 interface Props {
   title: string;
-  chip: string;
+  chip?: string;
   chipTone?: "soft" | "solid" | "quiet";
   foot?: string;
   footIcon?: string;
@@ -24,7 +24,7 @@ const {
 <div class:list={["ui", className]}>
   <div class="head">
     <span class="title">{title}</span>
-    <Chip tone={chipTone}>{chip}</Chip>
+    {chip && <Chip tone={chipTone}>{chip}</Chip>}
   </div>
   <slot />
   {foot && (
