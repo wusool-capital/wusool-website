@@ -12,6 +12,7 @@ export type Post = {
   slug: string;
   excerpt: string;
   silo: string;
+  image?: string;
 };
 export type Deal = {
   category: string;
@@ -83,7 +84,8 @@ export async function loadPage(id: string): Promise<PageData> {
       "settings": *[_id == "siteSettings"][0],
       "banner": *[_type == "report" && bannerPinned == true][0]{title, "slug": slug.current},
       "posts": *[_type == "insights" && hideFromListings != true] | order(featured desc, publishedAt desc)[0...3]{
-        title, "slug": slug.current, excerpt, silo
+        title, "slug": slug.current, excerpt, silo,
+        "image": featuredImage.asset._ref
       },
       "deals": *[_type == "transaction"] | order(sortOrder asc){
         category, status, sector, country, year, "summary": oneLineDescription
