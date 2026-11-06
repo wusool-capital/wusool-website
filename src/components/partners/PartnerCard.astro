@@ -1,0 +1,155 @@
+---
+// One partner: logo (or initial), name, what they do, the offer and the way
+// to claim it. The quiz reads the data attributes to pick matches.
+import Chip from "../Chip.astro";
+import Icon from "../Icon.astro";
+import { imageUrl } from "../../lib/sanity";
+import { categoryLabel, refUrl, type Partner } from "../../lib/partners";
+
+interface Props {
+  partner: Partner;
+}
+const { partner: p } = Astro.props;
+const href = refUrl(p.url);
+---
+
+<li
+  class="card"
+  data-partner
+  data-category={p.category}
+  data-sizes={(p.sizes ?? []).join(" ")}
+  data-locations={(p.locations ?? []).join(" ")}
+>
+  <div class="top">
+    {p.logo ? (
+      <img
+        class="logo"
+        src={imageUrl(p.logo, 240, undefined, "webp")}
+        alt=""
+        width="120"
+        height="48"
+        loading="lazy"
+        decoding="async"
+      />
+    ) : (
+      <span class="mono" aria-hidden="true">
+        {p.name.charAt(0)}
+      </span>
+    )}
+    <Chip tone="quiet">{categoryLabel(p.category)}</Chip>
+  </div>
+  <h3>{p.name}</h3>
+  <p class="desc">{p.description}</p>
+  {p.offer && (
+    <p class="offer">
+      <Icon name="tag" />
+      {p.offer}
+    </p>
+  )}
+  <div class="act">
+    {p.linkType === "code" && p.code && (
+      <button type="button" class="code" data-code={p.code}>
+        <code>{p.code}</code>
+        <span data-copy-label aria-live="polite">
+          Copy code
+        </span>
+      </button>
+    )}
+    <a href={href} target="_blank" rel="sponsored noopener" class="go">
+      {p.linkType === "landing" ? "See the offer" : `Visit ${p.name}`}
+      <Icon name="arrow-up-right" />
+    </a>
+  </div>
+</li>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-6);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+  }
+  .card[hidden] {
+    display: none;
+  }
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+  }
+  .logo {
+    width: auto;
+    max-width: var(--partner-logo-w);
+    height: var(--partner-logo-h);
+    object-fit: contain;
+  }
+  .mono {
+    display: grid;
+    place-items: center;
+    width: var(--partner-logo-h);
+    height: var(--partner-logo-h);
+    border-radius: var(--r-icon);
+    background: var(--sky-soft);
+    color: var(--navy);
+    font-weight: var(--weight-semibold);
+  }
+  h3 {
+    color: var(--navy);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+  }
+  .desc {
+    margin-top: var(--space-2);
+    color: var(--muted);
+    font-size: var(--text-15);
+  }
+  .offer {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    margin-top: var(--space-4);
+    color: var(--navy);
+    font-size: var(--text-14);
+    font-weight: var(--weight-medium);
+  }
+  .act {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: center;
+    margin-top: auto;
+    padding-top: var(--space-5);
+  }
+  .go {
+    display: inline-flex;
+    gap: var(--space-1-5);
+    align-items: center;
+    color: var(--navy);
+    font-size: var(--text-14);
+    font-weight: var(--weight-semibold);
+  }
+  .go:hover {
+    text-decoration: underline;
+    text-underline-offset: var(--nudge);
+  }
+  .code {
+    display: inline-flex;
+    gap: var(--space-2);
+    align-items: center;
+    padding: var(--space-1-5) var(--space-3);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--r-item);
+    background: var(--sky-soft);
+    color: var(--navy);
+    font-size: var(--text-14);
+    cursor: pointer;
+  }
+  .code code {
+    font-family: inherit;
+    font-weight: var(--weight-semibold);
+  }
+</style>

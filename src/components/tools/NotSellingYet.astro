@@ -1,0 +1,58 @@
+---
+// Shown in every tool's results: owners not selling now get a next step
+// with our partners (PRD 6.3).
+import Icon from "../Icon.astro";
+---
+
+<aside class="nsy" aria-label="Not selling yet">
+  <Icon name="handshake" />
+  <div>
+    <p class="t">Not selling yet? Get your company acquisition-ready.</p>
+    <p class="s">
+      Lenders, accountants, auditors and lawyers we trust, with preferred terms
+      for companies we refer.
+    </p>
+  </div>
+  <a href="/partners" class="go">
+    See our partners <Icon name="arrow-right" />
+  </a>
+</aside>
+
+<style>
+  .nsy {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    align-items: center;
+    margin-top: var(--space-8);
+    padding: var(--space-5) var(--space-6);
+    border: 1px solid var(--sky);
+    border-radius: var(--r-card);
+    background: var(--sky-soft);
+    color: var(--navy);
+  }
+  .nsy > :global(.icon) {
+    font-size: var(--text-xl);
+  }
+  div {
+    flex: 1 1 var(--card-min);
+  }
+  .t {
+    font-weight: var(--weight-semibold);
+  }
+  .s {
+    margin-top: var(--space-1);
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  .go {
+    display: inline-flex;
+    gap: var(--space-1-5);
+    align-items: center;
+    font-weight: var(--weight-semibold);
+  }
+  .go:hover {
+    text-decoration: underline;
+    text-underline-offset: var(--nudge);
+  }
+</style>

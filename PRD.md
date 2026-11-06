@@ -135,7 +135,7 @@ Images:
 Goal: an owner who is not ready to sell or raise still leaves with a useful next step, and Wusool Capital stays in the loop until they are. The page recycles companies that are not exiting now.
 
 Page (`/partners`, linked in the nav and footer):
-- Short intro, then a 4-question quiz, then the full directory grouped by category with filter buttons (same pattern and components as the insights hub).
+- Short intro, then a 4-question quiz, then the full directory with category filter buttons (one grid; each card shows its category) (same pattern and components as the insights hub).
 - Every partner is in the server HTML so search engines and AI crawlers can read the page. No page per partner.
 - One disclosure line under the intro, confirmed with Hugo before launch: "We negotiated preferred terms for companies we refer. Some partners pay us a referral fee; it never changes the price you pay."
 
@@ -143,7 +143,7 @@ Categories (fixed list in code, partners pick one): cap table management, SME le
 
 Sanity `partner` fields:
 - `name`, `logo`, `description` (one plain sentence), `category`
-- Fit: `stages` (early, growing, established), `sizes` (revenue bands), `locations` (UAE mainland, UAE free zone, KSA, other GCC)
+- Fit: `sizes` (revenue bands), `locations` (UAE mainland, UAE free zone, KSA, other GCC)
 - `offer` (short text, e.g. "20% off the first year"), optional
 - Link: `linkType` (link, code or landing page), `url`, `code` (shown with a copy button when the type is code)
 - `active` (hidden when off), `order`
@@ -282,7 +282,7 @@ These apply to every feature and go into the repo's `CLAUDE.md`.
 | 11 | Legal pages and 404 | Content matches live; 404 returns status 404 |
 | 12 | Global SEO layer: sitemap, robots, `llms.txt`, redirects | Crawl diff old vs new shows zero missing URLs; Ahrefs staging crawl meets section 14.4 |
 | 13 | Cutover (section 15) | Section 16 acceptance criteria met on production |
-| 14 | Partners page and quiz (section 6.3); can ship before cutover | `/partners` lists every active partner from Sanity grouped by category, with filters and Organization plus ItemList JSON-LD; hiding a partner in Sanity removes it on the next build; the quiz returns at least one match for every category and size in a test, with no request off the site; links carry the ref parameter and codes copy; nav and footer link to the page on one line at desktop and tablet; each tool result shows the "Not selling yet" block; gates pass |
+| 14 | Partners page and quiz (section 6.3); can ship before cutover | `/partners` lists every active partner from Sanity, with category filters and Organization plus ItemList JSON-LD; hiding a partner in Sanity removes it on the next build; the quiz returns at least one match for every category and size in a test, with no request off the site; links carry the ref parameter and codes copy; nav and footer link to the page on one line at desktop and tablet; each tool result shows the "Not selling yet" block; gates pass |
 
 ### 14.3 Loop per feature
 

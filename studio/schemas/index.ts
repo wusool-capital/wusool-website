@@ -7,6 +7,7 @@ import { career } from "./career";
 import { transaction } from "./transaction";
 import { page } from "./page";
 import { legal } from "./legal";
+import { partner } from "./partner";
 import { siteSettings } from "./siteSettings";
 
 export const schemaTypes = [
@@ -21,5 +22,6 @@ export const schemaTypes = [
   transaction,
   page,
   legal,
+  partner,
   siteSettings,
 ];
