@@ -2,14 +2,44 @@
 // holds the values editors pick from.
 import { query } from "./sanity";
 
+// `need` is how the quiz phrases each category.
 export const CATEGORIES = [
-  { value: "cap-table", label: "Cap table management" },
-  { value: "lending", label: "SME lending" },
-  { value: "accounting", label: "Accounting" },
-  { value: "audit-tax", label: "Audit and corporate tax" },
-  { value: "csp", label: "Corporate services" },
-  { value: "legal", label: "Legal" },
-  { value: "banking", label: "Banking" },
+  {
+    value: "lending",
+    label: "SME lending",
+    need: "I want access to debt to grow the business",
+  },
+  {
+    value: "accounting",
+    label: "Accounting",
+    need: "I need to make sure my accounting is right",
+  },
+  {
+    value: "audit-tax",
+    label: "Audit and corporate tax",
+    need: "I need to audit my company or file corporate tax",
+  },
+  { value: "legal", label: "Legal", need: "I need legal advice" },
+  {
+    value: "csp",
+    label: "Corporate services",
+    need: "I need to set up an entity",
+  },
+  {
+    value: "marketing",
+    label: "Marketing",
+    need: "I need help with marketing",
+  },
+  {
+    value: "cap-table",
+    label: "Cap table management",
+    need: "I need to organise my cap table",
+  },
+  {
+    value: "banking",
+    label: "Banking",
+    need: "I need a business bank account",
+  },
 ];
 export const SIZES = [
   { value: "under-1m", label: "Under $1M" },
@@ -22,6 +52,8 @@ export const LOCATIONS = [
   { value: "uae-freezone", label: "UAE free zone" },
   { value: "ksa", label: "Saudi Arabia" },
   { value: "gcc-other", label: "Other GCC" },
+  { value: "outside-gcc", label: "Outside the GCC" },
+  { value: "not-setup", label: "Not set up yet" },
 ];
 export const HORIZONS = [
   { value: "none", label: "Not planning to sell" },

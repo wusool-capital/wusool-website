@@ -25,6 +25,7 @@ export const partnerCategories = [
   { title: "Corporate services (CSP)", value: "csp" },
   { title: "Legal", value: "legal" },
   { title: "Banking", value: "banking" },
+  { title: "Marketing", value: "marketing" },
 ];
 export const partnerSizes = [
   { title: "Under $1M revenue", value: "under-1m" },
@@ -37,4 +38,6 @@ export const partnerLocations = [
   { title: "UAE free zone", value: "uae-freezone" },
   { title: "Saudi Arabia", value: "ksa" },
   { title: "Other GCC", value: "gcc-other" },
+  { title: "Outside the GCC", value: "outside-gcc" },
+  { title: "Not set up yet", value: "not-setup" },
 ];
