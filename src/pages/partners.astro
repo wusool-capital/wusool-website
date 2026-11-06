@@ -6,7 +6,7 @@ import Hero from "../components/Hero.astro";
 import Quiz from "../components/partners/Quiz.astro";
 import PartnerCard from "../components/partners/PartnerCard.astro";
 import { imageUrl } from "../lib/sanity";
-import { CATEGORIES, activePartners, refUrl } from "../lib/partners";
+import { CATEGORIES, activePartners } from "../lib/partners";
 import { SITE, WEBSITE_ID, graph, breadcrumbs } from "../lib/schema";
 
 const partners = await activePartners();
@@ -36,7 +36,7 @@ const jsonLd = graph([
         item: {
           "@type": "Organization",
           name: p.name,
-          url: refUrl(p.url),
+          url: p.url,
           ...(p.logo && { logo: imageUrl(p.logo, 240, undefined, "webp") }),
         },
       })),

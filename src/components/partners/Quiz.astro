@@ -69,11 +69,20 @@ const groups = [
     <h2 tabindex="-1">Your matches</h2>
     <ul class="list" data-quiz-list></ul>
     <p class="none" data-quiz-none hidden>
-      No partner fits all your answers yet. Browse the categories below.
+      No partner fits these answers yet. Browse all partners below.
     </p>
-    <p class="next">
-      When you are ready to sell, start with a{" "}
-      <a href="/valuation-tool">free valuation</a>.
+    <p class="next" data-next="none">
+      If you decide to sell one day, a{" "}
+      <a href="/valuation-tool">free valuation</a> shows where you stand.
+    </p>
+    <p class="next" data-next="1-2y" hidden>
+      Selling within two years? Start with a{" "}
+      <a href="/valuation-tool">free valuation</a> and a{" "}
+      <a href="/deal-readiness-tool">readiness check</a>.
+    </p>
+    <p class="next" data-next="3y" hidden>
+      Planning further out? A <a href="/deal-readiness-tool">readiness check</a>{" "}
+      shows what to fix first.
     </p>
     <button type="button" class="again" data-quiz-again>
       Change my answers

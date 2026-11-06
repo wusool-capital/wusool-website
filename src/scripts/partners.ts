@@ -25,9 +25,12 @@ document.addEventListener("click", async (e) => {
     await navigator.clipboard.writeText(btn.dataset.code ?? "");
     if (label) label.textContent = "Copied";
   } catch {
-    if (label) label.textContent = "Select and copy";
+    if (label) label.textContent = "Copy failed, the code is shown here";
   }
-  setTimeout(() => label && (label.textContent = "Copy code"), 2000);
+  clearTimeout(Number(btn.dataset.timer));
+  btn.dataset.timer = String(
+    setTimeout(() => label && (label.textContent = "Copy code"), 2500),
+  );
 });
 
 // Quiz: partners in the chosen categories, best fit on size and location
@@ -48,8 +51,18 @@ if (quiz) {
     const needs = data.getAll("need").map(String);
     const size = String(data.get("size") ?? "");
     const location = String(data.get("location") ?? "");
-    if (!needs.length || !size || !location || !data.get("horizon")) {
+    const horizon = String(data.get("horizon") ?? "");
+    const missing = [
+      !needs.length && "need",
+      !size && "size",
+      !location && "location",
+      !horizon && "horizon",
+    ].find(Boolean);
+    if (missing) {
+      // Re-insert the text so screen readers announce it again.
       error.hidden = false;
+      error.textContent = error.textContent ?? "";
+      form.querySelector<HTMLInputElement>(`input[name="${missing}"]`)?.focus();
       return;
     }
     error.hidden = true;
@@ -62,6 +75,8 @@ if (quiz) {
           Number(fits(c.dataset.sizes, size)) +
           Number(fits(c.dataset.locations, location)),
       }))
+      // A partner that fits neither the size nor the location is no match.
+      .filter((m) => m.score > 0)
       .sort((a, b) => b.score - a.score || a.i - b.i)
       .slice(0, 3);
     list.replaceChildren(
@@ -72,6 +87,9 @@ if (quiz) {
       }),
     );
     none.hidden = matches.length > 0;
+    quiz
+      .querySelectorAll<HTMLElement>("[data-next]")
+      .forEach((p) => (p.hidden = p.dataset.next !== horizon));
     form.hidden = true;
     results.hidden = false;
     results.querySelector("h2")?.focus();

@@ -53,10 +53,11 @@ export const activePartners = () =>
 
 // Outbound links tell the partner the visit came from us, unless the URL
 // already carries its own tracking.
-export const refUrl = (url: string) =>
-  /[?&](ref|utm_[a-z]+)=/i.test(url)
-    ? url
-    : `${url}${url.includes("?") ? "&" : "?"}ref=wusoolcapital`;
+export const refUrl = (url: string) => {
+  if (/[?&](ref|utm_[a-z]+)=/i.test(url)) return url;
+  const [base, hash] = url.split("#");
+  return `${base}${base.includes("?") ? "&" : "?"}ref=wusoolcapital${hash ? `#${hash}` : ""}`;
+};
 
 export const categoryLabel = (v: string) =>
   CATEGORIES.find((c) => c.value === v)?.label ?? v;

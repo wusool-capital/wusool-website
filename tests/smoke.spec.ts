@@ -786,9 +786,14 @@ test("partners page lists every active partner from Sanity, by category", async 
       expect(await c.getAttribute("data-category")).toBe(cat);
 });
 
-test("partners quiz finds a match for every category and size", async ({
+test("partners quiz answers every category and size, without any request", async ({
   page,
 }) => {
+  const external: string[] = [];
+  page.on("request", (r) => {
+    if (!r.url().startsWith("http://localhost") && r.url() !== EMBED)
+      external.push(r.url());
+  });
   await page.goto("/partners");
   const cats = await page
     .locator('[data-quiz] input[name="need"]')
@@ -801,7 +806,8 @@ test("partners quiz finds a match for every category and size", async ({
       .locator("[data-directory] [data-partner]")
       .evaluateAll((c) => c.map((x) => (x as HTMLElement).dataset.category)),
   );
-  for (const cat of cats.filter((c) => present.has(c)))
+  const location = "uae-mainland";
+  for (const cat of cats)
     for (const size of sizes) {
       await page.goto("/partners");
       await page
@@ -816,9 +822,8 @@ test("partners quiz finds a match for every category and size", async ({
         .click();
       await page
         .locator("[data-quiz] label", {
-          has: page.locator('input[name="location"]'),
+          has: page.locator(`input[value="${location}"]`),
         })
-        .first()
         .click();
       await page
         .locator("[data-quiz] label", {
@@ -827,10 +832,23 @@ test("partners quiz finds a match for every category and size", async ({
         .first()
         .click();
       await page.locator('[data-quiz] button[type="submit"]').click();
-      await expect(
-        page.locator("[data-quiz-list] [data-partner]").first(),
-      ).toBeVisible();
+      // Either matches that fit the size or the location, or the no-match note.
+      const shown = page.locator("[data-quiz-list] [data-partner]");
+      if (present.has(cat) && (await shown.count())) {
+        for (const m of await shown.all()) {
+          expect(await m.getAttribute("data-category")).toBe(cat);
+          const sz = (await m.getAttribute("data-sizes")) ?? "";
+          const loc = (await m.getAttribute("data-locations")) ?? "";
+          expect(
+            !sz ||
+              sz.split(" ").includes(size) ||
+              !loc ||
+              loc.split(" ").includes(location),
+          ).toBe(true);
+        }
+      } else await expect(page.locator("[data-quiz-none]")).toBeVisible();
     }
+  expect(external).toEqual([]);
 });
 
 test("Partners is in the nav and footer, and the desktop nav stays on one line", async ({

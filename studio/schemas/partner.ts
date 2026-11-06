@@ -76,6 +76,12 @@ export const partner = defineType({
       description: "Shown with a copy button when the link type is code.",
       type: "string",
       hidden: ({ parent }) => parent?.linkType !== "code",
+      validation: (r) =>
+        r.custom((code, ctx) =>
+          (ctx.parent as { linkType?: string })?.linkType === "code" && !code
+            ? "Add the code, or pick another link type."
+            : true,
+        ),
     }),
     defineField({
       name: "active",

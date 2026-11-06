@@ -25,7 +25,7 @@ const href = refUrl(p.url);
       <img
         class="logo"
         src={imageUrl(p.logo, 240, undefined, "webp")}
-        alt={p.name}
+        alt=""
         width="120"
         height="48"
         loading="lazy"
@@ -50,10 +50,12 @@ const href = refUrl(p.url);
     {p.linkType === "code" && p.code && (
       <button type="button" class="code" data-code={p.code}>
         <code>{p.code}</code>
-        <span data-copy-label>Copy code</span>
+        <span data-copy-label aria-live="polite">
+          Copy code
+        </span>
       </button>
     )}
-    <a href={href} target="_blank" rel="noopener" class="go">
+    <a href={href} target="_blank" rel="sponsored noopener" class="go">
       {p.linkType === "landing" ? "See the offer" : `Visit ${p.name}`}
       <Icon name="arrow-up-right" />
     </a>
