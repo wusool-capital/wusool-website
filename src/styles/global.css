@@ -142,6 +142,16 @@ p {
   }
 }
 
+/* Everything clickable shows the hand cursor, form choices included. */
+a[href],
+button:not(:disabled),
+summary,
+select,
+label:has(input[type="radio"], input[type="checkbox"]),
+[role="button"] {
+  cursor: pointer;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
