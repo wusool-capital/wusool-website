@@ -90,6 +90,7 @@ Cloudflare Workers static assets (CDN, _headers, _redirects, preview URLs per br
 | `teamMember` | Every Webflow field (Appendix A) plus a display order; feeds the team page list and Person schema. Members are added, removed and reordered in Sanity |
 | `career`, `transaction` | Every Webflow field (Appendix A). Transactions stay in Sanity but are hidden on the site until Jules decides otherwise |
 | `page` | Landing pages built from section blocks (hero, stats, comparison, sector grid, process, deals table, FAQ, CTA band). Layout of each block is code; content and order are editable |
+| `partner` | Partner directory entry for `/partners` (section 6.3): name, logo, one-line description, category, fit (stage, size, location), offer, link type and link, active, order |
 | `siteSettings` | Nav, footer, announcement bar, default SEO, organization data |
 | `seo` (object) | Title, description, canonical override, OG title, OG image, noindex |
 
@@ -128,6 +129,39 @@ Images:
 - Every insight and report needs a card image (1200 x 630, also used as the OG image).
 - Default: a branded cover generated at build from the title, topic and one key figure, in the `index.html` style (navy panel, sky accents, Inter). Editors can replace it with an uploaded image in Sanity.
 - Images served as AVIF and WebP at the needed sizes, lazy-loaded below the fold, with alt text from Sanity.
+
+### 6.3 Partners page and quiz
+
+Goal: an owner who is not ready to sell or raise still leaves with a useful next step, and Wusool Capital stays in the loop until they are. The page recycles companies that are not exiting now.
+
+Page (`/partners`, linked in the nav and footer):
+- Short intro, then a 4-question quiz, then the full directory grouped by category with filter buttons (same pattern and components as the insights hub).
+- Every partner is in the server HTML so search engines and AI crawlers can read the page. No page per partner.
+- One disclosure line under the intro, confirmed with Hugo before launch: "We negotiated preferred terms for companies we refer. Some partners pay us a referral fee; it never changes the price you pay."
+
+Categories (fixed list in code, partners pick one): cap table management, SME lending, accounting, audit and corporate tax, corporate services (CSP), legal, banking. New categories are a code change.
+
+Sanity `partner` fields:
+- `name`, `logo`, `description` (one plain sentence), `category`
+- Fit: `stages` (early, growing, established), `sizes` (revenue bands), `locations` (UAE mainland, UAE free zone, KSA, other GCC)
+- `offer` (short text, e.g. "20% off the first year"), optional
+- Link: `linkType` (link, code or landing page), `url`, `code` (shown with a copy button when the type is code)
+- `active` (hidden when off), `order`
+- Outbound links add `?ref=wusoolcapital` unless the partner's own URL already carries a tracking parameter.
+
+Quiz (front end only, same rules as the tools: no network request, no AI):
+1. What do you need now? (one or more categories)
+2. Company size (revenue band)
+3. Where are you set up? (location)
+4. When might you sell? (not planning to, 1 to 2 years, 3 years or more)
+
+Rules: keep active partners in the chosen categories, prefer those whose fit matches size and location, show up to 3 with their offer and link. With no match, show the category in the directory. The sell-horizon answer is shown back as a next step ("When you are ready, start with a free valuation") and kept for lead capture once Attio is connected.
+
+Hooks into the rest of the site:
+- Tool results (valuation, deal readiness, benchmark) show a block "Not selling yet? Get your company acquisition-ready" linking to `/partners`, most prominently on low readiness scores.
+- Email templates (outside this repo) link to `/partners?src=email` with the same CTA. The page reads `src` only to pass it on to analytics.
+
+Kept simple on purpose: no chat assistant, no partner logins, no per-partner pages, no partner dashboard. See section 14.6.
 
 ## 7. Animations and advanced lead magnets
 
@@ -244,10 +278,11 @@ These apply to every feature and go into the repo's `CLAUDE.md`.
 | 7 | Insights hub and article pages, including exhibit blocks (sections 6.1 and 6.2) | Every published insight URL returns 200; hub search and filters work with JavaScript and the full list is still in the HTML without it; every card has an image; Sanity insights render their exhibits natively with no duplicate text; Article JSON-LD with author valid; padel report renders its exhibits |
 | 8 | Reports (section 6.1) | Every published report URL returns 200 with H1, summary, canonical and Report JSON-LD in the raw HTML; the download form opens from `embed.js` and a test lead arrives |
 | 9 | Team and Careers | URLs return 200; the team page lists every member from Sanity with valid Person JSON-LD; insight bylines link to the member's card; transactions are hidden and `/transactions` redirects to `/sell` |
-| 10 | Valuation, Deal Readiness and Benchmark pages | Each tool loads and a test lead arrives with its page source |
+| 10 | Valuation, Deal Readiness and Benchmark pages | Each tool runs natively on the page with its questions in the HTML and completes in a test without any request off the site. Lead capture (Attio) is connected before cutover |
 | 11 | Legal pages and 404 | Content matches live; 404 returns status 404 |
 | 12 | Global SEO layer: sitemap, robots, `llms.txt`, redirects | Crawl diff old vs new shows zero missing URLs; Ahrefs staging crawl meets section 14.4 |
 | 13 | Cutover (section 15) | Section 16 acceptance criteria met on production |
+| 14 | Partners page and quiz (section 6.3); can ship before cutover | `/partners` lists every active partner from Sanity grouped by category, with filters and Organization plus ItemList JSON-LD; hiding a partner in Sanity removes it on the next build; the quiz returns at least one match for every category and size in a test, with no request off the site; links carry the ref parameter and codes copy; nav and footer link to the page on one line at desktop and tablet; each tool result shows the "Not selling yet" block; gates pass |
 
 ### 14.3 Loop per feature
 
@@ -291,6 +326,7 @@ The review agent gets: the PRD, `CLAUDE.md`, the feature's "done when" check and
 - Arabic version and `hreflang`.
 - On-site report gate (reports stay gated through the tools app).
 - Any form endpoint on the main domain.
+- Partners: chat assistant, per-partner pages, partner logins or dashboards, partner suggestions tuned per tool answer beyond the "Not selling yet" block, category landing pages for SEO.
 
 ## 15. Cutover plan
 
@@ -316,6 +352,8 @@ Runs after features 1 to 12 are approved.
 1. Who is the technical owner after launch?
 2. Should AI training crawlers (as opposed to AI search crawlers) be allowed?
 3. Arabic version: when, and should URLs be `/ar/...` from day one?
+4. Partners: the referral-fee disclosure wording, to confirm with Hugo against UAE advertising rules.
+5. Partners: the first list of partners, offers and links (Jules).
 
 ## Appendix A. Webflow fields to carry into Sanity
 
@@ -353,3 +391,4 @@ Today = what the live HTML emits (checked 30 Oct 2026). Target = what the new te
 | Valuation tool | WebApplication | WebApplication, FAQPage if present, BreadcrumbList |
 | Benchmark | Organization, WebSite, WebPage, BreadcrumbList, SoftwareApplication, FAQPage (5) | Same, on the www host |
 | Deal readiness | not checked | WebApplication, BreadcrumbList |
+| Partners | none (new page) | CollectionPage with ItemList of partner Organizations (name, url, logo), BreadcrumbList |
