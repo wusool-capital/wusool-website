@@ -143,7 +143,7 @@ Categories (fixed list in code, partners pick one): cap table management, SME le
 
 Sanity `partner` fields:
 - `name`, `logo`, `description` (one plain sentence), `category`
-- Fit: `stages` (early, growing, established), `sizes` (revenue bands), `locations` (UAE mainland, UAE free zone, KSA, other GCC)
+- Fit: `sizes` (revenue bands), `locations` (UAE mainland, UAE free zone, KSA, other GCC)
 - `offer` (short text, e.g. "20% off the first year"), optional
 - Link: `linkType` (link, code or landing page), `url`, `code` (shown with a copy button when the type is code)
 - `active` (hidden when off), `order`

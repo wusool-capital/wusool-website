@@ -67,6 +67,10 @@
   --article-w: 767px;
   /* Tool pages: title and tool share one centered column. */
   --tool-w: 880px;
+  /* Partner logos on /partners. */
+  --partner-logo-w: 120px;
+  --partner-logo-h: 40px;
+  --card-min: 260px;
   --measure-hero: 46ch;
   --measure-card: 32ch;
   --measure-post: 18ch;

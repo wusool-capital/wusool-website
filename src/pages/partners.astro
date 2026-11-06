@@ -1,0 +1,153 @@
+---
+// Partners (PRD 6.3): a quiz, then every active partner from Sanity grouped
+// by category with filters. For owners not selling yet.
+import Base from "../layouts/Base.astro";
+import Hero from "../components/Hero.astro";
+import Quiz from "../components/partners/Quiz.astro";
+import PartnerCard from "../components/partners/PartnerCard.astro";
+import { imageUrl } from "../lib/sanity";
+import { CATEGORIES, activePartners, refUrl } from "../lib/partners";
+import { SITE, WEBSITE_ID, graph, breadcrumbs } from "../lib/schema";
+
+const partners = await activePartners();
+const groups = CATEGORIES.map((c) => ({
+  ...c,
+  items: partners.filter((p) => p.category === c.value),
+})).filter((g) => g.items.length);
+
+const url = `${SITE}/partners`;
+const title = "Partners for GCC SMEs | Wusool Capital";
+const description =
+  "Lenders, accountants, auditors, lawyers and corporate service providers we trust, with preferred terms for UAE and GCC business owners.";
+const jsonLd = graph([
+  {
+    "@type": "CollectionPage",
+    "@id": `${url}#webpage`,
+    url,
+    name: title,
+    description,
+    isPartOf: { "@id": WEBSITE_ID },
+    breadcrumb: { "@id": `${url}#breadcrumb` },
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: partners.map((p, n) => ({
+        "@type": "ListItem",
+        position: n + 1,
+        item: {
+          "@type": "Organization",
+          name: p.name,
+          url: refUrl(p.url),
+          ...(p.logo && { logo: imageUrl(p.logo, 240, undefined, "webp") }),
+        },
+      })),
+    },
+  },
+  breadcrumbs(url, [
+    { name: "Home", url: `${SITE}/` },
+    { name: "Partners", url },
+  ]),
+]);
+---
+
+<Base title={title} description={description} jsonLd={jsonLd}>
+  <Hero
+    title="Get your company ready, with partners we trust"
+    sub="Not selling yet? These lenders, accountants, lawyers and service providers help owners build a company buyers want."
+  />
+
+  <section class="section section--flush-top">
+    <div class="wrap">
+      <p class="note">
+        We negotiated preferred terms for companies we refer. Some partners pay
+        us a referral fee; it never changes the price you pay.
+      </p>
+      {partners.length > 0 && <Quiz />}
+    </div>
+  </section>
+
+  <section class="section section--flush-top" data-directory>
+    <div class="wrap">
+      {partners.length === 0 ? (
+        <p class="empty">
+          Our partner list is being finalised. Check back soon.
+        </p>
+      ) : (
+        <>
+          <div class="filters" role="group" aria-label="Filter by category">
+            <button type="button" aria-pressed="true" data-cat="">
+              All partners
+            </button>
+            {groups.map((g) => (
+              <button type="button" aria-pressed="false" data-cat={g.value}>
+                {g.label}
+              </button>
+            ))}
+          </div>
+          <h2 id="all-partners" class="visually-hidden">
+            All partners
+          </h2>
+          <ul class="grid" aria-labelledby="all-partners">
+            {partners.map((p) => (
+              <PartnerCard partner={p} />
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
+  </section>
+</Base>
+
+<script>
+  import "../scripts/partners";
+</script>
+
+<style>
+  .note {
+    max-width: var(--tool-w);
+    margin: var(--space-8) auto var(--space-6);
+    color: var(--muted);
+    font-size: var(--text-14);
+    text-align: center;
+  }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .filters button {
+    padding: var(--space-1-5) var(--space-3-5);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: var(--text-14);
+    cursor: pointer;
+  }
+  .filters button[aria-pressed="true"] {
+    border-color: var(--navy);
+    background: var(--navy);
+    color: var(--on-navy);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-4);
+    margin: var(--space-8) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .empty {
+    color: var(--muted);
+    text-align: center;
+  }
+  @media (max-width: 1080px) {
+    .grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 720px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

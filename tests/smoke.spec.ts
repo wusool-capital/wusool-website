@@ -18,6 +18,7 @@ const pages = [
   "/valuation-tool",
   "/deal-readiness-tool",
   "/benchmark",
+  "/partners",
   "/privacy-policy",
   "/terms",
   "/styleguide",
@@ -710,6 +711,9 @@ test("deal readiness tool scores the answers without any request", async ({
     "[data-results]",
   );
   await expect(page.locator("[data-score]")).toHaveText(/^\d+$/);
+  await expect(
+    page.locator('[data-results] a[href="/partners"]'),
+  ).toBeVisible();
   expect(external).toEqual([]);
 });
 
@@ -723,6 +727,7 @@ test("benchmark tool shows results and a thank-you without any request", async (
   });
   await page.goto("/benchmark");
   await completeTool(page, "#bm", ".act--primary:visible", "#bm-thanks");
+  await expect(page.locator('#bm a[href="/partners"]')).toBeVisible();
   expect(external).toEqual([]);
 });
 
@@ -740,5 +745,110 @@ test("valuation tool shows a range without any request", async ({ page }) => {
     "[data-valuation-results]",
   );
   await expect(page.locator('[data-v="range"]')).not.toBeEmpty();
+  await expect(
+    page.locator('[data-valuation-results] a[href="/partners"]'),
+  ).toBeVisible();
   expect(external).toEqual([]);
+});
+
+// Partners (PRD 6.3, feature 14).
+test("partners page lists every active partner from Sanity, by category", async ({
+  page,
+}) => {
+  const api =
+    "https://qjvm6ww8.api.sanity.io/v2025-01-01/data/query/production?perspective=published&query=";
+  const active: { name: string }[] = (
+    await (
+      await fetch(
+        api +
+          encodeURIComponent('*[_type == "partner" && active != false]{name}'),
+      )
+    ).json()
+  ).result;
+  await page.goto("/partners");
+  const cards = page.locator("[data-directory] [data-partner]");
+  await expect(cards).toHaveCount(active.length);
+  for (const p of active)
+    await expect(
+      page.locator("[data-directory] h3", { hasText: p.name }),
+    ).toHaveCount(1);
+  // Every outbound partner link says it came from us.
+  for (const href of await page
+    .locator("[data-directory] a.go")
+    .evaluateAll((a) => a.map((x) => x.getAttribute("href") ?? "")))
+    expect(href).toMatch(/[?&](ref|utm_[a-z]+)=/);
+  // Filters show one category at a time.
+  const first = page.locator("[data-cat]").nth(1);
+  await first.click();
+  const cat = await first.getAttribute("data-cat");
+  for (const c of await cards.all())
+    if (await c.isVisible())
+      expect(await c.getAttribute("data-category")).toBe(cat);
+});
+
+test("partners quiz finds a match for every category and size", async ({
+  page,
+}) => {
+  await page.goto("/partners");
+  const cats = await page
+    .locator('[data-quiz] input[name="need"]')
+    .evaluateAll((i) => i.map((x) => (x as HTMLInputElement).value));
+  const sizes = await page
+    .locator('[data-quiz] input[name="size"]')
+    .evaluateAll((i) => i.map((x) => (x as HTMLInputElement).value));
+  const present = new Set(
+    await page
+      .locator("[data-directory] [data-partner]")
+      .evaluateAll((c) => c.map((x) => (x as HTMLElement).dataset.category)),
+  );
+  for (const cat of cats.filter((c) => present.has(c)))
+    for (const size of sizes) {
+      await page.goto("/partners");
+      await page
+        .locator("[data-quiz] label", {
+          has: page.locator(`input[value="${cat}"]`),
+        })
+        .click();
+      await page
+        .locator("[data-quiz] label", {
+          has: page.locator(`input[value="${size}"]`),
+        })
+        .click();
+      await page
+        .locator("[data-quiz] label", {
+          has: page.locator('input[name="location"]'),
+        })
+        .first()
+        .click();
+      await page
+        .locator("[data-quiz] label", {
+          has: page.locator('input[name="horizon"]'),
+        })
+        .first()
+        .click();
+      await page.locator('[data-quiz] button[type="submit"]').click();
+      await expect(
+        page.locator("[data-quiz-list] [data-partner]").first(),
+      ).toBeVisible();
+    }
+});
+
+test("Partners is in the nav and footer, and the desktop nav stays on one line", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "desktop and tablet nav");
+  for (const width of [1280, 1100]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/");
+    const main = page.getByRole("navigation", { name: "Main" });
+    await expect(main.locator('a[href="/partners"]')).toBeVisible();
+    const tops = await main
+      .locator(".links > li")
+      .evaluateAll((li) =>
+        li.map((x) => Math.round(x.getBoundingClientRect().top)),
+      );
+    expect(new Set(tops).size).toBe(1);
+  }
+  await expect(page.locator('footer a[href="/partners"]')).toHaveCount(1);
 });

@@ -6,6 +6,7 @@ import Chip from "../../Chip.astro";
 import Gate from "./Gate.astro";
 import ArrowLink from "../../ArrowLink.astro";
 import { SECTIONS } from "../../../lib/tools/readiness";
+import NotSellingYet from "../NotSellingYet.astro";
 ---
 
 <div class="res" data-results hidden>
@@ -52,6 +53,7 @@ import { SECTIONS } from "../../../lib/tools/readiness";
     <ArrowLink href="/valuation-tool">Estimate your valuation</ArrowLink>
     <ArrowLink href="/benchmark">Benchmark your business</ArrowLink>
   </div>
+  <NotSellingYet />
   <p class="small">
     Prepared by Wusool Capital. Confidential. <span data-date></span>
   </p>
