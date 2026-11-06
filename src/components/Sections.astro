@@ -373,6 +373,9 @@ const person = (m: { slug: string }) => m.slug !== COMPANY_SLUG;
               lead={{
                 ...post(posts[0]),
                 glyph: glyphs[posts[0].silo] ?? "newspaper",
+                image: posts[0].image
+                  ? `/heroes/${posts[0].slug}-800.webp`
+                  : undefined,
               }}
               side={posts.slice(1).map(post)}
             />

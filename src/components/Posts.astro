@@ -9,15 +9,29 @@ interface Post {
   excerpt: string;
 }
 interface Props {
-  lead: Post & { glyph: string };
+  lead: Post & { glyph: string; image?: string };
   side: Post[];
 }
 const { lead, side } = Astro.props;
 ---
 
 <div class="posts">
-  <a class="post lead reveal" href={lead.href}>
-    <Icon name={lead.glyph} class="glyph" />
+  <a
+    class:list={["post", "lead", "reveal", lead.image && "lead--image"]}
+    href={lead.href}
+  >
+    {lead.image ? (
+      <img
+        src={lead.image}
+        alt=""
+        width="800"
+        height="420"
+        loading="lazy"
+        decoding="async"
+      />
+    ) : (
+      <Icon name={lead.glyph} class="glyph" />
+    )}
     <h3>{lead.title}</h3>
     <p>{lead.excerpt}</p>
     <ArrowLink class="more">Read more</ArrowLink>
@@ -95,6 +109,31 @@ const { lead, side } = Astro.props;
     right: var(--space-7);
     color: var(--sky);
     font-size: var(--text-glyph);
+  }
+  /* With the article's image: picture on top, text below, plain card. */
+  .lead--image {
+    justify-content: flex-start;
+    padding: 0;
+    border-color: var(--line);
+    background: var(--surface);
+  }
+  .lead--image img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 800 / 420;
+    object-fit: cover;
+  }
+  .lead--image h3,
+  .lead--image p,
+  .lead--image :global(.more) {
+    margin-inline: var(--space-7);
+  }
+  .lead--image h3 {
+    margin-top: var(--space-6);
+  }
+  .lead--image :global(.more) {
+    margin-top: auto;
+    margin-bottom: var(--space-7);
   }
   @media (max-width: 720px) {
     .posts {
