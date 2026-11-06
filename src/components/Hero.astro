@@ -70,8 +70,9 @@ const ctas = Astro.slots.has("ctas")
     min-height: 0;
     padding-block: var(--space-12);
   }
+  /* A title-only hero has the full width for its intro line. */
   .panel--text .sub {
-    max-width: var(--measure-lede);
+    max-width: none;
   }
   .label {
     display: inline-block;

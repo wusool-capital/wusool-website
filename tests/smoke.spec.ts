@@ -810,6 +810,7 @@ test("partners quiz answers every category and size, without any request", async
   for (const cat of cats)
     for (const size of sizes) {
       await page.goto("/partners");
+      await page.locator("[data-quiz] summary").click();
       await page
         .locator("[data-quiz] label", {
           has: page.locator(`input[value="${cat}"]`),
