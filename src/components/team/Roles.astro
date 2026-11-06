@@ -47,10 +47,16 @@ const { roles, empty } = Astro.props;
     border: 1px solid var(--line);
     border-radius: var(--r-card);
     background: var(--surface);
+    transition:
+      border-color var(--dur-base),
+      transform var(--dur-mid) var(--ease),
+      box-shadow var(--dur-mid);
   }
+  /* Same hover as every clickable card: lift, shadow, sky border. */
   a:hover {
     border-color: var(--sky);
-    background: var(--sky-soft);
+    box-shadow: var(--shadow);
+    transform: translateY(var(--lift));
   }
   .name {
     color: var(--navy);

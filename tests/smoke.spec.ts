@@ -871,3 +871,27 @@ test("Partners is in the nav and footer, and the desktop nav stays on one line",
   }
   await expect(page.locator('footer a[href="/partners"]')).toHaveCount(1);
 });
+
+// Everything clickable shows the hand cursor, form choices included.
+test("clickable elements show the pointer cursor on every page", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "cursor is a desktop concern");
+  for (const path of pages) {
+    await page.goto(path);
+    const missing = await page.evaluate(() =>
+      [
+        ...document.querySelectorAll(
+          'a[href], button:not(:disabled), summary, select, label:has(input[type="radio"], input[type="checkbox"])',
+        ),
+      ]
+        .filter((e) => (e as HTMLElement).offsetParent !== null)
+        .filter((e) => getComputedStyle(e).cursor !== "pointer")
+        .map(
+          (e) => `${e.tagName} ${(e.textContent ?? "").trim().slice(0, 30)}`,
+        ),
+    );
+    expect(missing, path).toEqual([]);
+  }
+});

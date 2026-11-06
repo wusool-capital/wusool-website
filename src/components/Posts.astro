@@ -67,10 +67,13 @@ const { lead, side } = Astro.props;
     background: var(--surface);
     transition:
       border-color var(--dur-base),
-      transform var(--dur-mid) var(--ease);
+      transform var(--dur-mid) var(--ease),
+      box-shadow var(--dur-mid);
   }
+  /* Same hover as every clickable card: lift, shadow, sky border. */
   .post:hover {
     border-color: var(--sky);
+    box-shadow: var(--shadow);
     transform: translateY(var(--lift));
   }
   h3 {
