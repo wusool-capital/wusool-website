@@ -170,6 +170,8 @@ for (const file of htmlFiles) {
     "";
   if (description.length < 70 || description.length > 160)
     err(`description is ${description.length} chars, needs 70 to 160`);
+  if (!doc.querySelector('meta[property="og:image"]')?.getAttribute("content"))
+    err("no og:image (share image)");
 
   for (const [key, value] of [
     ["title", title],

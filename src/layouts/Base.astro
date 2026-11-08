@@ -8,6 +8,7 @@ import ClosingFooter from "../components/ClosingFooter.astro";
 import ConsentBanner from "../components/ConsentBanner.astro";
 import { CONSENT_GATE } from "../lib/consent-gate";
 import type { Props as CtaProps } from "../components/CtaBand.astro";
+import { defaultOgImage } from "../data/site";
 
 interface Props {
   title: string;
@@ -35,6 +36,7 @@ const {
 // Build output is file format (/sell.html), so drop the .html for the public URL.
 const path = Astro.url.pathname.replace(/(index)?\.html$/, "");
 const canonical = new URL(path, Astro.site).href;
+const ogImage = og.image ?? defaultOgImage;
 ---
 
 <html lang="en">
@@ -52,14 +54,14 @@ const canonical = new URL(path, Astro.site).href;
     <meta property="og:url" content={canonical} />
     <meta property="og:title" content={og.title ?? title} />
     <meta property="og:description" content={og.description ?? description} />
-    {og.image && <meta property="og:image" content={og.image} />}
-    {og.image && <meta property="og:image:width" content="1200" />}
-    {og.image && <meta property="og:image:height" content="630" />}
-    {og.image && <meta property="og:image:alt" content={og.title ?? title} />}
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={og.title ?? title} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={og.title ?? title} />
     <meta name="twitter:description" content={og.description ?? description} />
-    {og.image && <meta name="twitter:image" content={og.image} />}
+    <meta name="twitter:image" content={ogImage} />
     {jsonLd && (
       <script
         is:inline

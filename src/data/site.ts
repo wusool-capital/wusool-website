@@ -91,3 +91,7 @@ export const closingCta = {
   label: "Get My Free Valuation",
   href: "/valuation-tool",
 };
+
+// Share image for pages that have none of their own (the home page's).
+export const defaultOgImage =
+  "https://cdn.sanity.io/images/qjvm6ww8/production/2247de378b2e22aaa3c15f6692b987276b8d7bc3-1910x1001.jpg?w=1200&h=630&fit=crop&fm=jpg";
