@@ -19,6 +19,7 @@ const pages = [
   "/deal-readiness-tool",
   "/benchmark",
   "/partners",
+  "/refer",
   "/privacy-policy",
   "/terms",
   "/styleguide",
@@ -852,7 +853,7 @@ test("partners quiz answers every category and size, without any request", async
   expect(external).toEqual([]);
 });
 
-test("Partners is in the nav and footer, and the desktop nav stays on one line", async ({
+test("Partners and Refer and earn are in the nav and footer, and the desktop nav stays on one line", async ({
   page,
   isMobile,
 }) => {
@@ -861,7 +862,10 @@ test("Partners is in the nav and footer, and the desktop nav stays on one line",
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/");
     const main = page.getByRole("navigation", { name: "Main" });
+    // Both sit in the Partners dropdown, which opens on hover.
+    await main.getByRole("button", { name: "Partners" }).hover();
     await expect(main.locator('a[href="/partners"]')).toBeVisible();
+    await expect(main.locator('a[href="/refer"]')).toBeVisible();
     const tops = await main
       .locator(".links > li")
       .evaluateAll((li) =>
@@ -870,6 +874,43 @@ test("Partners is in the nav and footer, and the desktop nav stays on one line",
     expect(new Set(tops).size).toBe(1);
   }
   await expect(page.locator('footer a[href="/partners"]')).toHaveCount(1);
+  await expect(page.locator('footer a[href="/refer"]')).toHaveCount(1);
+});
+
+test("referral calculator shows 10% of a 5% fee for the chosen deal value, without any request", async ({
+  page,
+}) => {
+  const external: string[] = [];
+  page.on("request", (r) => {
+    if (!r.url().startsWith("http://localhost") && r.url() !== EMBED)
+      external.push(r.url());
+  });
+  await page.goto("/refer");
+  const types = JSON.parse(
+    (await page
+      .locator('script[type="application/ld+json"]')
+      .first()
+      .textContent()) ?? "{}",
+  )["@graph"].map((n: { "@type": string }) => n["@type"]);
+  expect(types).toEqual(
+    expect.arrayContaining(["WebPage", "FAQPage", "BreadcrumbList"]),
+  );
+  const calc = page.locator("[data-referral-calc]");
+  // The default result is in the HTML before any script runs.
+  await expect(calc.locator('[data-out="share"]')).toHaveText("$25,000");
+  await calc.locator("input[type=range]").fill("10000000");
+  await expect(calc.locator('[data-out="deal"]')).toHaveText("$10,000,000");
+  await expect(calc.locator('[data-out="share"]')).toHaveText("$50,000");
+  await expect(calc.locator("input[type=range]")).toHaveAttribute(
+    "aria-valuetext",
+    "$10,000,000",
+  );
+  expect(external).toEqual([]);
+  // Sign-up opens the existing Get Started form, tagged for attribution:
+  // hero, calculator and closing band.
+  await expect(
+    page.locator('[data-form="get-started"][data-source^="refer"]'),
+  ).toHaveCount(3);
 });
 
 // Everything clickable shows the hand cursor, form choices included.

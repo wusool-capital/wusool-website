@@ -1,0 +1,187 @@
+---
+// Refer and earn (PRD 6.4): service providers register as referral partners
+// and earn a share of our success fee on deals they introduce.
+import Base from "../layouts/Base.astro";
+import Hero from "../components/Hero.astro";
+import Button from "../components/Button.astro";
+import Stats from "../components/Stats.astro";
+import SectionHead from "../components/SectionHead.astro";
+import Steps from "../components/Steps.astro";
+import Faq from "../components/Faq.astro";
+import ReferralCalc from "../components/ReferralCalc.astro";
+import { query } from "../lib/sanity";
+import { FEE_RATE, SHARE_RATE, PAYOUT_DAYS } from "../lib/referral";
+import { SITE, graph, webPage, faqPage, breadcrumbs } from "../lib/schema";
+
+// The approved deal size lives once in siteSettings (PRD section 13).
+const { dealSizeRange } = await query<{ dealSizeRange: string }>(
+  `*[_id == "siteSettings"][0]{dealSizeRange}`,
+);
+const share = `${SHARE_RATE * 100}%`;
+const fee = `${FEE_RATE * 100}%`;
+
+const url = `${SITE}/refer`;
+const title = "Refer and earn | Wusool Capital referral partners";
+const description = `Introduce a UAE or GCC business owner who wants to sell. Referral partners earn ${share} of our success fee when the deal closes.`;
+
+const faq = [
+  {
+    question: "Who can become a referral partner?",
+    answer:
+      "Any service provider who advises business owners in the UAE and GCC: accountants, auditors, lawyers, corporate service providers, bankers, lenders, consultants and wealth managers.",
+  },
+  {
+    question: "Which businesses can I refer?",
+    answer: `Businesses in the UAE and GCC whose owner is considering a sale, worth ${dealSizeRange}. The owner must agree to the introduction before you make it.`,
+  },
+  {
+    question: "How much do I earn?",
+    answer: `You earn ${share} of the success fee Wusool Capital receives on the deal. Our success fee is ${fee} of the transaction value on average and varies by mandate.`,
+  },
+  {
+    question: "When am I paid?",
+    answer: `Within ${PAYOUT_DAYS} days of Wusool Capital receiving its success fee, once the deal has closed. The terms are set out in a signed referral agreement.`,
+  },
+  {
+    question: "What do I have to do after the introduction?",
+    answer:
+      "Nothing. We run the sale process with the owner, from valuation to closing, and keep you informed of progress.",
+  },
+  {
+    question: "Is there a limit on introductions?",
+    answer:
+      "No. You can introduce as many business owners as you like, and each closed deal is paid on the same terms.",
+  },
+];
+
+const jsonLd = graph([
+  {
+    ...webPage(url, title, description),
+    breadcrumb: { "@id": `${url}#breadcrumb` },
+  },
+  faqPage(url, faq),
+  breadcrumbs(url, [
+    { name: "Home", url: `${SITE}/` },
+    { name: "Partners", url: `${SITE}/partners` },
+    { name: "Refer and earn", url },
+  ]),
+]);
+---
+
+<Base
+  title={title}
+  description={description}
+  jsonLd={jsonLd}
+  bottom="surface"
+  closing={{
+    title: "Know an owner who is thinking of selling?",
+    text: `Register once. Earn ${share} of our success fee on every deal that closes.`,
+    label: "Become a referral partner",
+    form: "get-started",
+    source: "refer-closing",
+  }}
+>
+  <Hero
+    label="Refer and earn"
+    title="Introduce a business owner."
+    soft={`Earn ${share} of our fee.`}
+    sub="You advise owners every day. When one of them wants to sell, introduce them to Wusool Capital and share in our success fee."
+  >
+    <Fragment slot="ctas">
+      <Button form="get-started" variant="light" source="refer-hero">
+        Become a referral partner
+      </Button>
+      <Button href="#calculator" variant="ghost-dark">
+        Calculate my earnings
+      </Button>
+    </Fragment>
+  </Hero>
+
+  <Stats
+    items={[
+      {
+        num: share,
+        unit: "of our success fee",
+        text: "Paid on every deal you introduce that closes.",
+      },
+      {
+        num: `${PAYOUT_DAYS} days`,
+        unit: "to payout",
+        text: "From the day we receive our success fee.",
+      },
+      {
+        num: "No cap",
+        unit: "on introductions",
+        text: "Refer as many business owners as you like.",
+      },
+    ]}
+  />
+
+  <section class="section">
+    <div class="wrap">
+      <SectionHead
+        label="How it works"
+        title="From introduction to payout"
+        lede="One introduction is all we need from you. We run the sale."
+      />
+      <Steps
+        steps={[
+          {
+            title: "Register as a referral partner",
+            text: "Tell us about your firm. We send you a short referral agreement to sign.",
+          },
+          {
+            title: "Introduce a business owner",
+            text: "With the owner's agreement, introduce us by email. We confirm the referral in writing.",
+          },
+          {
+            title: "We run the sale process",
+            text: "Valuation, buyer matching, negotiation and closing. You stay informed, with nothing more to do.",
+          },
+          {
+            title: "The deal closes and you are paid",
+            text: `You receive ${share} of our success fee within ${PAYOUT_DAYS} days of us receiving it.`,
+          },
+        ]}
+      />
+    </div>
+  </section>
+
+  <section class="section section--flush-top" id="calculator">
+    <div class="wrap">
+      <SectionHead
+        label="Earnings calculator"
+        title="What one introduction is worth"
+        lede="Move the slider to the value of the business you have in mind."
+      />
+      <ReferralCalc />
+      <div class="after reveal">
+        <Button form="get-started" source="refer-calculator">
+          Become a referral partner
+        </Button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--surface">
+    <div class="wrap">
+      <Faq items={faq}>
+        <SectionHead
+          label="Common questions"
+          title="Referral partner FAQ"
+          lede="How the programme works, who it is for and when you are paid."
+        />
+      </Faq>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .after {
+    margin-top: var(--space-8);
+  }
+  /* The hero link jumps here; keep the heading clear of the sticky header. */
+  #calculator {
+    scroll-margin-top: var(--sticky-top);
+  }
+</style>

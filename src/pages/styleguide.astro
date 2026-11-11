@@ -16,6 +16,7 @@ import Posts from "../components/Posts.astro";
 import Faq from "../components/Faq.astro";
 import FeatureCards from "../components/FeatureCards.astro";
 import Steps from "../components/Steps.astro";
+import ReferralCalc from "../components/ReferralCalc.astro";
 import ValuationMock from "../components/mocks/ValuationMock.astro";
 import BuyersMock from "../components/mocks/BuyersMock.astro";
 import BusinessMock from "../components/mocks/BusinessMock.astro";
@@ -229,6 +230,16 @@ const colors = [
           },
         ]}
       />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <SectionHead
+        title="Referral calculator"
+        lede="One slider, used on the Refer and earn page."
+      />
+      <ReferralCalc />
     </div>
   </section>
 

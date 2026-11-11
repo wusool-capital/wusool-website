@@ -1,0 +1,128 @@
+---
+// Referral earnings calculator (PRD 6.4): one slider for the transaction
+// value. The default result is in the HTML, so it reads without JavaScript.
+import { FEE_RATE, SHARE_RATE, DEAL, earnings, usd } from "../lib/referral";
+
+const start = earnings(DEAL.start);
+const pct = (rate: number) => `${rate * 100}%`;
+---
+
+<div class="calc reveal" data-referral-calc>
+  <div class="input">
+    <label for="deal-value">Transaction value</label>
+    <output for="deal-value" data-out="deal">
+      {usd(DEAL.start)}
+    </output>
+    <input
+      id="deal-value"
+      type="range"
+      min={DEAL.min}
+      max={DEAL.max}
+      step={DEAL.step}
+      value={DEAL.start}
+      aria-valuetext={usd(DEAL.start)}
+    />
+    <div class="ends" aria-hidden="true">
+      <span>{usd(DEAL.min)}</span>
+      <span>{usd(DEAL.max)}</span>
+    </div>
+  </div>
+  <dl class="result">
+    <div class="you">
+      <dt>Your referral fee ({pct(SHARE_RATE)} of our fee)</dt>
+      <dd>
+        <output for="deal-value" data-out="share">
+          {usd(start.share)}
+        </output>
+      </dd>
+    </div>
+  </dl>
+  <p class="note">
+    Illustrative, based on our average success fee of {pct(FEE_RATE)} of the
+    transaction value. The fee varies by mandate, and you earn {pct(SHARE_RATE)}{" "}
+    of the fee we receive when the deal closes.
+  </p>
+</div>
+
+<script>
+  import "../scripts/referral-calc";
+</script>
+
+<style>
+  .calc {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8) var(--space-12);
+    margin-top: var(--space-12);
+    padding: var(--space-8);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  .input {
+    display: grid;
+    align-content: center;
+    gap: var(--space-3);
+  }
+  label,
+  dt {
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  dd {
+    margin: 0;
+  }
+  output {
+    color: var(--navy);
+    font-size: var(--text-range);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--tracking-num-sm);
+  }
+  input {
+    width: 100%;
+    height: var(--input-h);
+    margin: 0;
+    accent-color: var(--navy);
+    cursor: pointer;
+  }
+  .ends {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: var(--text-sm);
+  }
+  .result {
+    display: grid;
+    align-content: center;
+    margin: 0;
+  }
+  .result div {
+    display: grid;
+    gap: var(--space-1);
+    padding: var(--space-5);
+    border: 1px solid var(--line);
+    border-radius: var(--r-inner);
+  }
+  .result .you {
+    border-color: var(--sky);
+    background: var(--sky-soft);
+  }
+  .you output {
+    font-size: var(--text-stat);
+    line-height: var(--leading-stat);
+    letter-spacing: var(--tracking-num);
+  }
+  .note {
+    grid-column: 1 / -1;
+    color: var(--muted);
+    font-size: var(--text-14);
+  }
+  @media (max-width: 720px) {
+    .calc {
+      grid-template-columns: 1fr;
+      padding: var(--space-5-5);
+    }
+  }
+</style>
