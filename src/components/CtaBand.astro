@@ -10,6 +10,8 @@ export interface Props {
   label?: string;
   href?: string;
   form?: "get-started" | "buyers";
+  // Lead source for attribution. Defaults to the site-wide closing CTA.
+  source?: string;
 }
 const page = Astro.props;
 const cta = page.title && page.label ? page : closingCta;
@@ -22,7 +24,7 @@ const cta = page.title && page.label ? page : closingCta;
     href={cta.href}
     form={"form" in cta ? cta.form : undefined}
     variant="light"
-    source="closing-cta"
+    source={page.source ?? "closing-cta"}
   >
     {cta.label}
   </Button>

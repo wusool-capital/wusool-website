@@ -163,6 +163,20 @@ Hooks into the rest of the site:
 
 Kept simple on purpose: no chat assistant, no partner logins, no per-partner pages, no partner dashboard. See section 14.6.
 
+### 6.4 Refer and earn page
+
+For service providers (accountants, auditors, lawyers, corporate service providers, bankers, lenders, consultants) who can introduce business owners that want to sell.
+
+Page (`/refer`, in the Partners nav dropdown with the partner directory, and in the footer):
+- Flow: hero with two CTAs, three key figures, four numbered steps, earnings calculator, FAQ, closing CTA.
+- Terms stated on the page: 10% of the success fee Wusool Capital receives on a closed deal, flat with no tiers, paid within 30 days of receiving the fee, under a signed referral agreement. No cap on introductions.
+- Calculator: one slider for the transaction value ($1M to $25M, step $0.5M, default $5M). Shows the partner's 10% share, with the 5% average success fee stated in the note under it. Labelled illustrative. The default result is in the server HTML and the slider sends nothing off the site.
+- The rates, payout days and slider range live once in `src/lib/referral.ts`. The deal size in the FAQ comes from `siteSettings`.
+- Sign-up: every CTA opens the existing Get Started form from the tools app, tagged with a `refer-*` source. No new form.
+- Copy is in code, like `/partners`. It is not a Sanity page.
+
+Kept simple on purpose: no partner accounts, referral links, tracking dashboard or tiers. See section 14.6.
+
 ## 7. Animations and advanced lead magnets
 
 - **Animated content** (report exhibits, charts, scroll reveals): CSS and scroll-driven animations first; React islands with Motion for interactive exhibits. Islands load only on the pages that use them and respect reduced motion.
@@ -283,6 +297,7 @@ These apply to every feature and go into the repo's `CLAUDE.md`.
 | 12 | Global SEO layer: sitemap, robots, `llms.txt`, redirects | Crawl diff old vs new shows zero missing URLs; Ahrefs staging crawl meets section 14.4 |
 | 13 | Cutover (section 15) | Section 16 acceptance criteria met on production |
 | 14 | Partners page and quiz (section 6.3); can ship before cutover | `/partners` lists every active partner from Sanity, with category filters and Organization plus ItemList JSON-LD; hiding a partner in Sanity removes it on the next build; the quiz returns at least one match for every category and size in a test, with no request off the site; links carry the ref parameter and codes copy; nav and footer link to the page on one line at desktop and tablet; each tool result shows the "Not selling yet" block; gates pass |
+| 15 | Refer and earn page (section 6.4); can ship before cutover | `/refer` returns 200 with WebPage, FAQPage and BreadcrumbList JSON-LD; the calculator shows $25,000 by default in the raw HTML and $50,000 at $10M in a test, with no request off the site; both CTAs open the Get Started form with a `refer-*` source; Partners is a nav dropdown holding both pages, the nav stays on one line at desktop and tablet, and the footer links to the page; gates pass |
 
 ### 14.3 Loop per feature
 
@@ -326,6 +341,7 @@ The review agent gets: the PRD, `CLAUDE.md`, the feature's "done when" check and
 - Arabic version and `hreflang`.
 - On-site report gate (reports stay gated through the tools app).
 - Any form endpoint on the main domain.
+- Refer and earn: partner accounts, unique referral links, a referral dashboard, commission tiers, a dedicated sign-up form in the tools app.
 - Partners: chat assistant, per-partner pages, partner logins or dashboards, partner suggestions tuned per tool answer beyond the "Not selling yet" block, category landing pages for SEO.
 
 ## 15. Cutover plan
@@ -392,3 +408,4 @@ Today = what the live HTML emits (checked 30 Oct 2026). Target = what the new te
 | Benchmark | Organization, WebSite, WebPage, BreadcrumbList, SoftwareApplication, FAQPage (5) | Same, on the www host |
 | Deal readiness | not checked | WebApplication, BreadcrumbList |
 | Partners | none (new page) | CollectionPage with ItemList of partner Organizations (name, url, logo), BreadcrumbList |
+| Refer and earn | none (new page) | WebPage, FAQPage, BreadcrumbList |

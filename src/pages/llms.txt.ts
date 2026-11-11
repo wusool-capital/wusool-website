@@ -43,6 +43,7 @@ ${s.orgDescription}
 - Insights: ${SITE}/insights
 - Reports: ${SITE}/reports
 - Team: ${SITE}/team
+- Refer and earn (referral partners): ${SITE}/refer
 
 ## Reports
 

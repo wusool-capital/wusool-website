@@ -39,7 +39,13 @@ export const nav: NavItem[] = [
     ],
   },
   { label: "Insights", href: "/insights" },
-  { label: "Partners", href: "/partners" },
+  {
+    label: "Partners",
+    menu: [
+      { label: "Partner directory", href: "/partners" },
+      { label: "Refer and earn", href: "/refer" },
+    ],
+  },
   {
     label: "About",
     menu: [
@@ -57,6 +63,7 @@ export const mobileNav: NavLink[] = [
   { label: "Valuation Calculator", href: "/valuation-tool" },
   { label: "Insights", href: "/insights" },
   { label: "Partners", href: "/partners" },
+  { label: "Refer and earn", href: "/refer" },
   { label: "Team", href: "/team" },
 ];
 
@@ -65,6 +72,7 @@ export const footerLinks: NavLink[] = [
   { label: "For Buyers", href: "/buyers" },
   { label: "Insights", href: "/insights" },
   { label: "Partners", href: "/partners" },
+  { label: "Refer and earn", href: "/refer" },
   { label: "Team", href: "/team" },
   { label: "Careers", href: "/careers" },
 ];
