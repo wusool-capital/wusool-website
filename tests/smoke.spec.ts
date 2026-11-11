@@ -877,6 +877,30 @@ test("Partners and Refer and earn are in the nav and footer, and the desktop nav
   await expect(page.locator('footer a[href="/refer"]')).toHaveCount(1);
 });
 
+test("footer links every industry, tool and topic page in labelled columns", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const footer = page.getByRole("navigation", { name: "Footer" });
+  for (const title of [
+    "Services",
+    "Industries",
+    "Tools",
+    "Resources",
+    "Company",
+  ])
+    await expect(footer.getByRole("list", { name: title })).toBeVisible();
+  await expect(footer.locator('a[href^="/industries/"]')).toHaveCount(10);
+  await expect(footer.locator('a[href^="/insights/topic/"]')).toHaveCount(6);
+  for (const href of [
+    "/valuation-tool",
+    "/deal-readiness-tool",
+    "/benchmark",
+    "/reports",
+  ])
+    await expect(footer.locator(`a[href="${href}"]`)).toHaveCount(1);
+});
+
 test("referral calculator shows 10% of a 5% fee for the chosen deal value, without any request", async ({
   page,
 }) => {

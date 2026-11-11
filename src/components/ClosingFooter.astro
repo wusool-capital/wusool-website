@@ -1,7 +1,7 @@
 ---
 // Closing CTA band and footer, sharing one navy panel (as in index.html).
 import logo from "../assets/logo/logo-white.svg?url";
-import { company, footerLinks, legalLinks } from "../data/site";
+import { company, footerGroups, legalLinks } from "../data/site";
 import CtaBand, { type Props as CtaProps } from "./CtaBand.astro";
 import Icon from "./Icon.astro";
 
@@ -37,8 +37,17 @@ const year = new Date().getFullYear();
             </a>
           </div>
           <nav class="links" aria-label="Footer">
-            {footerLinks.map((l) => (
-              <a href={l.href}>{l.label}</a>
+            {footerGroups.map((g, i) => (
+              <div class="col">
+                <h2 id={`footer-${i}`}>{g.title}</h2>
+                <ul aria-labelledby={`footer-${i}`}>
+                  {g.links.map((l) => (
+                    <li>
+                      <a href={l.href}>{l.label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
           </nav>
         </div>
@@ -90,7 +99,7 @@ const year = new Date().getFullYear();
   }
   .grid {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
     gap: var(--space-10);
     align-items: start;
   }
@@ -130,8 +139,22 @@ const year = new Date().getFullYear();
   }
   .links {
     display: grid;
-    grid-template-columns: repeat(2, auto);
-    gap: var(--space-3) var(--space-12);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--space-8) var(--space-6);
+  }
+  .col h2 {
+    margin: 0 0 var(--space-4);
+    color: var(--on-navy);
+    font-size: var(--text-14);
+    font-weight: var(--weight-semibold);
+    letter-spacing: normal;
+  }
+  .col ul {
+    display: grid;
+    gap: var(--space-2-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
   .links a:hover,
   .legal a:hover,
@@ -162,12 +185,24 @@ const year = new Date().getFullYear();
     font-size: inherit;
     cursor: pointer;
   }
+  /* Below this width five columns beside the brand block get too narrow,
+     so the brand block moves above them. */
+  @media (max-width: 1280px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 1080px) {
+    .links {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
   @media (max-width: 720px) {
     footer {
       padding: var(--space-10) var(--space-5-5) var(--space-7);
     }
-    .grid {
-      grid-template-columns: 1fr;
+    .links {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 </style>
