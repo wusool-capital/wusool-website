@@ -3,6 +3,7 @@
 //
 //   npx sanity exec migration/webflow-to-sanity.ts            # write
 //   npx sanity exec migration/webflow-to-sanity.ts -- --dry-run
+//   npx sanity exec migration/webflow-to-sanity.ts -- --only=slug-a,slug-b
 //
 // Needs WEBFLOW_TOKEN (read-only) and SANITY_WRITE_TOKEN in ../.env.
 import { createClient } from "@sanity/client";
@@ -25,6 +26,13 @@ type Item = {
 };
 
 const DRY = process.argv.includes("--dry-run");
+// --only=slug,slug imports just those live items, creating them only when
+// missing. Nothing in Sanity is replaced, deleted or checked for edits.
+const ONLY = new Set(
+  (process.argv.find((a) => a.startsWith("--only="))?.slice(7) ?? "")
+    .split(",")
+    .filter(Boolean),
+);
 const { WEBFLOW_TOKEN, SANITY_WRITE_TOKEN } = process.env;
 if (!WEBFLOW_TOKEN || (!DRY && !SANITY_WRITE_TOKEN)) {
   throw new Error("Set WEBFLOW_TOKEN and SANITY_WRITE_TOKEN in .env");
@@ -701,6 +709,24 @@ async function main() {
     insights: wfInsights.length,
     report: wfReports.length,
   };
+
+  if (ONLY.size) {
+    const picked = docs.filter((d) =>
+      ONLY.has((d.slug as { current?: string })?.current ?? ""),
+    );
+    for (const d of picked)
+      console.log(`${DRY ? "would add" : "add"} ${d._type} ${d._id}`);
+    const missing = [...ONLY].filter(
+      (s) => !picked.some((d) => (d.slug as { current: string }).current === s),
+    );
+    if (missing.length) throw new Error(`Not found in Webflow: ${missing}`);
+    if (!DRY) {
+      const tx = client.transaction();
+      for (const d of picked) tx.createIfNotExists(d);
+      await retry(() => tx.commit());
+    }
+    return;
+  }
 
   if (!DRY) {
     await guardEdits();
