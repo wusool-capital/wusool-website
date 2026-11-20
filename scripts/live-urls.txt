@@ -1,3 +1,4 @@
+
 /
 /benchmark
 /buyers
@@ -15,6 +16,7 @@
 /industries/retail
 /industries/technology
 /insights
+/insights/business-broker-vs-ma-advisor-gcc
 /insights/business-sale-costs-uae
 /insights/business-valuation-methods-uae
 /insights/business-valuation-uae-guide
@@ -37,6 +39,7 @@
 /insights/how-long-to-sell-business-uae
 /insights/how-many-times-ebitda-is-a-company-worth
 /insights/how-much-does-business-valuation-cost-uae
+/insights/how-often-should-business-be-valued
 /insights/how-to-buy-a-business-in-abu-dhabi
 /insights/how-to-buy-a-business-in-dubai
 /insights/how-to-buy-a-business-uae
@@ -46,6 +49,8 @@
 /insights/is-business-worth-3x-profit
 /insights/leveraged-buyout-uae-gcc
 /insights/mainland-vs-freezone-business-sale-uae
+/insights/mistakes-first-time-business-buyers-gcc
+/insights/nda-process-business-sale-uae
 /insights/reduce-founder-dependency-uae
 /insights/self-funded-search-gcc
 /insights/sell-a-logistics-business-uae
@@ -67,6 +72,7 @@
 /insights/why-we-backed-armoir-functionality-meets-craftsmanship
 /privacy-policy
 /reports
+/reports/buyouts-in-the-gcc
 /reports/how-to-fund-a-buyout-in-the-uae-and-gcc-2026-playbook
 /reports/padel-in-the-gulf
 /sell
