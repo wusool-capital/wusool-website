@@ -11,33 +11,30 @@ export interface NavItem {
   wide?: boolean;
 }
 
+// Shared by the nav dropdowns and the footer columns.
+const industries: NavLink[] = [
+  { label: "Manufacturing", href: "/industries/manufacturing" },
+  { label: "Construction & Fit-out", href: "/industries/construction" },
+  { label: "Education & Training", href: "/industries/education" },
+  { label: "Logistics & Freight", href: "/industries/logistics" },
+  { label: "Business Services", href: "/industries/business-services" },
+  { label: "Retail", href: "/industries/retail" },
+  { label: "Beauty & Wellness", href: "/industries/beauty-wellness" },
+  { label: "Technology & SaaS", href: "/industries/technology" },
+  { label: "Healthcare & Clinics", href: "/industries/healthcare" },
+  { label: "F&B & Restaurants", href: "/industries/food-beverage" },
+];
+const tools: NavLink[] = [
+  { label: "Valuation Calculator", href: "/valuation-tool" },
+  { label: "Deal Readiness", href: "/deal-readiness-tool" },
+  { label: "Benchmarking Tool", href: "/benchmark" },
+];
+
 export const nav: NavItem[] = [
   { label: "For Sellers", href: "/sell" },
   { label: "For Buyers", href: "/buyers" },
-  {
-    label: "Industries",
-    wide: true,
-    menu: [
-      { label: "Manufacturing", href: "/industries/manufacturing" },
-      { label: "Construction & Fit-out", href: "/industries/construction" },
-      { label: "Education & Training", href: "/industries/education" },
-      { label: "Logistics & Freight", href: "/industries/logistics" },
-      { label: "Business Services", href: "/industries/business-services" },
-      { label: "Retail", href: "/industries/retail" },
-      { label: "Beauty & Wellness", href: "/industries/beauty-wellness" },
-      { label: "Technology & SaaS", href: "/industries/technology" },
-      { label: "Healthcare & Clinics", href: "/industries/healthcare" },
-      { label: "F&B & Restaurants", href: "/industries/food-beverage" },
-    ],
-  },
-  {
-    label: "Tools",
-    menu: [
-      { label: "Valuation Calculator", href: "/valuation-tool" },
-      { label: "Deal Readiness", href: "/deal-readiness-tool" },
-      { label: "Benchmarking Tool", href: "/benchmark" },
-    ],
-  },
+  { label: "Industries", wide: true, menu: industries },
+  { label: "Tools", menu: tools },
   { label: "Insights", href: "/insights" },
   {
     label: "Partners",
@@ -67,14 +64,48 @@ export const mobileNav: NavLink[] = [
   { label: "Team", href: "/team" },
 ];
 
-export const footerLinks: NavLink[] = [
-  { label: "For Sellers", href: "/sell" },
-  { label: "For Buyers", href: "/buyers" },
-  { label: "Insights", href: "/insights" },
-  { label: "Partners", href: "/partners" },
-  { label: "Refer and earn", href: "/refer" },
-  { label: "Team", href: "/team" },
-  { label: "Careers", href: "/careers" },
+// Footer link columns: every key page is one click from any page.
+export const footerGroups: { title: string; links: NavLink[] }[] = [
+  {
+    title: "Services",
+    links: [
+      { label: "Sell your business", href: "/sell" },
+      { label: "Buy a business", href: "/buyers" },
+    ],
+  },
+  { title: "Industries", links: industries },
+  { title: "Tools", links: tools },
+  {
+    title: "Resources",
+    links: [
+      { label: "Insights", href: "/insights" },
+      { label: "Reports", href: "/reports" },
+      {
+        label: "Selling a business",
+        href: "/insights/topic/sell-your-business",
+      },
+      {
+        label: "Business valuation",
+        href: "/insights/topic/business-valuation",
+      },
+      { label: "Exit strategy", href: "/insights/topic/exit-strategy" },
+      { label: "Buying a business", href: "/insights/topic/buy-a-business" },
+      { label: "GCC M&A market", href: "/insights/topic/gcc-ma-market" },
+      {
+        label: "Acquisition entrepreneurship",
+        href: "/insights/topic/eta-gcc",
+      },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "Team", href: "/team" },
+      { label: "Careers", href: "/careers" },
+      { label: "Partners", href: "/partners" },
+      { label: "Refer and earn", href: "/refer" },
+    ],
+  },
 ];
 
 export const legalLinks: NavLink[] = [
