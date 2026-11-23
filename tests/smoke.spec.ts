@@ -712,9 +712,10 @@ test("deal readiness tool scores the answers without any request", async ({
     "[data-results]",
   );
   await expect(page.locator("[data-score]")).toHaveText(/^\d+$/);
-  await expect(
-    page.locator('[data-results] a[href="/partners"]'),
-  ).toBeVisible();
+  // The partner directory is hidden until launch.
+  await expect(page.locator('[data-results] a[href="/partners"]')).toHaveCount(
+    0,
+  );
   expect(external).toEqual([]);
 });
 
@@ -728,7 +729,7 @@ test("benchmark tool shows results and a thank-you without any request", async (
   });
   await page.goto("/benchmark");
   await completeTool(page, "#bm", ".act--primary:visible", "#bm-thanks");
-  await expect(page.locator('#bm a[href="/partners"]')).toBeVisible();
+  await expect(page.locator('#bm a[href="/partners"]')).toHaveCount(0);
   expect(external).toEqual([]);
 });
 
@@ -746,9 +747,10 @@ test("valuation tool shows a range without any request", async ({ page }) => {
     "[data-valuation-results]",
   );
   await expect(page.locator('[data-v="range"]')).not.toBeEmpty();
+  // The partner directory is hidden until launch.
   await expect(
     page.locator('[data-valuation-results] a[href="/partners"]'),
-  ).toBeVisible();
+  ).toHaveCount(0);
   expect(external).toEqual([]);
 });
 
@@ -767,6 +769,11 @@ test("partners page lists every active partner from Sanity, by category", async 
     ).json()
   ).result;
   await page.goto("/partners");
+  // Hidden until launch: built for preview, kept out of search.
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    "content",
+    "noindex",
+  );
   const cards = page.locator("[data-directory] [data-partner]");
   await expect(cards).toHaveCount(active.length);
   for (const p of active)
@@ -853,7 +860,7 @@ test("partners quiz answers every category and size, without any request", async
   expect(external).toEqual([]);
 });
 
-test("Partners and Refer and earn are in the nav and footer, and the desktop nav stays on one line", async ({
+test("Refer and earn is in the nav and footer, the hidden partner directory is not, and the desktop nav stays on one line", async ({
   page,
   isMobile,
 }) => {
@@ -862,10 +869,8 @@ test("Partners and Refer and earn are in the nav and footer, and the desktop nav
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/");
     const main = page.getByRole("navigation", { name: "Main" });
-    // Both sit in the Partners dropdown, which opens on hover.
-    await main.getByRole("button", { name: "Partners" }).hover();
-    await expect(main.locator('a[href="/partners"]')).toBeVisible();
     await expect(main.locator('a[href="/refer"]')).toBeVisible();
+    await expect(page.locator('a[href="/partners"]')).toHaveCount(0);
     const tops = await main
       .locator(".links > li")
       .evaluateAll((li) =>
@@ -873,7 +878,6 @@ test("Partners and Refer and earn are in the nav and footer, and the desktop nav
       );
     expect(new Set(tops).size).toBe(1);
   }
-  await expect(page.locator('footer a[href="/partners"]')).toHaveCount(1);
   await expect(page.locator('footer a[href="/refer"]')).toHaveCount(1);
 });
 

@@ -2,21 +2,24 @@
 // Shown in every tool's results: owners not selling now get a next step
 // with our partners (PRD 6.3).
 import Icon from "../Icon.astro";
+import { partnersLive } from "../../data/site";
 ---
 
-<aside class="nsy" aria-label="Not selling yet">
-  <Icon name="handshake" />
-  <div>
-    <p class="t">Not selling yet? Get your company acquisition-ready.</p>
-    <p class="s">
-      Lenders, accountants, auditors and lawyers we trust, with preferred terms
-      for companies we refer.
-    </p>
-  </div>
-  <a href="/partners" class="go">
-    See our partners <Icon name="arrow-right" />
-  </a>
-</aside>
+{partnersLive && (
+  <aside class="nsy" aria-label="Not selling yet">
+    <Icon name="handshake" />
+    <div>
+      <p class="t">Not selling yet? Get your company acquisition-ready.</p>
+      <p class="s">
+        Lenders, accountants, auditors and lawyers we trust, with preferred
+        terms for companies we refer.
+      </p>
+    </div>
+    <a href="/partners" class="go">
+      See our partners <Icon name="arrow-right" />
+    </a>
+  </aside>
+)}
 
 <style>
   .nsy {

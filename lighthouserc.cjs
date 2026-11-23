@@ -28,7 +28,6 @@ module.exports = {
         "http://localhost:8787/reports/padel-in-the-gulf",
         "http://localhost:8787/team",
         "http://localhost:8787/careers/senior-analyst-ma-advisory-dubai",
-        "http://localhost:8787/partners",
         "http://localhost:8787/refer",
         "http://localhost:8787/valuation-tool",
         "http://localhost:8787/benchmark",

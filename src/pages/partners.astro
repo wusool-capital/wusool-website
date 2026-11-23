@@ -8,6 +8,7 @@ import PartnerCard from "../components/partners/PartnerCard.astro";
 import { imageUrl } from "../lib/sanity";
 import { CATEGORIES, activePartners } from "../lib/partners";
 import { SITE, WEBSITE_ID, graph, breadcrumbs } from "../lib/schema";
+import { partnersLive } from "../data/site";
 
 const partners = await activePartners();
 const groups = CATEGORIES.map((c) => ({
@@ -49,7 +50,12 @@ const jsonLd = graph([
 ]);
 ---
 
-<Base title={title} description={description} jsonLd={jsonLd}>
+<Base
+  title={title}
+  description={description}
+  jsonLd={jsonLd}
+  noindex={!partnersLive}
+>
   <Hero
     title="Get your company ready, with partners we trust"
     sub="Not selling yet? These lenders, accountants, lawyers and service providers help owners build a company buyers want."
