@@ -799,7 +799,12 @@ test("partners quiz answers every category and size, without any request", async
 }) => {
   const external: string[] = [];
   page.on("request", (r) => {
-    if (!r.url().startsWith("http://localhost") && r.url() !== EMBED)
+    // Partner logos come from the Sanity image CDN, like every CMS image.
+    const ok = [EMBED, "https://cdn.sanity.io/images/"];
+    if (
+      !r.url().startsWith("http://localhost") &&
+      !ok.some((u) => r.url().startsWith(u))
+    )
       external.push(r.url());
   });
   await page.goto("/partners");
