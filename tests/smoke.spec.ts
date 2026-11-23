@@ -961,6 +961,7 @@ test("referral form opens, needs the owner's agreement for an introduction, and 
   });
   await expect(dialog).toBeVisible();
   await expect(dialog.locator("#refer-source")).toHaveValue("refer-hero");
+  await expect(dialog.getByLabel("Name")).toBeFocused();
   await dialog.getByLabel("Introduce a business owner now").check();
   await dialog.getByLabel("Name").fill("Test Referrer");
   await dialog.getByLabel("Firm").fill("Test Firm");

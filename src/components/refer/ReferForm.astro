@@ -28,7 +28,13 @@ import Button from "../Button.astro";
     </fieldset>
     <div class="grid">
       <Field id="refer-name" label="Name">
-        <input id="refer-name" name="name" autocomplete="name" required />
+        <input
+          id="refer-name"
+          name="name"
+          autocomplete="name"
+          required
+          autofocus
+        />
       </Field>
       <Field id="refer-firm" label="Firm">
         <input
@@ -74,7 +80,10 @@ import Button from "../Button.astro";
     <label class="check">
       <input type="checkbox" name="privacy" required />
       <span>
-        I agree to Wusool Capital's <a href="/privacy-policy">Privacy Policy</a>
+        I agree to Wusool Capital's{" "}
+        <a href="/privacy-policy" target="_blank" rel="noopener">
+          Privacy Policy
+        </a>
         and consent to being contacted.
       </span>
     </label>

@@ -10,6 +10,10 @@ const source = document.querySelector<HTMLInputElement>("#refer-source");
 if (dialog && form && thanks && owner && ownerWrap && source) {
   document.querySelectorAll<HTMLElement>('[data-form="refer"]').forEach((b) =>
     b.addEventListener("click", () => {
+      // Start fresh each time, then record which button opened it.
+      form.reset();
+      ownerWrap.hidden = true;
+      owner.required = false;
       source.value = b.dataset.source ?? "";
       form.hidden = false;
       thanks.hidden = true;
@@ -19,9 +23,14 @@ if (dialog && form && thanks && owner && ownerWrap && source) {
   dialog
     .querySelectorAll("[data-close]")
     .forEach((b) => b.addEventListener("click", () => dialog.close()));
-  // Close on a click on the backdrop.
+  // Close on a click on the backdrop, but not when a text selection that
+  // started in a field ends there.
+  let downOnBackdrop = false;
+  dialog.addEventListener("mousedown", (e) => {
+    downOnBackdrop = e.target === dialog;
+  });
   dialog.addEventListener("click", (e) => {
-    if (e.target === dialog) dialog.close();
+    if (downOnBackdrop && e.target === dialog) dialog.close();
   });
   // The owner's agreement is required only for an introduction.
   form.addEventListener("change", () => {
