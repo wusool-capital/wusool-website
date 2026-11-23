@@ -4,11 +4,13 @@ import Icon from "./Icon.astro";
 
 interface Props {
   href?: string;
-  form?: "get-started" | "buyers";
+  form?: "get-started" | "buyers" | "refer";
   variant?: "primary" | "light" | "ghost-dark";
   size?: "md" | "sm";
   arrow?: boolean;
   source?: string;
+  // A submit button for the form it sits in.
+  submit?: boolean;
 }
 const {
   href,
@@ -17,6 +19,7 @@ const {
   size = "md",
   arrow = true,
   source,
+  submit,
 } = Astro.props;
 const cls = ["btn", `btn--${variant}`, size === "sm" && "btn--sm"];
 // Links to other sites open in a new tab.
@@ -24,7 +27,12 @@ const external =
   /^https?:\/\//.test(href ?? "") && !/wusoolcapital\.com/.test(href ?? "");
 ---
 
-{form ? (
+{submit ? (
+  <button type="submit" class:list={cls}>
+    <slot />
+    {arrow && <Icon name="arrow-right" />}
+  </button>
+) : form ? (
   <button type="button" class:list={cls} data-form={form} data-source={source}>
     <slot />
     {arrow && <Icon name="arrow-right" />}

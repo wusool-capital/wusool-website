@@ -939,11 +939,45 @@ test("referral calculator shows 10% of a 5% fee for the chosen deal value, witho
     "$10,000,000",
   );
   expect(external).toEqual([]);
-  // Sign-up opens the existing Get Started form, tagged for attribution:
+  // Sign-up opens the referral form, tagged for attribution:
   // hero, calculator and closing band.
   await expect(
-    page.locator('[data-form="get-started"][data-source^="refer"]'),
+    page.locator('[data-form="refer"][data-source^="refer"]'),
   ).toHaveCount(3);
+});
+
+test("referral form opens, needs the owner's agreement for an introduction, and thanks without any request", async ({
+  page,
+}) => {
+  const external: string[] = [];
+  page.on("request", (r) => {
+    if (!r.url().startsWith("http://localhost") && r.url() !== EMBED)
+      external.push(r.url());
+  });
+  await page.goto("/refer");
+  await page.locator('[data-form="refer"][data-source="refer-hero"]').click();
+  const dialog = page.getByRole("dialog", {
+    name: "Become a referral partner",
+  });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator("#refer-source")).toHaveValue("refer-hero");
+  await dialog.getByLabel("Introduce a business owner now").check();
+  await dialog.getByLabel("Name").fill("Test Referrer");
+  await dialog.getByLabel("Firm").fill("Test Firm");
+  await dialog.getByLabel("Email").fill("test@example.com");
+  await dialog.getByLabel("Mobile").fill("+971500000000");
+  await dialog.getByLabel(/Privacy Policy/).check();
+  await dialog.getByRole("button", { name: "Send" }).click();
+  // Blocked until the owner has agreed.
+  await expect(dialog.locator("#refer-thanks")).toBeHidden();
+  await dialog.getByLabel(/owner has agreed/).check();
+  await dialog.getByRole("button", { name: "Send" }).click();
+  await expect(
+    dialog.getByRole("heading", { name: "Thank you" }),
+  ).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  expect(external).toEqual([]);
 });
 
 // Everything clickable shows the hand cursor, form choices included.

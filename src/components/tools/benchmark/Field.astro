@@ -67,7 +67,8 @@ const {
     position: relative;
   }
   .ctl :global(input),
-  .ctl :global(select) {
+  .ctl :global(select),
+  .ctl :global(textarea) {
     width: 100%;
     height: var(--btn-h);
     padding: 0 var(--space-3);
@@ -79,7 +80,8 @@ const {
     transition: border-color var(--dur-fast);
   }
   .ctl :global(input:focus-visible),
-  .ctl :global(select:focus-visible) {
+  .ctl :global(select:focus-visible),
+  .ctl :global(textarea:focus-visible) {
     border-color: var(--navy);
     outline: 2px solid var(--sky);
     outline-offset: 0;
@@ -89,7 +91,13 @@ const {
     border-color: var(--navy);
     border-width: 2px;
   }
-  .ctl :global(input::placeholder) {
+  .ctl :global(textarea) {
+    height: auto;
+    padding: var(--space-3);
+    resize: vertical;
+  }
+  .ctl :global(input::placeholder),
+  .ctl :global(textarea::placeholder) {
     color: var(--muted);
   }
   .affix {
