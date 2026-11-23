@@ -23,6 +23,8 @@
   --flow: rgb(127 180 206 / 0.77);
   --flow-angle: 70deg;
   --close-hover: rgb(0 5 35 / 0.06);
+  /* Dimmed page behind a modal. */
+  --backdrop: rgb(0 5 35 / 0.5);
   --glow-strong: rgb(198 225 238 / 0.16);
   --glow-soft: rgb(198 225 238 / 0.08);
   --glow-closing: rgb(198 225 238 / 0.14);
@@ -63,6 +65,7 @@
   --measure-h2: 22ch;
   --measure-lede: 58ch;
   --measure-body: 68ch;
+  --dialog-w: 560px;
   /* Article column: 68 characters of the 18px body text. */
   --article-w: 767px;
   /* Tool pages: title and tool share one centered column. */

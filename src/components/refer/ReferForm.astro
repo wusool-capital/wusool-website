@@ -1,0 +1,204 @@
+---
+// Referral partner form (PRD 6.4), opened by any [data-form="refer"] button.
+// Front end only: submitting validates in the browser and shows a thank-you.
+// Nothing is sent yet; engineers wire the submit to contact@ and jules@.
+import Field from "../tools/benchmark/Field.astro";
+import Icon from "../Icon.astro";
+import Button from "../Button.astro";
+---
+
+<dialog class="refer" id="refer-dialog" aria-labelledby="refer-title">
+  <form class="body" id="refer-form" method="dialog" novalidate>
+    <button type="button" class="close" data-close aria-label="Close">
+      <Icon name="x" />
+    </button>
+    <h2 id="refer-title">Become a referral partner</h2>
+    <p class="sub">Tell us about you and how you would like to work with us.</p>
+    <input type="hidden" name="source" id="refer-source" />
+    <fieldset>
+      <legend>What would you like to do?</legend>
+      <label class="opt">
+        <input type="radio" name="type" value="register" checked />
+        Register as a referral partner
+      </label>
+      <label class="opt">
+        <input type="radio" name="type" value="introduce" />
+        Introduce a business owner now
+      </label>
+    </fieldset>
+    <div class="grid">
+      <Field id="refer-name" label="Name">
+        <input
+          id="refer-name"
+          name="name"
+          autocomplete="name"
+          required
+          autofocus
+        />
+      </Field>
+      <Field id="refer-firm" label="Firm">
+        <input
+          id="refer-firm"
+          name="firm"
+          autocomplete="organization"
+          required
+        />
+      </Field>
+      <Field id="refer-email" label="Email">
+        <input
+          type="email"
+          id="refer-email"
+          name="email"
+          autocomplete="email"
+          placeholder="you@firm.com"
+          required
+        />
+      </Field>
+      <Field id="refer-phone" label="Mobile">
+        <input
+          type="tel"
+          id="refer-phone"
+          name="phone"
+          autocomplete="tel"
+          placeholder="+971 50 000 0000"
+          required
+        />
+      </Field>
+    </div>
+    <Field id="refer-notes" label="Notes" optional>
+      <textarea
+        id="refer-notes"
+        name="notes"
+        rows="4"
+        placeholder="Who you advise, or the business you want to introduce: industry, country and rough size."
+      ></textarea>
+    </Field>
+    <label class="check" id="refer-owner-wrap" hidden>
+      <input type="checkbox" name="ownerConsent" id="refer-owner" />
+      The business owner has agreed to this introduction.
+    </label>
+    <label class="check">
+      <input type="checkbox" name="privacy" required />
+      <span>
+        I agree to Wusool Capital's{" "}
+        <a href="/privacy-policy" target="_blank" rel="noopener">
+          Privacy Policy
+        </a>
+        and consent to being contacted.
+      </span>
+    </label>
+    <div class="send">
+      <Button submit>Send</Button>
+    </div>
+  </form>
+  <div class="body thanks" id="refer-thanks" hidden>
+    <button type="button" class="close" data-close aria-label="Close">
+      <Icon name="x" />
+    </button>
+    <h2 tabindex="-1">Thank you</h2>
+    <p class="sub">A Wusool Capital team member will be in touch.</p>
+  </div>
+</dialog>
+
+<script>
+  import "../../scripts/refer-form";
+</script>
+
+<style>
+  .refer {
+    width: min(var(--dialog-w), calc(100% - 2 * var(--space-4)));
+    max-height: calc(100% - 2 * var(--space-4));
+    padding: 0;
+    border: 0;
+    border-radius: var(--r-card);
+    background: var(--surface);
+    box-shadow: var(--shadow-menu);
+  }
+  .refer::backdrop {
+    background: var(--backdrop);
+  }
+  .body {
+    position: relative;
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-8);
+  }
+  .body[hidden] {
+    display: none;
+  }
+  .close {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    display: grid;
+    place-items: center;
+    width: var(--space-10);
+    height: var(--space-10);
+    border: 0;
+    border-radius: var(--r-inner);
+    background: none;
+    color: var(--navy);
+    cursor: pointer;
+  }
+  .close:hover {
+    background: var(--close-hover);
+  }
+  h2 {
+    padding-right: var(--space-10);
+    font-size: var(--text-xl);
+  }
+  .sub {
+    color: var(--muted);
+  }
+  fieldset {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  legend {
+    margin-bottom: var(--space-2);
+    color: var(--navy);
+    font-size: var(--text-14);
+    font-weight: var(--weight-medium);
+  }
+  .opt,
+  .check {
+    display: flex;
+    gap: var(--space-2-5);
+    align-items: flex-start;
+    font-size: var(--text-14);
+  }
+  .check[hidden] {
+    display: none;
+  }
+  .check {
+    color: var(--muted);
+  }
+  .opt input,
+  .check input {
+    flex: none;
+    width: var(--space-4);
+    height: var(--space-4);
+    margin-top: var(--space-1);
+    accent-color: var(--navy);
+  }
+  .check a {
+    color: var(--navy);
+    text-decoration: underline;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+  @media (max-width: 720px) {
+    .body {
+      padding: var(--space-5-5);
+    }
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
