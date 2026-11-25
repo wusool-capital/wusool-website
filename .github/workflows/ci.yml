@@ -20,7 +20,6 @@ permissions:
   actions: read
 
 jobs:
-  # Fast checks and the one build every later job tests and deploys.
   # A Sanity publish changes content only. When this exact commit already
   # passed every gate on main, the code-only gates are skipped.
   verify:
@@ -33,25 +32,34 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          last=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --branch main --status success --limit 20 --json headSha,event \
-            --jq 'map(select(.event == "push" or .event == "workflow_dispatch"))[0].headSha')
-          echo "verified=$([ "$last" = "$GITHUB_SHA" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          passed=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --commit "$GITHUB_SHA" --status success --json event,headBranch \
+            --jq 'map(select(.headBranch == "main" and (.event == "push" or .event == "workflow_dispatch"))) | length')
+          echo "verified=$([ "$passed" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
+  # Fast checks and the one build every later job tests and deploys. On a
+  # verified publish only the content steps run, so a new npm advisory or lint
+  # rule cannot block a content deploy.
   build:
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - uses: gitleaks/gitleaks-action@v2
+        if: needs.verify.outputs.verified != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
       - uses: ./.github/actions/setup
       - run: npm audit --audit-level=high
+        if: needs.verify.outputs.verified != 'true'
       - run: npm run lint
+        if: needs.verify.outputs.verified != 'true'
       - run: npm run check
+        if: needs.verify.outputs.verified != 'true'
       - run: npm run check:tokens
+        if: needs.verify.outputs.verified != 'true'
       - run: npm run build
       - run: npm run check:dist
       - uses: actions/upload-artifact@v4

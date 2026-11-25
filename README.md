@@ -86,19 +86,19 @@ Set up once by an admin. The webhook only starts a CI run, so the token it holds
 2. In [sanity.io/manage](https://www.sanity.io/manage), project `qjvm6ww8`, API, Webhooks, create a webhook with the settings below.
 3. Publish a small edit. The webhook attempts log should show `204`, and a new CI run starts on `main` with the token owner as the actor.
 
-Webhook settings:
+Webhook settings. The filter lists every document type in `studio/schemas`, so system writes such as schema deploys do not start a build. Add a new document type to it when one is created.
 
-| Setting      | Value                                                                                            |
-| ------------ | ------------------------------------------------------------------------------------------------ |
-| URL          | `https://api.github.com/repos/wusool-capital/wusool-website/actions/workflows/ci.yml/dispatches` |
-| Dataset      | `production`                                                                                     |
-| Trigger on   | Create, Update, Delete                                                                           |
-| Filter       | `!(_type in ["sanity.imageAsset", "sanity.fileAsset"])`                                          |
-| Projection   | `{"ref": "main"}`                                                                                |
-| HTTP method  | POST                                                                                             |
-| HTTP headers | `Authorization: Bearer <token>` and `Accept: application/vnd.github+json`                        |
-| Drafts       | Off                                                                                              |
-| Versions     | Off                                                                                              |
+| Setting      | Value                                                                                                                            |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| URL          | `https://api.github.com/repos/wusool-capital/wusool-website/actions/workflows/ci.yml/dispatches`                                 |
+| Dataset      | `production`                                                                                                                     |
+| Trigger on   | Create, Update, Delete                                                                                                           |
+| Filter       | `_type in ["page", "insights", "report", "industry", "teamMember", "career", "partner", "legal", "siteSettings", "transaction"]` |
+| Projection   | `{"ref": "main"}`                                                                                                                |
+| HTTP method  | POST                                                                                                                             |
+| HTTP headers | `Authorization: Bearer <token>` and `Accept: application/vnd.github+json`                                                        |
+| Drafts       | Off                                                                                                                              |
+| Versions     | Off                                                                                                                              |
 
 If the token expires, the attempts log shows `401` and publishes stop deploying. A manual deploy is `gh workflow run ci.yml --ref main`.
 
