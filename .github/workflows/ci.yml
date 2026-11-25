@@ -50,6 +50,10 @@ jobs:
         with:
           name: dist
           path: dist
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       # The system packages come from Ubuntu's mirrors, which the runner
       # sometimes cannot reach. The runner image already has Chromium's
       # libraries, so fall back to installing the browser alone.
@@ -71,6 +75,11 @@ jobs:
         with:
           name: dist
           path: dist
+      # npx keeps the @lhci/cli download here; its version is pinned in package.json.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm/_npx
+          key: lhci-${{ runner.os }}-${{ hashFiles('package.json') }}
       - run: npm run lhci
         env:
           LHCI_SHARD: ${{ matrix.shard }}/3
