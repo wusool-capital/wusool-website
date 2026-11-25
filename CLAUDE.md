@@ -66,12 +66,11 @@ For copy, comments, commit messages and reports: no em dashes, no "it's not X, i
 - Pages read Sanity at build through `src/lib/sanity.ts` (public dataset, published content only, no token).
 - `npm run preview`: serve `dist/` with `wrangler dev` on port 8787, with `_headers` applied.
 
-## Branches and deploys
+## Deploys
 
-- `dev` is the default branch. Feature PRs target `dev`. Each PR gets a preview URL comment (`pr-<n>`).
-- Merge to `dev` deploys the `wusool-website` Worker: `https://wusool-website.jules-aa2.workers.dev` (staging, noindex).
-- Merge `dev` into `prod` to release. It deploys `wusool-website-prod` (`wrangler.jsonc` env `prod`). Until cutover it lives on its workers.dev URL with noindex. At cutover, attach `wusoolcapital.com` and remove that noindex rule in `public/_headers`, with Jules's approval.
-- CI deploys only after every gate passes. Needs the `CLOUDFLARE_API_TOKEN` repo secret.
+- Every PR gets a preview URL comment (`pr-<n>`) once the gates pass.
+- Merge to `main` deploys the `wusool-website` Worker (`https://wusool-website.jules-aa2.workers.dev`, noindex). At launch, attach `wusoolcapital.com` to this Worker and remove the noindex rule in `public/_headers`, with Jules's approval.
+- Needs the `CLOUDFLARE_API_TOKEN` repo secret.
 
 ## Gates
 

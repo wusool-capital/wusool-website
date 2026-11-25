@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [dev, prod]
+    branches: [main]
 
 # One run per branch or PR. Pushes queue so deploys land in commit order;
 # a new push to a PR cancels its older run so the preview never goes stale.
@@ -86,7 +86,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           PR: ${{ github.event.pull_request.number }}
         run: |
-          npx wrangler versions upload --env "" --preview-alias "pr-$PR" --message "PR #$PR" | tee upload.log
+          npx wrangler versions upload --preview-alias "pr-$PR" --message "PR #$PR" | tee upload.log
           url=$(grep -oE 'https://pr-[0-9]+-[a-z0-9.-]+\.workers\.dev' upload.log | head -1)
           test -n "$url"
           echo "URL=$url" >> "$GITHUB_ENV"
@@ -98,10 +98,10 @@ jobs:
         run: |
           gh pr comment "$PR" --edit-last --create-if-none --body "Preview: $URL (commit ${SHA::7})"
 
-  # dev deploys Jules's wusool-website Worker, prod deploys wusool-website-prod.
+  # Deploys the existing Worker after every gate passes on main.
   deploy:
     needs: gates
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -114,6 +114,6 @@ jobs:
         with:
           name: dist
           path: dist
-      - run: npx wrangler deploy --env "${{ github.ref_name == 'prod' && 'prod' || '' }}" --message "${GITHUB_SHA::7}"
+      - run: npx wrangler deploy --message "${GITHUB_SHA::7}"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

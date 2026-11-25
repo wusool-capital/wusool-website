@@ -11,10 +11,4 @@
     // Unknown paths serve 404.html with a 404 status (PRD feature 11).
     "not_found_handling": "404-page",
   },
-  // prod branch deploys here. wusoolcapital.com is attached at cutover only.
-  "env": {
-    "prod": {
-      "name": "wusool-website-prod",
-    },
-  },
 }
