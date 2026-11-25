@@ -16,7 +16,8 @@ permissions:
   pull-requests: read
 
 jobs:
-  gates:
+  # Fast checks and the one build every later job tests and deploys.
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -26,45 +27,86 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
-      - uses: actions/setup-node@v5
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            studio/package-lock.json
-      - run: npm ci
+      - uses: ./.github/actions/setup
       - run: npm audit --audit-level=high
       - run: npm run lint
       - run: npm run check
       - run: npm run check:tokens
       - run: npm run build
       - run: npm run check:dist
-      # The system packages come from Ubuntu's mirrors, which the runner
-      # sometimes cannot reach. The runner image already has Chromium's
-      # libraries, so fall back to installing the browser alone.
-      - run: npx playwright install --with-deps chromium || npx playwright install chromium
-      - run: npm run test:e2e
-      - run: npm run lhci
-      # The deploy jobs publish exactly the build that passed the gates.
       - uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist
           retention-days: 1
-      # Sanity Studio and the migration scripts (separate package).
+
+  e2e:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      # The system packages come from Ubuntu's mirrors, which the runner
+      # sometimes cannot reach. The runner image already has Chromium's
+      # libraries, so fall back to installing the browser alone.
+      - run: npx playwright install --with-deps chromium || npx playwright install chromium
+      - run: npm run test:e2e
+
+  # Lighthouse is the slowest gate, so its URLs are split across four runners.
+  lhci:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      # npx keeps the @lhci/cli download here; its version is pinned in package.json.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm/_npx
+          key: lhci-${{ runner.os }}-${{ hashFiles('package.json') }}
+      - run: npm run lhci
+        env:
+          LHCI_SHARD: ${{ matrix.shard }}/4
+
+  # Sanity Studio and the migration scripts (separate package).
+  studio:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: studio
+    steps:
+      - uses: actions/checkout@v5
+      # sanity schema validate also reads the root tsconfig, which extends astro's.
+      - uses: ./.github/actions/setup
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: studio/package-lock.json
       - run: npm ci
-        working-directory: studio
       - run: npm audit --audit-level=high
-        working-directory: studio
       - run: npx tsc -p .
-        working-directory: studio
       - run: npx sanity schema validate
-        working-directory: studio
 
   # Preview version per pull request. Forks get no secrets, so they skip it.
   preview:
-    needs: gates
+    needs: [build, e2e, lhci, studio]
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
@@ -72,11 +114,7 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup
       - uses: actions/download-artifact@v4
         with:
           name: dist
@@ -101,16 +139,12 @@ jobs:
 
   # Deploys the existing Worker after every gate passes on main.
   deploy:
-    needs: gates
+    needs: [build, e2e, lhci, studio]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup
       - uses: actions/download-artifact@v4
         with:
           name: dist
