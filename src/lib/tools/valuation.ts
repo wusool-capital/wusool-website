@@ -640,7 +640,8 @@ export function detectSectorFromText(text: string): string | null {
     )
   )
     return "Online Content & News";
-  if (/media|news.platform|digital.publish|broadcast/.test(t)) return "Online Content & News";
+  if (/media|news.platform|digital.publish|broadcast/.test(t))
+    return "Online Content & News";
   if (/gaming|game.studio|esport|mobile.game|video.game/.test(t))
     return "Gaming - Mobile";
   if (/agritech|agri.tech|precision.farm|crop.monitor|smart.farm/.test(t))

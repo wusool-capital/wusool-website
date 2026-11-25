@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { test, expect } from "@playwright/test";
 import {
   SECTORS,
@@ -31,27 +32,18 @@ test("Qatar and Bahrain pay 0% tax in the DCF", () => {
   }
 });
 
-test("every sector the keyword matcher suggests is in the sector list", () => {
-  const phrases = [
-    "we process payment gateway checkout for merchants",
-    "freight forwarding and last mile logistics",
-    "commercial real estate property management firm",
-    "a streaming and podcast platform for creators",
-    "a mobile game studio publishing video games",
-    "a telecom operator selling broadband",
-    "a SaaS crm for enterprise teams",
-    "a restaurant group and hotel brand",
-    "a neobank and lending platform",
-    "digital health and telehealth clinic",
-  ];
-  const seen = phrases.map((t) => detectSectorFromText(t));
-  for (const s of seen) expect(SECTORS, String(s)).toContain(s);
+test("every sector the keyword matcher can return is in the sector list", () => {
+  const src = readFileSync("src/lib/tools/valuation.ts", "utf8");
+  const body = src.slice(src.indexOf("export function detectSectorFromText"));
+  const names = [...body.matchAll(/return "([^"]+)";/g)].map((m) => m[1]);
+  expect(names.length).toBeGreaterThan(20);
+  for (const n of new Set(names)) expect(SECTORS, n).toContain(n);
 });
 
 test("a same-day update is not shown as updated", () => {
-  expect(
-    isLaterDay("2026-03-01T08:00:00Z", "2026-03-01T17:30:00Z"),
-  ).toBe(false);
+  expect(isLaterDay("2026-03-01T08:00:00Z", "2026-03-01T17:30:00Z")).toBe(
+    false,
+  );
   expect(isLaterDay("2026-03-01T08:00:00Z", "2026-03-02T01:00:00Z")).toBe(true);
   expect(isLaterDay(undefined, "2026-03-02T01:00:00Z")).toBe(true);
   expect(isLaterDay("2026-03-01", undefined)).toBe(false);
@@ -94,6 +86,15 @@ test("a negative owner salary or last-round revenue blocks submit with a message
   await f.locator('[name="ownerSalary"]').fill("-50000");
   await f.locator('button[type="submit"]').click();
   await expect(page.locator('[data-error="ownerSalary"]')).toHaveText(
+    "Enter 0 or more.",
+  );
+  await expect(page.locator("[data-valuation-results]")).toBeHidden();
+
+  await f.locator('[name="ownerSalary"]').fill("0");
+  await f.locator('[name="raised"][value="Yes"]').check({ force: true });
+  await f.locator('[name="lastRaiseRevenue"]').fill("-1000");
+  await f.locator('button[type="submit"]').click();
+  await expect(page.locator('[data-error="lastRaiseRevenue"]')).toHaveText(
     "Enter 0 or more.",
   );
   await expect(page.locator("[data-valuation-results]")).toBeHidden();
