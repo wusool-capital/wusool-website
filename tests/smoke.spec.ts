@@ -602,10 +602,17 @@ test("every live URL still resolves, and the sitemap lists every indexable page"
     .split("\n")
     .filter(Boolean);
   const missing: string[] = [];
+  // Pages that go noindex later (a closed job) leave the sitemap but stay live.
+  const noindex = new Set<string>();
   for (const path of live) {
     const res = await request.get(path, { maxRedirects: 0 });
     if (![200, 301].includes(res.status()))
       missing.push(`${path} ${res.status()}`);
+    else if (
+      res.status() === 200 &&
+      (await res.text()).includes('<meta name="robots" content="noindex">')
+    )
+      noindex.add(path);
   }
   expect(missing).toEqual([]);
 
@@ -613,7 +620,9 @@ test("every live URL still resolves, and the sitemap lists every indexable page"
   expect(sitemap.headers()["content-type"]).toContain("application/xml");
   const xml = await sitemap.text();
   const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-  for (const path of live.filter((p) => p !== "/transactions"))
+  for (const path of live.filter(
+    (p) => p !== "/transactions" && !noindex.has(p),
+  ))
     expect(locs, path).toContain(`https://www.wusoolcapital.com${path}`);
   expect(locs.some((u) => /\/styleguide$|\/404$|-test$/.test(u))).toBe(false);
 
