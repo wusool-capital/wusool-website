@@ -13,10 +13,10 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { chromium } from "@playwright/test";
+import { createClient } from "@sanity/client";
 
 const [slug] = process.argv.slice(2).filter((a) => !a.startsWith("-"));
 const WRITE = process.argv.includes("--write");
-const API = "https://qjvm6ww8.api.sanity.io/v2025-01-01";
 const token = process.env.SANITY_WRITE_TOKEN;
 if (!slug || (WRITE && !token)) {
   throw new Error(
@@ -24,12 +24,19 @@ if (!slug || (WRITE && !token)) {
   );
 }
 
-const q = encodeURIComponent(
-  `*[_type == "insights" && slug.current == "${slug}" && !(_id in path("drafts.**"))][0]{_id, "file": htmlFile.asset->url}`,
+const client = createClient({
+  projectId: "qjvm6ww8",
+  dataset: "production",
+  apiVersion: "2025-01-01",
+  useCdn: false,
+  perspective: "published",
+  token,
+});
+
+const doc = await client.fetch(
+  `*[_type == "insights" && slug.current == $slug][0]{_id, "file": htmlFile.asset->url}`,
+  { slug },
 );
-const doc = (
-  await (await fetch(`${API}/data/query/production?query=${q}`)).json()
-).result;
 if (!doc?.file) throw new Error(`${slug} has no HTML bundle`);
 
 // The files CDN serves bundles sandboxed, so the bundle runs from a local copy.
@@ -189,18 +196,9 @@ console.log(`images in ${dir}`);
 
 if (WRITE) {
   for (const b of blocks.filter((x) => x._type === "exhibit")) {
-    const res = await fetch(
-      `${API}/assets/images/production?filename=${slug}-exhibit-${b.shot + 1}.png`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "image/png",
-        },
-        body: readFileSync(b.file),
-      },
-    );
-    const asset = (await res.json()).document;
+    const asset = await client.assets.upload("image", readFileSync(b.file), {
+      filename: `${slug}-exhibit-${b.shot + 1}.png`,
+    });
     b.image = {
       _type: "image",
       asset: { _type: "reference", _ref: asset._id },
@@ -210,22 +208,9 @@ if (WRITE) {
     delete b.shot;
     delete b.alt;
   }
-  const res = await fetch(`${API}/data/mutate/production`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      mutations: [
-        {
-          patch: {
-            id: doc._id,
-            set: { body: blocks, bodyFormat: "portableText" },
-          },
-        },
-      ],
-    }),
-  });
-  console.log(`written: ${res.status}`);
+  await client
+    .patch(doc._id)
+    .set({ body: blocks, bodyFormat: "portableText" })
+    .commit();
+  console.log("written");
 }
