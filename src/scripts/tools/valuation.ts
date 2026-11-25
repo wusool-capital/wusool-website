@@ -114,7 +114,13 @@ function init(root: HTMLElement) {
     ["sector", () => !!val("sector"), "Select your sector."],
     ["geo", () => !!val("geo"), "Select your country."],
     ["revenue", () => num("revenue") > 0, "Enter your yearly revenue."],
+    ["ownerSalary", () => num("ownerSalary") >= 0, "Enter 0 or more."],
     ["raised", () => !!val("raised"), "Choose yes or no."],
+    [
+      "lastRaiseRevenue",
+      () => val("raised") !== "Yes" || num("lastRaiseRevenue") >= 0,
+      "Enter 0 or more.",
+    ],
     [
       "consent",
       () => (field("consent") as HTMLInputElement).checked,

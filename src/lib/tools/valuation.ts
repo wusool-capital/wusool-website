@@ -131,7 +131,7 @@ function getIndustryGrowth(sector: string): Growth {
   return DEFAULT_GROWTH;
 }
 
-export const getTaxRate = (geo: string) => TAX[geo] || 20;
+export const getTaxRate = (geo: string) => TAX[geo] ?? 20;
 
 function getStats(arr: number[]) {
   if (!arr.length) return { min: 0, p25: 0, avg: 0, median: 0, p75: 0, max: 0 };
@@ -326,9 +326,9 @@ export function valuation(
   const D = 0;
   const wacc =
     (E / (E + D)) * (p.ke / 100) +
-    (D / (E + D)) * (p.kd / 100) * (1 - (tax || 20) / 100) +
+    (D / (E + D)) * (p.kd / 100) * (1 - (tax ?? 20) / 100) +
     (sp || 3) / 100;
-  const taxR = (tax || 20) / 100;
+  const taxR = (tax ?? 20) / 100;
   const gR = (termGrowth || 2) / 100;
   const decels = [1, 1, 0.8, 0.65, 0.5];
   const targetMargin = Math.max(ebitMarginImpr * 5 + 5, 15);
@@ -492,11 +492,7 @@ export function valuation(
 // Amounts come in USD and show in the chosen currency.
 export function fmtResult(v: number, cur = "USD") {
   if (v === null || v === undefined || isNaN(v)) return "-";
-  const sy = CUR_SYM[cur] || "$";
-  const converted = v * (CUR_RATE[cur] || 1);
-  const a = Math.abs(converted);
-  const s = a >= 1e9 ? (a / 1e9).toFixed(1) + "B" : (a / 1e6).toFixed(1) + "M";
-  return converted < 0 ? `(${sy}${s})` : `${sy}${s}`;
+  return fmt(v, cur);
 }
 export function fmt(v: number, cur = "USD") {
   if (v === null || v === undefined || isNaN(v)) return "-";
@@ -592,7 +588,7 @@ export function detectSectorFromText(text: string): string | null {
       t,
     )
   )
-    return "Payments";
+    return "Payment Service Providers";
   if (/wallet|remittance|money.transfer/.test(t)) return "Fintech";
   if (
     /ecommerce|e-commerce|online.marketplace|online.retail|direct.to.consumer|\bd2c\b|shopify.plus/.test(
@@ -627,11 +623,11 @@ export function detectSectorFromText(text: string): string | null {
       t,
     )
   )
-    return "Logistics";
+    return "Logistics & Air Freight";
   if (/proptech|property.tech|real.estate.tech|realty.platform/.test(t))
     return "Proptech";
   if (/real.estate|property.manag|commercial.real.estate/.test(t))
-    return "Real Estate";
+    return "Real Estate Services";
   if (
     /mobility|rideshare|ride.hail|electric.vehicle|\bev.platform\b|micro.mobility|autonomous.vehicle/.test(
       t,
@@ -643,10 +639,10 @@ export function detectSectorFromText(text: string): string | null {
       t,
     )
   )
-    return "Media";
-  if (/media|news.platform|digital.publish|broadcast/.test(t)) return "Media";
+    return "Online Content & News";
+  if (/media|news.platform|digital.publish|broadcast/.test(t)) return "Online Content & News";
   if (/gaming|game.studio|esport|mobile.game|video.game/.test(t))
-    return "Gaming";
+    return "Gaming - Mobile";
   if (/agritech|agri.tech|precision.farm|crop.monitor|smart.farm/.test(t))
     return "AgriTech";
   if (
@@ -657,7 +653,7 @@ export function detectSectorFromText(text: string): string | null {
     return "Energy";
   if (/energy(?!.*health)/.test(t)) return "Energy";
   if (/telecom|telco|wireless.platform|broadband|isp\b|fiber.network/.test(t))
-    return "Telecom";
+    return "Telecom Service Providers";
   if (/quantum|robotics|3d.print|nano.tech|deep.tech|bioprint/.test(t))
     return "DeepTech";
   if (/insurance|insurtech|\bunderwriting\b|reinsurance/.test(t))
