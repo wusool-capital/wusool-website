@@ -74,7 +74,32 @@ GitHub Actions runs the gates on every pull request and on every push to `main`.
 - **Pull requests:** once every gate passes, CI comments a preview URL on the PR.
 - **Merges to `main`:** they deploy the `wusool-website` Worker. The Worker is noindex until launch.
 
+- **Sanity publishes:** a Sanity webhook starts CI on `main`. If that commit already passed every gate, the run only builds, runs `check:dist` and deploys (about 2 minutes). Otherwise it runs every gate first.
+
 Deploys need the `CLOUDFLARE_API_TOKEN` repository secret. Never commit secrets.
+
+## Content deploys
+
+Set up once by an admin. The webhook only starts a CI run, so the token it holds cannot change code or read secrets.
+
+1. In GitHub, create a fine-grained personal access token. Repository access: only `wusool-capital/wusool-website`. Permissions: **Actions: read and write**, nothing else. Set an expiry and put the renewal date in the team calendar.
+2. In [sanity.io/manage](https://www.sanity.io/manage), project `qjvm6ww8`, API, Webhooks, create a webhook:
+
+| Setting      | Value                                                                                            |
+| ------------ | ------------------------------------------------------------------------------------------------ |
+| URL          | `https://api.github.com/repos/wusool-capital/wusool-website/actions/workflows/ci.yml/dispatches` |
+| Dataset      | `production`                                                                                     |
+| Trigger on   | Create, Update, Delete                                                                           |
+| Filter       | `!(_type match "sanity.*")`                                                                      |
+| Projection   | `{"ref": "main"}`                                                                                |
+| HTTP method  | POST                                                                                             |
+| HTTP headers | `Authorization: Bearer <token>` and `Accept: application/vnd.github+json`                        |
+| Drafts       | Off                                                                                              |
+| Versions     | Off                                                                                              |
+
+3. Publish a small edit. The webhook's attempts log should show `204`, and a CI run named after the token's owner starts on `main`.
+
+If the token expires, the attempts log shows `401` and publishes stop deploying. A manual deploy is `gh workflow run ci.yml --ref main`.
 
 ## Docs
 

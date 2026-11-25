@@ -4,9 +4,12 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Started by the Sanity publish webhook (README, "Content deploys").
+  workflow_dispatch:
 
-# One run per branch or PR. Pushes queue so deploys land in commit order;
-# a new push to a PR cancels its older run so the preview never goes stale.
+# One run per branch or PR. Pushes and publishes queue so deploys land in
+# order, and a burst of publishes collapses into one pending run. A new push
+# to a PR cancels its older run so the preview never goes stale.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -14,15 +17,27 @@ concurrency:
 permissions:
   contents: read
   pull-requests: read
+  actions: read
 
 jobs:
   # Fast checks and the one build every later job tests and deploys.
   build:
     runs-on: ubuntu-latest
+    outputs:
+      verified: ${{ steps.verified.outputs.verified }}
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+      # A publish changes content only. When this exact commit already passed
+      # every gate on main, the code-only gates below are skipped.
+      - id: verified
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          last=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --branch main --status success --limit 1 --json headSha --jq '.[0].headSha')
+          echo "verified=$([ "$last" = "$GITHUB_SHA" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -42,6 +57,7 @@ jobs:
 
   e2e:
     needs: build
+    if: needs.build.outputs.verified != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -63,6 +79,7 @@ jobs:
   # Lighthouse is the slowest gate, so its URLs are split across four runners.
   lhci:
     needs: build
+    if: needs.build.outputs.verified != 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -86,6 +103,8 @@ jobs:
 
   # Sanity Studio and the migration scripts (separate package).
   studio:
+    needs: build
+    if: needs.build.outputs.verified != 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -137,10 +156,13 @@ jobs:
         run: |
           gh pr comment "$PR" --edit-last --create-if-none --body "Preview: $URL (commit ${SHA::7})"
 
-  # Deploys the existing Worker after every gate passes on main.
+  # Deploys the existing Worker on main after every gate that ran passed.
   deploy:
     needs: [build, e2e, lhci, studio]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >-
+      !cancelled() && !contains(needs.*.result, 'failure') &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5

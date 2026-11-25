@@ -70,6 +70,7 @@ For copy, comments, commit messages and reports: no em dashes, no "it's not X, i
 
 - Every PR gets a preview URL comment (`pr-<n>`) once the gates pass.
 - Merge to `main` deploys the `wusool-website` Worker (`https://wusool-website.jules-aa2.workers.dev`, noindex). At launch, attach `wusoolcapital.com` to this Worker and remove the noindex rule in `public/_headers`, with Jules's approval.
+- A Sanity publish starts CI on `main` through a webhook (README, "Content deploys"). When that commit already passed every gate, it only builds, runs `check:dist` and deploys.
 - Needs the `CLOUDFLARE_API_TOKEN` repo secret.
 
 ## Gates
