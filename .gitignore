@@ -15,3 +15,6 @@ studio/.sanity/
 
 # Raw tool files from the old tools app, reference only.
 lead magnets/
+
+# Local Claude Code settings and commands.
+.claude/
