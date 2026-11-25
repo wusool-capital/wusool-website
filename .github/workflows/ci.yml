@@ -83,6 +83,8 @@ jobs:
         working-directory: studio
     steps:
       - uses: actions/checkout@v5
+      # sanity schema validate also reads the root tsconfig, which extends astro's.
+      - uses: ./.github/actions/setup
       - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
