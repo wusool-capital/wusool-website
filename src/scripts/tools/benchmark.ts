@@ -36,10 +36,14 @@ function init(root: HTMLElement) {
     USD: ["1,360,000", "1,200,000", "190,000", "98,000", "204,000"],
   };
   const steps = [...root.querySelectorAll<HTMLElement>("[data-step]")];
+  // The server's limits. A longer answer would be refused and the lead lost.
+  Object.entries({ name: 200, company: 200, phone: 50 }).forEach(([id, max]) =>
+    $(id).setAttribute("maxlength", String(max)),
+  );
   // The answers behind the result on show, for the email form.
   let last: Input | null = null;
   // A retry after a failure reuses the id, so the server never records twice.
-  const submissionId = newId();
+  let submissionId = newId();
   let mode: Mode = "sme";
   let disp: Cur = "AED";
   const cur = () => (mode === "tech" ? "USD" : disp);
@@ -97,6 +101,11 @@ function init(root: HTMLElement) {
   };
   // Check only the fields on show for this mode and sector.
   const valid = (form: HTMLElement) => {
+    // The server refuses a negative amount, so say so before the answers go.
+    ["rev", "prev", "salary", "rent", "raised"].forEach((id) => {
+      const n = num(id);
+      $(id).setCustomValidity(n != null && n < 0 ? "Enter 0 or more." : "");
+    });
     for (const el of form.querySelectorAll<HTMLInputElement>("input, select"))
       if (el.offsetParent !== null && !el.reportValidity()) return false;
     return true;
@@ -144,6 +153,8 @@ function init(root: HTMLElement) {
       recur: num("recur"),
     };
     last = input;
+    // New figures are a new submission, so the server records them.
+    submissionId = newId();
     const r = compute(input);
     const { show } = view(input);
 
@@ -222,8 +233,8 @@ function init(root: HTMLElement) {
         salary_deducted: i.salaryDeducted,
         gross_margin_pct: i.gm,
         headcount: i.staff,
-        rent_cost: usd(i.rent),
-        capital_raised: i.raised,
+        rent_cost: tech ? null : usd(i.rent),
+        capital_raised: tech ? i.raised : null,
         top_customer_pct: i.conc,
         recurring_pct: i.recur,
         years_active: num("years"),

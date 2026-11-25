@@ -64,6 +64,7 @@ For copy, comments, commit messages and reports: no em dashes, no "it's not X, i
 - `cd studio && npx sanity exec migration/webflow-to-sanity.ts` (add `-- --dry-run` to only count): re-runnable Webflow to Sanity migration. Needs `WEBFLOW_TOKEN` and `SANITY_WRITE_TOKEN` in the git-ignored `.env`. `migration/review.ts -- <slugs>` compares migrated insights with Webflow. A re-run stops if any document was edited in Sanity since the last run; `-- --force` overwrites those edits, so use it only before the team starts editing.
 - `cd studio && npx sanity exec migration/seed-home.ts -- <og.jpg>`: creates the Home page document if missing (never overwrites).
 - Pages read Sanity at build through `src/lib/sanity.ts` (public dataset, published content only, no token).
+- `PUBLIC_TOOLS_API`: where the three tools post leads. Set it before `npm run build` and `npm run gates` (CI sets it to the dev backend). `npm run dev` falls back to the dev backend. A build without it sends nothing.
 - `npm run preview`: serve `dist/` with `wrangler dev` on port 8787, with `_headers` applied.
 
 ## Deploys

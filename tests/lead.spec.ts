@@ -426,3 +426,79 @@ test("the website field fills the description and sector once per address", asyn
   expect(sent("/enrich")).toHaveLength(1);
   expect(sent("/enrich")[0].body).toEqual({ domain: "acme.com" });
 });
+
+test("a refused readiness call lets the visitor edit, and the edit is a new submission", async ({
+  page,
+}) => {
+  const sent = await mockApi(page, {
+    "/readiness/score": (n) => (n === 1 ? { status: 422 } : { body: SCORED }),
+  });
+  await page.goto("/deal-readiness-tool");
+  await readiness(page);
+  await expect(page.locator("[data-failed-text]")).toContainText(
+    "Check your answers",
+  );
+  await page.locator("[data-edit]").click();
+  await expect(page.locator("#rd-name")).toBeVisible();
+  await page.locator("#rd-name").fill("Edited Name");
+  await readiness(page);
+  await expect(page.locator("[data-score]")).toHaveText("72");
+  const calls = sent("/readiness/score");
+  expect(calls[1].body.submission_id).not.toBe(calls[0].body.submission_id);
+  expect(calls[1].body.name).toBe("Edited Name");
+});
+
+test("the lead is tried once more when the first send fails", async ({
+  page,
+}) => {
+  await page.clock.install();
+  const sent = await mockApi(page, {
+    "/analyze": () => ({ body: ANALYZED }),
+    "/compare": () => ({ body: { comps: COMPS } }),
+    "/submit-lead": (n) => (n === 1 ? { status: 500 } : { body: {} }),
+  });
+  await page.goto("/valuation-tool");
+  const f = await fillValuation(page);
+  await f.locator('button[type="submit"]').click();
+  await page.clock.runFor(10_000);
+  await expect.poll(() => sent("/submit-lead").length).toBe(1);
+  await page.clock.runFor(3_000);
+  await expect.poll(() => sent("/submit-lead").length).toBe(2);
+  expect(sent("/submit-lead")[1].body.submission_id).toBe(
+    sent("/submit-lead")[0].body.submission_id,
+  );
+});
+
+test("long answers are capped at the server's limits", async ({ page }) => {
+  await page.goto("/valuation-tool");
+  await expect(page.locator('textarea[name="description"]')).toHaveAttribute(
+    "maxlength",
+    "4000",
+  );
+  await page.goto("/deal-readiness-tool");
+  await expect(page.locator("textarea").first()).toHaveAttribute(
+    "maxlength",
+    "2000",
+  );
+});
+
+test("a negative benchmark amount is refused before the answers go", async ({
+  page,
+}) => {
+  await page.goto("/benchmark");
+  await completeTool(
+    page,
+    "#bm",
+    ".act--primary:visible",
+    "[data-step='2']:visible",
+  );
+  await page.locator("#bm-rent").fill("-1000");
+  const msg = await page.evaluate(() => {
+    const step = document.querySelector<HTMLFormElement>("[data-step='2']");
+    step?.requestSubmit();
+    return (document.getElementById("bm-rent") as HTMLInputElement)
+      .validationMessage;
+  });
+  expect(msg).toBe("Enter 0 or more.");
+  await expect(page.locator("[data-step='3']")).toBeHidden();
+});

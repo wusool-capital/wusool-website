@@ -94,7 +94,7 @@ if (root) {
   });
 
   // A retry after a failure reuses the id, so the server never records twice.
-  const submissionId = newId();
+  let submissionId = newId();
 
   // Shows one panel and hides the form and the others. null shows the form.
   const swap = (panel: HTMLElement | null) => {
@@ -149,6 +149,18 @@ if (root) {
   }
 
   $("[data-retry]", failed).addEventListener("click", send);
+  // Edited answers are a new submission, so a refused one can be sent again.
+  $("[data-edit]", failed).addEventListener("click", () => {
+    submissionId = newId();
+    swap(null);
+    show(steps.length - 1);
+  });
+  // The server's limits. A longer answer would be refused.
+  const limits: Record<string, number> = { name: 200, biz: 200, domain: 253 };
+  $$<HTMLInputElement>("input, textarea", form).forEach((f) => {
+    const max = f.tagName === "TEXTAREA" ? 2000 : limits[f.name];
+    if (max) f.maxLength = max;
+  });
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     if (valid()) send();

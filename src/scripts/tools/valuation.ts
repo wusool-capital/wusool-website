@@ -77,6 +77,16 @@ function init(root: HTMLElement) {
   let data = load();
   data.catch(() => {});
 
+  // The server's limits. A longer answer would be refused and the lead lost.
+  Object.entries({
+    companyName: 200,
+    name: 200,
+    domain: 253,
+    description: 4000,
+  }).forEach(([n, max]) =>
+    form.querySelector(`[name="${n}"]`)?.setAttribute("maxlength", String(max)),
+  );
+
   const field = (n: string) =>
     form.elements.namedItem(n) as HTMLInputElement | RadioNodeList | null;
   const val = (n: string) => (field(n)?.value ?? "").trim();
@@ -345,33 +355,35 @@ function init(root: HTMLElement) {
     if (r.sent) return;
     r.sent = true;
     const { discounts, dcf, comps } = r.refine;
-    post(
-      "/submit-lead",
-      {
-        ...r.lead,
-        comps: comps ?? [],
-        discounts: discounts
-          ? {
-              revenue_discount_pct: discounts.revenue_discount_pct,
-              ebitda_discount_pct: discounts.ebitda_discount_pct,
-            }
-          : null,
-        dcf: dcf
-          ? {
-              revGrowth: dcf.revGrowth,
-              ebitMarginImpr: dcf.ebitMarginImpr,
-              daaPct: dcf.daaPct,
-              capexPct: dcf.capexPct,
-              nwcPct: dcf.nwcPct,
-              termGrowth: dcf.termGrowth,
-            }
-          : null,
-        transaction_search_terms: r.txTerms,
-        vc_search_terms: r.vcTerms,
-        analytics: analytics(),
-      },
-      true,
-    ).catch(() => {});
+    const body = {
+      ...r.lead,
+      comps: comps ?? [],
+      discounts: discounts
+        ? {
+            revenue_discount_pct: discounts.revenue_discount_pct,
+            ebitda_discount_pct: discounts.ebitda_discount_pct,
+          }
+        : null,
+      dcf: dcf
+        ? {
+            revGrowth: dcf.revGrowth,
+            ebitMarginImpr: dcf.ebitMarginImpr,
+            daaPct: dcf.daaPct,
+            capexPct: dcf.capexPct,
+            nwcPct: dcf.nwcPct,
+            termGrowth: dcf.termGrowth,
+          }
+        : null,
+      transaction_search_terms: r.txTerms,
+      vc_search_terms: r.vcTerms,
+      analytics: analytics(),
+    };
+    post("/submit-lead", body, true).catch(() =>
+      // One more try. The server ignores a repeat of the same submission id.
+      sleep(3000)
+        .then(() => post("/submit-lead", body))
+        .catch(() => {}),
+    );
   }
 
   results.addEventListener("click", (e) => {

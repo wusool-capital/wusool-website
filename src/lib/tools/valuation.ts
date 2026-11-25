@@ -411,10 +411,9 @@ export function valuation(
   };
 
   // Trading comps, with the size discount against the median peer.
-  const tc =
-    refine.comps && refine.comps.length >= 3
-      ? tradingProfile(refine.comps)
-      : p.tc;
+  // The API can return a peer with no EV. It would count as a 0x multiple.
+  const peers = (refine.comps ?? []).filter((c) => c.ev > 0);
+  const tc = peers.length >= 3 ? tradingProfile(peers) : p.tc;
   const targetRevM = rev / 1e6;
   const ratio = tc.n && targetRevM > 0 ? tc.mc / targetRevM : 0;
   const sizeDisc =
