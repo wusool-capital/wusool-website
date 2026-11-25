@@ -60,14 +60,14 @@ jobs:
       - run: npx playwright install --with-deps chromium || npx playwright install chromium
       - run: npm run test:e2e
 
-  # Lighthouse is the slowest gate, so its URLs are split across three runners.
+  # Lighthouse is the slowest gate, so its URLs are split across four runners.
   lhci:
     needs: build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup
@@ -82,7 +82,7 @@ jobs:
           key: lhci-${{ runner.os }}-${{ hashFiles('package.json') }}
       - run: npm run lhci
         env:
-          LHCI_SHARD: ${{ matrix.shard }}/3
+          LHCI_SHARD: ${{ matrix.shard }}/4
 
   # Sanity Studio and the migration scripts (separate package).
   studio:
