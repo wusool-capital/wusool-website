@@ -31,7 +31,7 @@ const urls = [
 ];
 
 // CI splits the URLs across parallel jobs with LHCI_SHARD=<n>/<total>.
-const [shard, shards] = (process.env.LHCI_SHARD ?? "1/1")
+const [shard, shards] = (process.env.LHCI_SHARD || "1/1")
   .split("/")
   .map(Number);
 
