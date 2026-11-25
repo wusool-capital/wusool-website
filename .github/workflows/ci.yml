@@ -39,6 +39,12 @@ jobs:
       - run: npx playwright install --with-deps chromium || npx playwright install chromium
       - run: npm run test:e2e
       - run: npm run lhci
+      # The deploy jobs publish exactly the build that passed the gates.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 1
       # Sanity Studio and the migration scripts (separate package).
       - run: npm ci
         working-directory: studio
@@ -48,3 +54,62 @@ jobs:
         working-directory: studio
       - run: npx sanity schema validate
         working-directory: studio
+
+  # Preview version per pull request. Forks get no secrets, so they skip it.
+  preview:
+    needs: gates
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: Upload preview version
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          npx wrangler versions upload --preview-alias "pr-$PR" --message "PR #$PR" | tee upload.log
+          url=$(grep -oE 'https://pr-[0-9]+-[a-z0-9.-]+\.workers\.dev' upload.log | head -1)
+          test -n "$url"
+          echo "URL=$url" >> "$GITHUB_ENV"
+      - name: Comment preview URL
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          gh pr comment "$PR" --edit-last --create-if-none --body "Preview: $URL (commit ${SHA::7})"
+
+  # Production deploy of the existing Worker after every gate passes on main.
+  deploy:
+    needs: gates
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - run: npx wrangler deploy --message "${GITHUB_SHA::7}"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

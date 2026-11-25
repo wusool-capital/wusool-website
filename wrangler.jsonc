@@ -1,5 +1,7 @@
 {
   "name": "wusool-website",
+  // Jules's account. The login sees more than one, so wrangler needs it named.
+  "account_id": "aa28a40954cce378e48680c2b5588dda",
   "compatibility_date": "2026-10-01",
   // Lets Workers Builds publish a preview URL per branch (wrangler preview).
   "previews": {},
