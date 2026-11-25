@@ -12,28 +12,35 @@ const thresholds = {
   "cumulative-layout-shift": ["error", { maxNumericValue: 0.05 }],
 };
 
+const urls = [
+  "http://localhost:8787/",
+  "http://localhost:8787/sell",
+  "http://localhost:8787/buyers",
+  "http://localhost:8787/industries/technology",
+  "http://localhost:8787/insights",
+  "http://localhost:8787/insights/gcc-padel-report-2026",
+  "http://localhost:8787/reports",
+  "http://localhost:8787/reports/padel-in-the-gulf",
+  "http://localhost:8787/team",
+  "http://localhost:8787/careers/senior-analyst-ma-advisory-dubai",
+  "http://localhost:8787/refer",
+  "http://localhost:8787/valuation-tool",
+  "http://localhost:8787/benchmark",
+  "http://localhost:8787/privacy-policy",
+  "http://localhost:8787/styleguide",
+];
+
+// CI splits the URLs across parallel jobs with LHCI_SHARD=<n>/<total>.
+const [shard, shards] = (process.env.LHCI_SHARD ?? "1/1")
+  .split("/")
+  .map(Number);
+
 module.exports = {
   ci: {
     collect: {
       startServerCommand: "npx wrangler dev --port 8787",
       startServerReadyPattern: "Ready on",
-      url: [
-        "http://localhost:8787/",
-        "http://localhost:8787/sell",
-        "http://localhost:8787/buyers",
-        "http://localhost:8787/industries/technology",
-        "http://localhost:8787/insights",
-        "http://localhost:8787/insights/gcc-padel-report-2026",
-        "http://localhost:8787/reports",
-        "http://localhost:8787/reports/padel-in-the-gulf",
-        "http://localhost:8787/team",
-        "http://localhost:8787/careers/senior-analyst-ma-advisory-dubai",
-        "http://localhost:8787/refer",
-        "http://localhost:8787/valuation-tool",
-        "http://localhost:8787/benchmark",
-        "http://localhost:8787/privacy-policy",
-        "http://localhost:8787/styleguide",
-      ],
+      url: urls.filter((_, i) => i % shards === shard - 1),
       numberOfRuns: 3,
     },
     assert: {

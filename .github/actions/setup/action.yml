@@ -1,0 +1,16 @@
+name: Setup
+description: Node from .nvmrc and root node_modules, restored from cache when the lockfile is unchanged.
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v5
+      with:
+        node-version-file: .nvmrc
+    - id: cache
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-${{ hashFiles('.nvmrc', 'package-lock.json') }}
+    - if: steps.cache.outputs.cache-hit != 'true'
+      run: npm ci
+      shell: bash
