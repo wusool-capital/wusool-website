@@ -1,9 +1,10 @@
 ---
 // Deal readiness score tool. Every question is in the HTML; the script only
-// moves between steps, scores the answers and shows the results.
+// moves between steps, sends the answers for scoring and shows the results.
 import Icon from "../Icon.astro";
 import Step from "./readiness/Step.astro";
 import Contact from "./readiness/Contact.astro";
+import Wait from "./readiness/Wait.astro";
 import Results from "./readiness/Results.astro";
 import { SECTIONS } from "../../lib/tools/readiness";
 
@@ -50,6 +51,7 @@ const expect = [
     ))}
     <Contact />
   </form>
+  <Wait />
   <Results />
 </div>
 

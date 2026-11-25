@@ -1,6 +1,6 @@
 ---
-// "Get the full benchmark" form. Submitting validates in the browser and
-// shows a thank-you in place. Nothing is sent.
+// "Get the full benchmark" form. Submitting sends the figures to the tools API
+// and shows a thank-you in place. A failed send shows an error and keeps the form.
 import Field from "./Field.astro";
 ---
 
@@ -55,6 +55,7 @@ import Field from "./Field.astro";
       and consent to being contacted.
     </label>
   </div>
+  <p class="fail" id="bm-error" role="alert" hidden></p>
   <div class="row">
     <button type="submit" class="act act--primary">
       Send me the full benchmark
@@ -100,6 +101,15 @@ import Field from "./Field.astro";
   .check label {
     color: var(--muted);
     font-size: var(--text-sm);
+  }
+  .fail {
+    margin-top: var(--space-4);
+    color: var(--navy);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+  }
+  .fail[hidden] {
+    display: none;
   }
   .check a {
     color: var(--navy);

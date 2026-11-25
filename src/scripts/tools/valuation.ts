@@ -1,15 +1,49 @@
 // Valuation tool behaviour: form toggles, validation, the calculation and the
-// results. Sends nothing over the network.
+// results. The estimate is worked out in the browser. /enrich fills the
+// description from the website, /analyze and /compare refine the estimate,
+// and /submit-lead records the lead once those have settled.
 import {
+  SECTORS,
   valuation,
   detectSectorFromText,
   fmt,
   fmtM,
   fmtP,
   fmtResult,
+  type Comp,
+  type Growth,
   type Profile,
+  type Refine,
   type VcRow,
 } from "../../lib/tools/valuation";
+import { analytics, cleanDomain, newId, post } from "./lead";
+
+const LOADING_MS = 10_000;
+// The analysis can take a few minutes. After this the lead goes on what landed.
+const SETTLE_MS = 185_000;
+const STEPS = [
+  "Analyzing financial inputs...",
+  "Computing DCF projections...",
+  "Matching transaction comparables...",
+  "Benchmarking against listed peers...",
+  "Calibrating valuation ranges...",
+];
+interface Analyzed {
+  discounts?: Refine["discounts"];
+  dcf?: Growth | null;
+  transaction_search_terms?: string[];
+  vc_search_terms?: string[];
+}
+// One submission: the figures sent with the lead and what has landed so far.
+interface Run {
+  lead: Record<string, unknown>;
+  refine: Refine;
+  txTerms: string[];
+  vcTerms: string[];
+  sent: boolean;
+  shown: boolean;
+}
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const root = document.querySelector<HTMLElement>("[data-valuation]");
 if (root) init(root);
@@ -22,6 +56,8 @@ function init(root: HTMLElement) {
   const results = q("[data-valuation-results]");
   const funding = q("[data-funding]");
   const suggested = q("[data-suggested]");
+  const enrichNote = q("[data-enrich]");
+  const loading = q("[data-valuation-loading]");
   const title = q("#val-title");
   const live = q("[data-announce]");
   const sector = form.elements.namedItem("sector") as HTMLSelectElement;
@@ -46,6 +82,7 @@ function init(root: HTMLElement) {
   const val = (n: string) => (field(n)?.value ?? "").trim();
   const num = (n: string) => parseFloat(val(n).replace(/,/g, "")) || 0;
   const cur = () => val("currency") || "USD";
+  const toUSD = (x: number) => (cur() === "AED" ? x / 3.6725 : x);
   const set = (key: string, text: string) =>
     root
       .querySelectorAll(`[data-v="${key}"]`)
@@ -85,7 +122,7 @@ function init(root: HTMLElement) {
   );
 
   // Suggest a sector from the description, as the original tool did.
-  (field("description") as HTMLInputElement).addEventListener("input", () => {
+  const suggest = () => {
     const text = val("description");
     if (text.length <= 20 || sector.value) return;
     const guess = detectSectorFromText(text);
@@ -93,6 +130,40 @@ function init(root: HTMLElement) {
       sector.value = guess;
       suggested.hidden = false;
       setError("sector", "");
+    }
+  };
+  (field("description") as HTMLInputElement).addEventListener("input", suggest);
+
+  // Leaving the website field fills the description and sector from the site.
+  // It only fills what the visitor has not typed, and asks once per address.
+  let asked = "";
+  let filled = "";
+  (field("domain") as HTMLInputElement).addEventListener("blur", async () => {
+    const domain = cleanDomain(val("domain"));
+    if (!domain.includes(".") || domain === asked) return;
+    asked = domain;
+    enrichNote.textContent = "Analyzing your website...";
+    enrichNote.hidden = false;
+    try {
+      const r = await post<{ description: string; sector: string }>("/enrich", {
+        domain,
+        company: val("companyName") || undefined,
+      });
+      const desc = field("description") as HTMLInputElement;
+      if (
+        r.description &&
+        (!val("description") || val("description") === filled)
+      )
+        desc.value = filled = r.description;
+      await data.catch(() => {});
+      if (r.sector && SECTORS.includes(r.sector) && !sector.value) {
+        sector.value = r.sector;
+        suggested.hidden = false;
+      } else suggest();
+      enrichNote.textContent = "Auto-filled from your website. Check it.";
+    } catch {
+      asked = "";
+      enrichNote.hidden = true;
     }
   });
 
@@ -151,11 +222,157 @@ function init(root: HTMLElement) {
       );
       return;
     }
-    render();
-    form.hidden = true;
-    results.hidden = false;
-    title.focus();
+    run();
   });
+
+  // Shows the loading screen, then the preliminary estimate, then the refined
+  // one once /analyze and /compare have landed. Each submission is its own
+  // run with its own id, so an edited resubmission is recorded as a new lead.
+  let current: Run | null = null;
+  async function run() {
+    const raised = val("raised") === "Yes";
+    const usd = (n: string) => (val(n) === "" ? null : toUSD(num(n)));
+    const domain = cleanDomain(val("domain"));
+    const geo = val("geo");
+    const revenue = toUSD(num("revenue"));
+    const r: Run = {
+      lead: {
+        submission_id: newId(),
+        company: val("companyName"),
+        name: val("name"),
+        email: val("email"),
+        domain: domain || null,
+        description: val("description") || null,
+        sector: val("sector"),
+        geography: geo,
+        stage: raised ? val("stage") || null : null,
+        last_raise_revenue: raised ? usd("lastRaiseRevenue") : null,
+        last_raise_pbt: raised ? usd("lastRaisePBT") : null,
+        revenue,
+        profit_before_tax: usd("profitBeforeTax"),
+        owner_salary: usd("ownerSalary"),
+        consent: true,
+      },
+      refine: {},
+      txTerms: [],
+      vcTerms: [],
+      sent: false,
+      shown: false,
+    };
+    current = r;
+    window.addEventListener("pagehide", () => send(r));
+
+    form.hidden = true;
+    results.hidden = true;
+    loading.hidden = false;
+    loading.querySelector<HTMLElement>("h2")?.focus();
+    let i = 0;
+    const line = loading.querySelector("[data-loading-text]") as HTMLElement;
+    line.textContent = STEPS[0];
+    const timer = setInterval(
+      () => (line.textContent = STEPS[Math.min(++i, STEPS.length - 1)]),
+      LOADING_MS / STEPS.length,
+    );
+
+    const description = val("description");
+    const sectorName = val("sector");
+    const company = val("companyName");
+    const analyze = post<Analyzed>("/analyze", {
+      company,
+      domain,
+      sector: sectorName,
+      description,
+      geography: geo,
+      revenue,
+      ebitda: toUSD(num("profitBeforeTax") + num("ownerSalary")),
+      raised,
+      stage: raised ? val("stage") || null : null,
+    })
+      .then((a) => {
+        r.refine.discounts = a.discounts ?? null;
+        r.refine.dcf = a.dcf ?? null;
+        r.txTerms = a.transaction_search_terms ?? [];
+        r.vcTerms = a.vc_search_terms ?? [];
+      })
+      .catch(() => {});
+    const compare = post<{ comps: Comp[] }>("/compare", {
+      company,
+      sector: sectorName,
+      description,
+      revenue,
+      geography: geo,
+    })
+      .then((c) => {
+        if (c.comps.length >= 3)
+          r.refine.comps = c.comps.map(({ co, tk, ev, rev, ebitda }) => ({
+            co,
+            tk,
+            ev,
+            rev,
+            ebitda,
+          }));
+      })
+      .catch(() => {});
+
+    let settled = false;
+    const done = Promise.race([
+      Promise.all([analyze, compare]),
+      sleep(SETTLE_MS),
+    ]).then(() => (settled = true));
+    await sleep(LOADING_MS);
+    clearInterval(timer);
+    if (!settled) paint(r, "Preliminary estimate, refining...", {});
+    await done;
+    const refined = !!(r.refine.comps || r.refine.dcf);
+    paint(r, refined ? "Refined estimate" : "Estimate ready", r.refine);
+    send(r);
+  }
+
+  function paint(r: Run, label: string, refine: Refine) {
+    if (r !== current) return;
+    render(refine);
+    set("status", label);
+    if (!r.shown) {
+      r.shown = true;
+      loading.hidden = true;
+      results.hidden = false;
+      title.focus();
+    } else if (!results.hidden) announce(`${label}. ${val("companyName")}.`);
+  }
+
+  // Once per run: when the analysis settles or the visitor leaves.
+  function send(r: Run) {
+    if (r.sent) return;
+    r.sent = true;
+    const { discounts, dcf, comps } = r.refine;
+    post(
+      "/submit-lead",
+      {
+        ...r.lead,
+        comps: comps ?? [],
+        discounts: discounts
+          ? {
+              revenue_discount_pct: discounts.revenue_discount_pct,
+              ebitda_discount_pct: discounts.ebitda_discount_pct,
+            }
+          : null,
+        dcf: dcf
+          ? {
+              revGrowth: dcf.revGrowth,
+              ebitMarginImpr: dcf.ebitMarginImpr,
+              daaPct: dcf.daaPct,
+              capexPct: dcf.capexPct,
+              nwcPct: dcf.nwcPct,
+              termGrowth: dcf.termGrowth,
+            }
+          : null,
+        transaction_search_terms: r.txTerms,
+        vc_search_terms: r.vcTerms,
+        analytics: analytics(),
+      },
+      true,
+    ).catch(() => {});
+  }
 
   results.addEventListener("click", (e) => {
     const action = (e.target as HTMLElement)
@@ -176,9 +393,8 @@ function init(root: HTMLElement) {
     live.textContent = text;
   }
 
-  function render() {
+  function render(refine: Refine) {
     const c = cur();
-    const toUSD = (x: number) => (c === "AED" ? x / 3.6725 : x);
     const s = val("sector");
     const raised = val("raised") === "Yes";
     const inputs = {
@@ -190,7 +406,7 @@ function init(root: HTMLElement) {
       ownerSalary: toUSD(num("ownerSalary")),
     };
     const p = profiles[s];
-    const r = valuation(inputs, p, vc, new Date().getFullYear());
+    const r = valuation(inputs, p, vc, new Date().getFullYear(), refine);
     const money = (v: number) => fmt(v, c);
     const big = (v: number) => fmtResult(v, c);
     const n = r.methods.length;
