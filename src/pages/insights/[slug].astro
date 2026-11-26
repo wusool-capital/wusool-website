@@ -10,6 +10,7 @@ import SectionHead from "../../components/SectionHead.astro";
 import Breadcrumbs from "../../components/insights/Breadcrumbs.astro";
 import InsightCard from "../../components/insights/InsightCard.astro";
 import Takeaways from "../../components/insights/Takeaways.astro";
+import { isLaterDay } from "../../lib/dates";
 import Toc from "../../components/insights/Toc.astro";
 import AuthorBox from "../../components/insights/AuthorBox.astro";
 import ShareLinks from "../../components/insights/ShareLinks.astro";
@@ -74,10 +75,9 @@ const cta = {
   form: toForm ? ("get-started" as const) : undefined,
 };
 const published = i.publishedAt;
-const updated =
-  i.lastUpdated && i.lastUpdated > (published ?? "")
-    ? i.lastUpdated
-    : undefined;
+const updated = isLaterDay(published, i.lastUpdated)
+  ? i.lastUpdated
+  : undefined;
 const image = ogImage("insights", i);
 // Bylines link to the author's card on the team page; articles signed by the
 // company link to the team page itself.

@@ -60,7 +60,10 @@ jobs:
         if: needs.verify.outputs.verified != 'true'
       - run: npm run check:tokens
         if: needs.verify.outputs.verified != 'true'
+      # Where the tools post leads. Cutover: point production at the tools host.
       - run: npm run build
+        env:
+          PUBLIC_TOOLS_API: https://63-184-6-136.sslip.io
       - run: npm run check:dist
       - uses: actions/upload-artifact@v4
         with:

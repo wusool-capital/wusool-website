@@ -1,0 +1,30 @@
+---
+// Shown for about ten seconds after the form is sent, while the estimate is
+// worked out. The script rotates the line of text.
+---
+
+<section class="loading" data-valuation-loading hidden>
+  <h2 tabindex="-1">Working out your estimate</h2>
+  <progress aria-label="Estimate in progress"></progress>
+  <p data-loading-text></p>
+</section>
+
+<style>
+  .loading {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-4);
+    padding: var(--space-10) 0;
+    text-align: center;
+  }
+  .loading[hidden] {
+    display: none;
+  }
+  .loading p {
+    color: var(--muted);
+  }
+  progress {
+    width: 100%;
+    max-width: var(--measure-lede);
+  }
+</style>

@@ -1,5 +1,6 @@
 // Benchmark tool behaviour: mode and currency switches, steps, validation,
-// scoring and results. Every question is already in the HTML.
+// scoring and results. Every question is already in the HTML. The result is
+// worked out in the browser. The email form sends the figures to the tools API.
 import {
   DATA,
   FX,
@@ -14,6 +15,7 @@ import {
   type Input,
   type Mode,
 } from "../../lib/tools/benchmark";
+import { ApiError, FAIL_TEXT, analytics, newId, post } from "./lead";
 
 const root = document.getElementById("bm");
 if (root) init(root);
@@ -34,6 +36,14 @@ function init(root: HTMLElement) {
     USD: ["1,360,000", "1,200,000", "190,000", "98,000", "204,000"],
   };
   const steps = [...root.querySelectorAll<HTMLElement>("[data-step]")];
+  // The server's limits. A longer answer would be refused and the lead lost.
+  Object.entries({ name: 200, company: 200, phone: 50 }).forEach(([id, max]) =>
+    $(id).setAttribute("maxlength", String(max)),
+  );
+  // The answers behind the result on show, for the email form.
+  let last: Input | null = null;
+  // A retry after a failure reuses the id, so the server never records twice.
+  let submissionId = newId();
   let mode: Mode = "sme";
   let disp: Cur = "AED";
   const cur = () => (mode === "tech" ? "USD" : disp);
@@ -91,6 +101,11 @@ function init(root: HTMLElement) {
   };
   // Check only the fields on show for this mode and sector.
   const valid = (form: HTMLElement) => {
+    // The server refuses a negative amount, so say so before the answers go.
+    ["rev", "prev", "salary", "rent", "raised"].forEach((id) => {
+      const n = num(id);
+      $(id).setCustomValidity(n != null && n < 0 ? "Enter 0 or more." : "");
+    });
     for (const el of form.querySelectorAll<HTMLInputElement>("input, select"))
       if (el.offsetParent !== null && !el.reportValidity()) return false;
     return true;
@@ -137,6 +152,9 @@ function init(root: HTMLElement) {
       conc: num("conc"),
       recur: num("recur"),
     };
+    last = input;
+    // New figures are a new submission, so the server records them.
+    submissionId = newId();
     const r = compute(input);
     const { show } = view(input);
 
@@ -181,8 +199,56 @@ function init(root: HTMLElement) {
       `Your benchmark is ready. ${rows.length} metrics ranked.`;
   }
 
-  $<HTMLFormElement>("report").addEventListener("submit", (e) => {
+  $<HTMLFormElement>("report").addEventListener("submit", async (e) => {
     e.preventDefault();
+    const i = last;
+    if (!i) return;
+    const btn = $<HTMLButtonElement>("report").querySelector(
+      "button[type=submit]",
+    ) as HTMLButtonElement;
+    const fail = $("error");
+    btn.disabled = true;
+    fail.hidden = true;
+    // Startup mode is USD. SME figures are in the chosen currency.
+    const f = i.mode === "sme" && i.disp === "AED" ? 1 / FX : 1;
+    const usd = (v: number | null) => (v == null ? null : v * f);
+    const tech = i.mode === "tech";
+    try {
+      await post("/benchmark", {
+        submission_id: submissionId,
+        mode: i.mode,
+        peer_key: i.cut,
+        sector: tech ? $("tsector").value : undefined,
+        company: $("company").value.trim(),
+        name: $("name").value.trim(),
+        email: $("email").value.trim(),
+        phone: $("phone").value.trim() || undefined,
+        domain: null,
+        geography: $("geo").value || null,
+        consent: $("consent").checked,
+        revenue: usd(i.rev),
+        prev_revenue: usd(i.prev),
+        ebitda_reported: usd(i.ebitda),
+        owner_salary: i.salaryDeducted ? usd(i.salary) : null,
+        salary_deducted: i.salaryDeducted,
+        gross_margin_pct: i.gm,
+        headcount: i.staff,
+        rent_cost: tech ? null : usd(i.rent),
+        capital_raised: tech ? i.raised : null,
+        top_customer_pct: i.conc,
+        recurring_pct: i.recur,
+        years_active: num("years"),
+        outlets: $("outwrap").hidden ? null : num("outlets"),
+        days_to_get_paid: $("dsowrap").hidden ? null : num("dso"),
+        analytics: analytics(),
+      });
+    } catch (err) {
+      fail.textContent =
+        FAIL_TEXT[err instanceof ApiError ? err.kind : "server"];
+      fail.hidden = false;
+      btn.disabled = false;
+      return;
+    }
     $("report").hidden = true;
     $("thanks").hidden = false;
     ($("thanks").querySelector("h3") as HTMLElement).focus();

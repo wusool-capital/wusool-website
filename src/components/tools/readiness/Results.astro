@@ -1,6 +1,6 @@
 ---
 // Results: thank-you, overall score and band, section breakdown, flags,
-// call to action. Filled in by the script.
+// call to action. Filled in by the script from the server's score.
 import Icon from "../../Icon.astro";
 import Chip from "../../Chip.astro";
 import Gate from "./Gate.astro";
@@ -30,6 +30,8 @@ import NotSellingYet from "../NotSellingYet.astro";
     </div>
   </div>
 
+  <p class="summary" data-summary></p>
+
   <h3>Your score breakdown</h3>
   <ul class="dims">
     {SECTIONS.map((s) => (
@@ -43,6 +45,9 @@ import NotSellingYet from "../NotSellingYet.astro";
       </li>
     ))}
   </ul>
+
+  <h3>Your priority actions</h3>
+  <ol class="recs" data-recs></ol>
 
   <h3>What buyers will ask about</h3>
   <ul class="flags" data-flags></ul>
@@ -150,11 +155,22 @@ import NotSellingYet from "../NotSellingYet.astro";
     border-radius: var(--r-pill);
     background: var(--navy);
   }
-  .flags {
+  .summary {
+    margin-top: var(--space-5);
+    font-size: var(--text-15);
+  }
+  .flags,
+  .recs {
     display: grid;
     gap: var(--space-2);
   }
-  .flags :global(li) {
+  .recs {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .flags :global(li),
+  .recs :global(li) {
     padding: var(--space-3) var(--space-4);
     border-left: 2px solid var(--navy);
     border-radius: var(--r-item);

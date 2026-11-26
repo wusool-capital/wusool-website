@@ -271,16 +271,16 @@ export const SECTIONS: Section[] = [
 ];
 
 export const SECTORS = [
-  "Technology and SaaS",
-  "Healthcare and medical",
-  "F&B and hospitality",
-  "Professional services",
-  "Education and training",
-  "Retail and e-commerce",
-  "Construction and contracting",
-  "Logistics and supply chain",
-  "Financial services",
-  "Manufacturing and industrial",
+  "Technology & SaaS",
+  "Healthcare & Medical",
+  "F&B & Hospitality",
+  "Professional Services",
+  "Education & Training",
+  "Retail & E-Commerce",
+  "Construction & Contracting",
+  "Logistics & Supply Chain",
+  "Financial Services",
+  "Manufacturing & Industrial",
   "Other",
 ];
 export const REVENUES = [

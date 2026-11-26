@@ -1,12 +1,15 @@
 ---
-// Business valuation tool. Runs in the browser with no network requests:
-// the sector data is reduced to one profile per sector at build.
+// Business valuation tool. The estimate is worked out in the browser from one
+// sector profile built at build time. The tools API refines it and records
+// the lead.
 import ValuationForm from "./valuation/ValuationForm.astro";
+import Loading from "./valuation/Loading.astro";
 import Results from "./valuation/Results.astro";
 ---
 
 <div class="valuation" data-valuation>
   <ValuationForm />
+  <Loading />
   <Results />
   <p class="visually-hidden" aria-live="polite" data-announce></p>
 </div>

@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
 // Pages to smoke test. Add each new page as it ships.
 const pages = [
@@ -649,119 +649,8 @@ test("robots.txt lists the sitemap once and llms.txt uses the approved values", 
 });
 
 // The site-wide "Get started" modal still loads from the tools app on every
-// page; the tools themselves must request nothing else off the site.
+// page. The tools post their leads to the tools API (see lead.spec.ts).
 const EMBED = "https://tools.wusoolcapital.com/embed.js";
-
-// Answers every visible question with the first option or a sample value,
-// then presses the step's forward button, until `done` is visible.
-async function completeTool(
-  page: Page,
-  root: string,
-  forward: string,
-  done: string,
-) {
-  const tool = page.locator(root);
-  for (
-    let step = 0;
-    step < 20 && !(await page.locator(done).isVisible());
-    step++
-  ) {
-    for (const radio of await tool
-      .locator('input[type="radio"]:visible')
-      .all()) {
-      const name = await radio.getAttribute("name");
-      if (!(await tool.locator(`input[name="${name}"]:checked`).count()))
-        await radio.check();
-    }
-    for (const select of await tool.locator("select:visible").all())
-      if (!(await select.inputValue())) await select.selectOption({ index: 1 });
-    for (const input of await tool
-      .locator(
-        'input:visible:not([type="radio"]):not([type="checkbox"]), textarea:visible',
-      )
-      .all()) {
-      if (await input.inputValue()) continue;
-      const type = await input.getAttribute("type");
-      const max = await input.getAttribute("max");
-      const numeric = /numeric|decimal/.test(
-        (await input.getAttribute("inputmode")) ?? "",
-      );
-      const sample: Record<string, string> = {
-        email: "owner@example.com",
-        tel: "+971500000000",
-        url: "https://example.com",
-        number: max ?? "1000000",
-      };
-      await input.fill(
-        numeric ? "1000000" : (sample[type ?? ""] ?? "Test company"),
-      );
-    }
-    for (const box of await tool
-      .locator('input[type="checkbox"][required]:visible')
-      .all())
-      await box.check();
-    await tool.locator(forward).first().click();
-  }
-  await expect(page.locator(done)).toBeVisible();
-}
-
-test("deal readiness tool scores the answers without any request", async ({
-  page,
-}) => {
-  const external: string[] = [];
-  page.on("request", (r) => {
-    if (!r.url().startsWith("http://localhost") && r.url() !== EMBED)
-      external.push(r.url());
-  });
-  await page.goto("/deal-readiness-tool");
-  await completeTool(
-    page,
-    "[data-readiness]",
-    '[data-go="1"]:visible, .btn--next:visible',
-    "[data-results]",
-  );
-  await expect(page.locator("[data-score]")).toHaveText(/^\d+$/);
-  // The partner directory is hidden until launch.
-  await expect(page.locator('[data-results] a[href="/partners"]')).toHaveCount(
-    0,
-  );
-  expect(external).toEqual([]);
-});
-
-test("benchmark tool shows results and a thank-you without any request", async ({
-  page,
-}) => {
-  const external: string[] = [];
-  page.on("request", (r) => {
-    if (!r.url().startsWith("http://localhost") && r.url() !== EMBED)
-      external.push(r.url());
-  });
-  await page.goto("/benchmark");
-  await completeTool(page, "#bm", ".act--primary:visible", "#bm-thanks");
-  await expect(page.locator('#bm a[href="/partners"]')).toHaveCount(0);
-  expect(external).toEqual([]);
-});
-
-test("valuation tool shows a range without any request", async ({ page }) => {
-  const external: string[] = [];
-  page.on("request", (r) => {
-    if (!r.url().startsWith("http://localhost") && r.url() !== EMBED)
-      external.push(r.url());
-  });
-  await page.goto("/valuation-tool");
-  await completeTool(
-    page,
-    "[data-valuation]",
-    'button[type="submit"]:visible',
-    "[data-valuation-results]",
-  );
-  await expect(page.locator('[data-v="range"]')).not.toBeEmpty();
-  // The partner directory is hidden until launch.
-  await expect(
-    page.locator('[data-valuation-results] a[href="/partners"]'),
-  ).toHaveCount(0);
-  expect(external).toEqual([]);
-});
 
 // Partners (PRD 6.3, feature 14).
 test("partners page lists every active partner from Sanity, by category", async ({
