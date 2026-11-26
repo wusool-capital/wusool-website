@@ -159,6 +159,8 @@ function init(root: HTMLElement) {
         domain,
         company: val("companyName") || undefined,
       });
+      // A newer address has been asked for. Its answer will fill the form.
+      if (asked !== domain) return;
       const desc = field("description") as HTMLInputElement;
       if (
         r.description &&
@@ -339,7 +341,8 @@ function init(root: HTMLElement) {
   }
 
   function paint(r: Run, label: string, refine: Refine) {
-    if (r !== current) return;
+    // Once the visitor is editing, the form no longer matches this run.
+    if (r !== current || (r.shown && results.hidden)) return;
     render(refine);
     set("status", label);
     if (!r.shown) {

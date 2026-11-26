@@ -188,9 +188,13 @@ if (root) {
     $("[data-summary]", res).textContent = r.summaryParagraph;
     // The server names its five areas. Match each bar by its first word.
     $$("[data-sec]", res).forEach((b, i) => {
-      const word = SECTIONS[i].title.split(" ")[0].toLowerCase();
+      // "Your growth story" and "Growth Story" share "growth".
+      const word = SECTIONS[i].title
+        .toLowerCase()
+        .replace("your ", "")
+        .split(" ")[0];
       const d =
-        r.dimensions.find((x) => x.name.toLowerCase().startsWith(word)) ??
+        r.dimensions.find((x) => x.name.toLowerCase().includes(word)) ??
         r.dimensions[i];
       b.textContent = `${Math.round(d?.score ?? 0)} / 100`;
       const bar = $<HTMLProgressElement>(
