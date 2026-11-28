@@ -98,7 +98,6 @@ export const footerGroups: { title: string; links: NavLink[] }[] = [
     links: [
       { label: "Team", href: "/team" },
       { label: "Careers", href: "/careers" },
-      { label: "Refer and earn", href: "/refer" },
     ],
   },
 ];

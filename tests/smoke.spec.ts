@@ -764,7 +764,7 @@ test("partners quiz answers every category and size, without any request", async
   expect(external).toEqual([]);
 });
 
-test("Refer and earn is in the footer only, the hidden partner directory is not, and the desktop nav stays on one line", async ({
+test("Refer and earn and the hidden partner directory are not linked from the header or footer, and the desktop nav stays on one line", async ({
   page,
   isMobile,
 }) => {
@@ -782,7 +782,7 @@ test("Refer and earn is in the footer only, the hidden partner directory is not,
       );
     expect(new Set(tops).size).toBe(1);
   }
-  await expect(page.locator('footer a[href="/refer"]')).toHaveCount(1);
+  await expect(page.locator('footer a[href="/refer"]')).toHaveCount(0);
 });
 
 test("footer links every industry, tool and topic page in labelled columns", async ({
