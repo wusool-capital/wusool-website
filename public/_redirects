@@ -3,3 +3,4 @@
 # not redirected: they return 404 (fix 3).
 /transactions /sell 301
 /transactions/ /sell 301
+/reports/buyouts-in-the-gcc /reports/how-to-fund-a-buyout-in-the-uae-and-gcc-2026-playbook 301

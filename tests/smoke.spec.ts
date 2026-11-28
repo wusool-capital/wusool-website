@@ -620,8 +620,9 @@ test("every live URL still resolves, and the sitemap lists every indexable page"
   expect(sitemap.headers()["content-type"]).toContain("application/xml");
   const xml = await sitemap.text();
   const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  const redirected = ["/transactions", "/reports/buyouts-in-the-gcc"];
   for (const path of live.filter(
-    (p) => p !== "/transactions" && !noindex.has(p),
+    (p) => !redirected.includes(p) && !noindex.has(p),
   ))
     expect(locs, path).toContain(`https://www.wusoolcapital.com${path}`);
   expect(locs.some((u) => /\/styleguide$|\/404$|-test$/.test(u))).toBe(false);
