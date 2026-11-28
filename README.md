@@ -102,6 +102,8 @@ Webhook settings. The filter lists every document type in `studio/schemas`, so s
 
 If the token expires, the attempts log shows `401` and publishes stop deploying. A manual deploy is `gh workflow run ci.yml --ref main`.
 
+When a publish run fails, the `notify-failure` job posts the run link to Slack channel `C0CH5M2C8BE` as the wusool-toolkit bot. It reads the `SLACK_BOT_TOKEN` repo secret (from `slack_bot_token` in AWS secret `/wusool/prod/toolkit`), and the bot must be a member of the channel. An expired webhook token starts no run, so it sends no alert.
+
 ## Docs
 
 - `PRD.md`: the full product spec. Read it before building a feature.
