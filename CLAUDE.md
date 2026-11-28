@@ -65,6 +65,7 @@ For copy, comments, commit messages and reports: no em dashes, no "it's not X, i
 - `cd studio && npx sanity exec migration/seed-home.ts -- <og.jpg>`: creates the Home page document if missing (never overwrites).
 - Pages read Sanity at build through `src/lib/sanity.ts` (public dataset, published content only, no token).
 - `PUBLIC_TOOLS_API`: where the three tools post leads. Set it before `npm run build` and `npm run gates` (CI sets it to the dev backend). `npm run dev` falls back to the dev backend. A build without it sends nothing.
+- `npm run deploy`: build, check the tools API host is in the build, then `wrangler deploy`. Set `PUBLIC_TOOLS_API` first. CI is the normal deploy path. A local deploy without the variable makes every tool fail.
 - `npm run preview`: serve `dist/` with `wrangler dev` on port 8787, with `_headers` applied.
 
 ## Deploys
