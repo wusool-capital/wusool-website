@@ -48,7 +48,7 @@ module.exports = {
       assertMatrix: [
         {
           matchingUrlPattern:
-            "^(?!.*/styleguide$)(?!.*/careers/)(?!.*/reports/)(?!.*/valuation-tool$)(?!.*/benchmark$)(?!.*/gcc-padel-report-2026$)",
+            "^(?!.*/styleguide$)(?!.*/refer$)(?!.*/careers/)(?!.*/reports/)(?!.*/valuation-tool$)(?!.*/benchmark$)(?!.*/gcc-padel-report-2026$)",
           aggregationMethod: "median-run",
           assertions: thresholds,
         },
@@ -64,10 +64,10 @@ module.exports = {
             ],
           },
         },
-        // The styleguide is noindex by design, and a closed job turns noindex,
-        // so SEO cannot reach 100 there.
+        // The styleguide is noindex by design, a closed job turns noindex,
+        // and /refer is noindex until referLive, so SEO cannot reach 100 there.
         {
-          matchingUrlPattern: "/styleguide$|/careers/",
+          matchingUrlPattern: "/styleguide$|/careers/|/refer$",
           aggregationMethod: "median-run",
           assertions: { ...thresholds, "categories:seo": "off" },
         },

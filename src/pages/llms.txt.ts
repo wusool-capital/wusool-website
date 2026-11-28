@@ -3,6 +3,7 @@
 import type { APIRoute } from "astro";
 import { query } from "../lib/sanity";
 import { SITE } from "../lib/schema";
+import { referLive } from "../data/site";
 
 type Item = { title: string; slug: string };
 
@@ -43,8 +44,7 @@ ${s.orgDescription}
 - Insights: ${SITE}/insights
 - Reports: ${SITE}/reports
 - Team: ${SITE}/team
-- Refer and earn (referral partners): ${SITE}/refer
-
+${referLive ? `- Refer and earn (referral partners): ${SITE}/refer\n` : ""}
 ## Reports
 
 ${list(d.reports, "reports")}

@@ -16,6 +16,11 @@ export interface NavItem {
 // back to the nav and footer.
 export const partnersLive = false;
 
+// Refer and earn is hidden until its lead backend is ready: /refer builds
+// with noindex and nothing links to it. Set to true to publish it, then add
+// it back to the nav and footer.
+export const referLive = false;
+
 // Shared by the nav dropdowns and the footer columns.
 const industries: NavLink[] = [
   { label: "Manufacturing", href: "/industries/manufacturing" },

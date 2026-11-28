@@ -11,6 +11,7 @@ import Faq from "../components/Faq.astro";
 import ReferralCalc from "../components/ReferralCalc.astro";
 import ReferForm from "../components/refer/ReferForm.astro";
 import { query } from "../lib/sanity";
+import { referLive } from "../data/site";
 import { FEE_RATE, SHARE_RATE, PAYOUT_DAYS } from "../lib/referral";
 import { SITE, graph, webPage, faqPage, breadcrumbs } from "../lib/schema";
 
@@ -72,6 +73,7 @@ const jsonLd = graph([
   title={title}
   description={description}
   jsonLd={jsonLd}
+  noindex={!referLive}
   bottom="surface"
   closing={{
     title: "Know an owner who is thinking of selling?",
