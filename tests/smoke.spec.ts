@@ -764,7 +764,7 @@ test("partners quiz answers every category and size, without any request", async
   expect(external).toEqual([]);
 });
 
-test("Refer and earn is in the nav and footer, the hidden partner directory is not, and the desktop nav stays on one line", async ({
+test("Refer and earn is in the footer only, the hidden partner directory is not, and the desktop nav stays on one line", async ({
   page,
   isMobile,
 }) => {
@@ -773,7 +773,7 @@ test("Refer and earn is in the nav and footer, the hidden partner directory is n
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/");
     const main = page.getByRole("navigation", { name: "Main" });
-    await expect(main.locator('a[href="/refer"]')).toBeVisible();
+    await expect(page.locator('header a[href="/refer"]')).toHaveCount(0);
     await expect(page.locator('a[href="/partners"]')).toHaveCount(0);
     const tops = await main
       .locator(".links > li")

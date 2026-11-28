@@ -41,7 +41,6 @@ export const nav: NavItem[] = [
   { label: "Industries", wide: true, menu: industries },
   { label: "Tools", menu: tools },
   { label: "Insights", href: "/insights" },
-  { label: "Refer and earn", href: "/refer" },
   {
     label: "About",
     menu: [
@@ -58,7 +57,6 @@ export const mobileNav: NavLink[] = [
   { label: "Industries", href: "/industries/technology" },
   { label: "Valuation Calculator", href: "/valuation-tool" },
   { label: "Insights", href: "/insights" },
-  { label: "Refer and earn", href: "/refer" },
   { label: "Team", href: "/team" },
 ];
 
