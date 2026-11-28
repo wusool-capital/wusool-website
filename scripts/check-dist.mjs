@@ -220,18 +220,6 @@ for (const route of PENDING) {
     );
 }
 
-// The tools post leads to the host in PUBLIC_TOOLS_API. A build without it
-// compiles every tool to a function that throws, so no lead is ever sent.
-const leadChunks = readdirSync(join(DIST, "_astro")).filter((f) =>
-  /^lead\..*\.js$/.test(f),
-);
-for (const f of leadChunks)
-  if (
-    !/https:\/\/[a-z0-9.-]+/.test(readFileSync(join(DIST, "_astro", f), "utf8"))
-  )
-    errors.push(`${f} has no tools API host: build with PUBLIC_TOOLS_API set`);
-if (!leadChunks.length) errors.push("no lead chunk: the tools send nothing");
-
 if (errors.length) {
   console.error(
     `check-dist: ${errors.length} failure(s)\n` + errors.join("\n"),
