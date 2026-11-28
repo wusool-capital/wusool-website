@@ -42,6 +42,8 @@ jobs:
   build:
     needs: verify
     runs-on: ubuntu-latest
+    outputs:
+      alert: ${{ steps.alert.outputs.text }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -60,11 +62,31 @@ jobs:
         if: needs.verify.outputs.verified != 'true'
       - run: npm run check:tokens
         if: needs.verify.outputs.verified != 'true'
+      # The content steps keep their logs for the Slack alert, so editors
+      # see what to fix without opening GitHub.
+      - run: npm run -s check:content 2>&1 | tee content.log
+        shell: bash
       # Where the tools post leads: the production tools host. Its LEAD_MAGNET_ALLOWED_ORIGINS must list this site's origin.
-      - run: npm run build
+      - run: npm run build 2>&1 | tee build.log
+        shell: bash
         env:
           PUBLIC_TOOLS_API: https://tools.wusoolcapital.com
-      - run: npm run check:dist
+      - run: npm run -s check:dist 2>&1 | tee dist.log
+        shell: bash
+      # The failed step is the last one that wrote a log.
+      - id: alert
+        if: failure() && github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          log=$(for f in dist.log build.log content.log; do [ -f "$f" ] && echo "$f" && break; done)
+          eof=$(openssl rand -hex 8)
+          {
+            echo "text<<$eof"
+            echo "Website deploy failed after a Sanity publish. The change is not live yet."
+            if [ -n "$log" ]; then echo '```'; tail -n 40 "$log"; echo '```'; fi
+            echo "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "$eof"
+          } >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -191,3 +213,18 @@ jobs:
       - run: npx wrangler deploy --message "${GITHUB_SHA::7}"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+  # A failed Sanity publish leaves the edit off the live site with no other
+  # signal, so tell the team in Slack.
+  notify-failure:
+    needs: [verify, build, e2e, lhci, studio, deploy]
+    if: failure() && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: slackapi/slack-github-action@v2
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            channel: C0CH5M2C8BE
+            text: ${{ toJSON(needs.build.outputs.alert || format('Website deploy failed after a Sanity publish. The change is not live yet. Run: {0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id)) }}
