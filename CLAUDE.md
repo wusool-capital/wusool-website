@@ -59,7 +59,7 @@ For copy, comments, commit messages and reports: no em dashes, no "it's not X, i
 ## Commands
 
 - `npm run dev`: local dev server.
-- `npm run gates`: every local gate (lint, Astro check, `check:tokens`, `check:studio`, build, `check:dist`, npm audit, Playwright, Lighthouse CI).
+- `npm run gates`: every local gate (lint, Astro check, `check:tokens`, `check:studio`, `check:content`, build, `check:dist`, npm audit, Playwright, Lighthouse CI).
 - `cd studio && npm run dev`: Sanity Studio locally (project `qjvm6ww8`, dataset `production`).
 - `cd studio && npx sanity exec migration/webflow-to-sanity.ts` (add `-- --dry-run` to only count): re-runnable Webflow to Sanity migration. Needs `WEBFLOW_TOKEN` and `SANITY_WRITE_TOKEN` in the git-ignored `.env`. `migration/review.ts -- <slugs>` compares migrated insights with Webflow. A re-run stops if any document was edited in Sanity since the last run; `-- --force` overwrites those edits, so use it only before the team starts editing.
 - `cd studio && npx sanity exec migration/seed-home.ts -- <og.jpg>`: creates the Home page document if missing (never overwrites).
@@ -77,6 +77,7 @@ For copy, comments, commit messages and reports: no em dashes, no "it's not X, i
 
 ## Gates
 
+- `scripts/check-content.mjs`: every published Sanity document has the fields the build needs (SEO title and description, H1, excerpt and so on). Lists them all before the build stops at the first one.
 - `scripts/check-dist.mjs`: titles 30 to 60 chars, descriptions 70 to 160, unique titles and descriptions, one H1, self canonical on `https://www.wusoolcapital.com`, alt text, broken internal links, `href="#"` only on `data-form` modal triggers, one JSON-LD `@graph` per page, JS under 50 KB and CSS under 100 KB per page. Pages with `noindex` skip the SEO checks.
 - `scripts/check-tokens.mjs`: no raw colors, sizes, times or easings in component styles or `global.css`. Add a token to `tokens.css` instead.
 - `scripts/pending-routes.json`: live-site paths not built yet. Links to them pass the link checks. Remove a path in the feature that builds it. Must be empty by feature 12.
